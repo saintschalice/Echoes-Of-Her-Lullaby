@@ -1,0 +1,67 @@
+D:\EchoesOfHerLullaby\Echoes Of Her Lullaby\Assets\
+├── Scripts\
+│   ├── Player\
+│   ├── AI\
+│   ├── Puzzle\
+│   ├── Audio\
+│   ├── UI\
+│   │   ├── Menus\
+│   │   ├── Inventory\
+│   │   ├── HUD\
+│   │   └── Dialogs\
+│   └── GameManagement\
+├── Scenes\
+│   ├── SplashScreen
+│   ├── MainMenu
+│   ├── SettingsMenu
+│   ├── LoadGame
+│   ├── Room01_Foyer
+│   ├── Room02_LivingRoom
+│   ├── Room03_Hallway
+│   ├── Room04_Kitchen
+│   ├── Room05_DiningRoom
+│   ├── Room06_ReturnHallway
+│   ├── Room07_LisaBedroom
+│   ├── Room08_LisaBathroom
+│   ├── Room09_MasterBathroom
+│   ├── Room10_MasterBedroom
+│   ├── LoadingScreen
+│   ├── PauseMenu
+│   ├── InventoryScreen
+│   ├── GameOver
+│   ├── Credits
+│   └── Tutorial
+├── Prefabs\
+│   ├── Player\
+│   ├── Interactables\
+│   ├── UI\
+│   │   ├── Menus\
+│   │   ├── HUD\
+│   │   ├── Inventory\
+│   │   ├── Dialogs\
+│   │   └── Popups\
+│   └── Audio\
+├── Art\
+│   ├── Textures\
+│   ├── Sprites\
+│   │   ├── UI\
+│   │   ├── Icons\
+│   │   ├── Characters\
+│   │   └── Items\
+│   ├── Materials\
+│   └── Animations\
+│   │   ├── UI\
+│   │   └── Gameplay\
+├── Audio\
+│   ├── Music\
+│   ├── SFX\
+│   │   ├── UI\
+│   │   └── Gameplay\
+│   └── Ambient\
+└── Resources\
+    ├── Data\
+    │   ├── UI\
+    │   └── Gameplay\
+    └── Config\
+        ├── UI\
+        └── Settings\
