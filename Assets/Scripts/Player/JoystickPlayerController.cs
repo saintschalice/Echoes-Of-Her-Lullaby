@@ -14,6 +14,8 @@ public class JoystickPlayerController : MonoBehaviour
     [Header("Joystick Reference")]
     public VirtualJoystick joystick;
 
+
+
     // Store last direction for idle animations
     private Vector2 lastDirection = Vector2.down; // Start facing down
 
