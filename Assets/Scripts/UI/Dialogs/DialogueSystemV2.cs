@@ -37,6 +37,7 @@ public class DialogueSystemV2 : MonoBehaviour
     [Header("Audio")]
     public AudioSource audioSource;
     public float typingSoundVolume = 0.5f;
+    public int charactersPerSound = 1; // Play sound every X characters (1 = every character, 2 = every other character)
 
     [Header("Player Controller")]
     public MonoBehaviour playerController; // Reference to your player controller
@@ -110,8 +111,12 @@ public class DialogueSystemV2 : MonoBehaviour
     {
         if (isTyping)
         {
-            // Skip typing animation
+            // Skip typing animation and stop sounds immediately
             skipTyping = true;
+            if (audioSource != null)
+            {
+                audioSource.Stop();
+            }
         }
         else
         {
@@ -248,6 +253,7 @@ public class DialogueSystemV2 : MonoBehaviour
         }
 
         SpeakerData speaker = GetSpeakerData(line.speakerName);
+        int soundCounter = 0;
 
         // Type each character
         for (int i = 0; i < fullText.Length; i++)
@@ -264,11 +270,26 @@ public class DialogueSystemV2 : MonoBehaviour
                 dialogueText.text = fullText.Substring(0, i + 1);
             }
 
-            // Play typing sound
-            PlayTypingSound(speaker);
+            // Play typing sound based on character counter
+            char currentChar = fullText[i];
+            if (!char.IsWhiteSpace(currentChar)) // Don't play sound for spaces
+            {
+                soundCounter++;
+                if (soundCounter >= charactersPerSound)
+                {
+                    PlayTypingSound(speaker);
+                    soundCounter = 0;
+                }
+            }
 
             // Wait for next character
             yield return new WaitForSeconds(line.typewriterSpeed);
+        }
+
+        // Stop any lingering typing sounds
+        if (audioSource != null)
+        {
+            audioSource.Stop();
         }
 
         // Ensure full text is displayed
@@ -294,8 +315,16 @@ public class DialogueSystemV2 : MonoBehaviour
     {
         if (audioSource != null && speaker != null && speaker.typingSounds != null && speaker.typingSounds.Length > 0)
         {
+            // Stop any currently playing sound to prevent overlap
+            audioSource.Stop();
+
+            // Reset pitch to normal (no distortion)
+            audioSource.pitch = 1f;
+
+            // Pick a random sound from the speaker's collection
             AudioClip soundToPlay = speaker.typingSounds[Random.Range(0, speaker.typingSounds.Length)];
-            audioSource.pitch = Random.Range(0.9f, 1.1f);
+
+            // Play the sound (PlayOneShot for clean, crisp audio)
             audioSource.PlayOneShot(soundToPlay, typingSoundVolume);
         }
     }
@@ -326,6 +355,12 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             StopCoroutine(typingCoroutine);
             typingCoroutine = null;
+        }
+
+        // Stop any playing audio
+        if (audioSource != null)
+        {
+            audioSource.Stop();
         }
 
         // Hide dialogue panel

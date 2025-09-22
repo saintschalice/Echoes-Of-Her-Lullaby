@@ -170,7 +170,8 @@ MonoBehaviour:
     typingSounds:
     - {fileID: 8300000, guid: 0477e3979fd742c43b5b941695ff19d3, type: 3}
   audioSource: {fileID: 0}
-  typingSoundVolume: 0.5
+  typingSoundVolume: 0.2
+  charactersPerSound: 1
   playerController: {fileID: 0}
 --- !u!4 &1442795
 Transform:
