@@ -51,6 +51,7 @@ public class DialogueSystemV2 : MonoBehaviour
     private bool skipTyping = false;
     private Coroutine typingCoroutine;
     private string fullText = "";
+    private float baseTypingSoundVolume; // Store original volume
 
     public static DialogueSystemV2 Instance { get; private set; }
 
@@ -72,11 +73,20 @@ public class DialogueSystemV2 : MonoBehaviour
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
         }
+
+        // Store base volume
+        baseTypingSoundVolume = typingSoundVolume;
     }
 
     void Start()
     {
+        UpdateDialogueVolume();
+
+        ConnectToAudioMixer();
+
         // Hide dialogue panel at start
         if (dialoguePanel != null)
         {
@@ -86,7 +96,11 @@ public class DialogueSystemV2 : MonoBehaviour
         // Find player controller if not assigned
         if (playerController == null)
         {
-            playerController = FindFirstObjectByType<MonoBehaviour>();
+            playerController = FindFirstObjectByType<JoystickPlayerController>();
+            if (playerController == null)
+            {
+                playerController = FindFirstObjectByType<MonoBehaviour>();
+            }
         }
 
         // Find joystick UI if not assigned
@@ -94,9 +108,13 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             // Try to find the joystick by name or component
             GameObject foundJoystick = GameObject.Find("Joystick");
+            Debug.Log("Found Joystick by name: " + (foundJoystick != null ? foundJoystick.name : "NULL"));
+
             if (foundJoystick == null)
             {
                 foundJoystick = GameObject.Find("PlayerLight2D");
+                Debug.Log("Found PlayerLight2D: " + (foundJoystick != null ? foundJoystick.name : "NULL"));
+
                 if (foundJoystick != null)
                 {
                     // Look for joystick in the player hierarchy
@@ -104,10 +122,70 @@ public class DialogueSystemV2 : MonoBehaviour
                     if (parent != null)
                     {
                         foundJoystick = parent.Find("Joystick")?.gameObject;
+                        Debug.Log("Found Joystick in parent: " + (foundJoystick != null ? foundJoystick.name : "NULL"));
                     }
                 }
             }
             joystickUI = foundJoystick;
+        }
+
+        Debug.Log("DialogueSystem initialized with joystick: " + (joystickUI != null ? joystickUI.name : "NULL"));
+    }
+
+    void ConnectToAudioMixer()
+    {
+        if (audioSource != null)
+        {
+            // Check if already connected via Inspector
+            if (audioSource.outputAudioMixerGroup != null)
+            {
+                Debug.Log("DialogueSystem AudioSource already connected to: " + audioSource.outputAudioMixerGroup.name);
+                return;
+            }
+
+            // If not connected, try to find and connect automatically
+            UnityEngine.Audio.AudioMixer[] mixers = Resources.FindObjectsOfTypeAll<UnityEngine.Audio.AudioMixer>();
+
+            foreach (var mixer in mixers)
+            {
+                if (mixer.name == "MainAudioMixer")
+                {
+                    UnityEngine.Audio.AudioMixerGroup[] groups = mixer.FindMatchingGroups("Dialogue");
+                    if (groups.Length > 0)
+                    {
+                        audioSource.outputAudioMixerGroup = groups[0];
+                        Debug.Log("Connected DialogueSystem AudioSource to MainAudioMixer -> Dialogue group");
+                        return;
+                    }
+                }
+            }
+
+            Debug.LogWarning("Could not find Dialogue mixer group. Audio volume will be controlled locally.");
+        }
+        else
+        {
+            Debug.LogWarning("AudioSource is null in ConnectToAudioMixer!");
+        }
+    }
+
+    public void UpdateDialogueVolume()
+    {
+        if (audioSource != null)
+        {
+            float dialogueVolume = PlayerPrefs.GetFloat("DialogueVolume", 1f);
+
+            // If connected to audio mixer, don't modify audioSource.volume
+            if (audioSource.outputAudioMixerGroup != null)
+            {
+                // Volume is controlled by the mixer
+                Debug.Log($"Dialogue volume controlled by mixer: {dialogueVolume * 100}%");
+            }
+            else
+            {
+                // Fallback: control volume directly
+                audioSource.volume = baseTypingSoundVolume * dialogueVolume;
+                Debug.Log($"Dialogue volume set directly: {audioSource.volume}");
+            }
         }
     }
 
@@ -178,6 +256,10 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             dialoguePanel.SetActive(true);
         }
+
+        // Ensure cursor is visible for dialogue interaction
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
 
         // Start first line
         DisplayLine();
@@ -352,8 +434,17 @@ public class DialogueSystemV2 : MonoBehaviour
             // Pick a random sound from the speaker's collection
             AudioClip soundToPlay = speaker.typingSounds[Random.Range(0, speaker.typingSounds.Length)];
 
-            // Play the sound (PlayOneShot for clean, crisp audio)
-            audioSource.PlayOneShot(soundToPlay, typingSoundVolume);
+            // Play the sound with appropriate volume
+            float currentVolume = baseTypingSoundVolume;
+
+            // If not connected to mixer, apply dialogue volume setting
+            if (audioSource.outputAudioMixerGroup == null)
+            {
+                float dialogueVolume = PlayerPrefs.GetFloat("DialogueVolume", 1f);
+                currentVolume *= dialogueVolume;
+            }
+
+            audioSource.PlayOneShot(soundToPlay, currentVolume);
         }
     }
 
@@ -408,6 +499,10 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             playerController.enabled = true;
         }
+
+        // Restore cursor for mobile/touch gameplay
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
 
         // Clear dialogue data
         currentDialogue.Clear();

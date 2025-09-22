@@ -17,6 +17,7 @@ public class SaveUIManager : MonoBehaviour
     public Button newGameButton;
 
     private List<SaveSlotUI> saveSlots = new List<SaveSlotUI>();
+    private bool wasOpenedFromPauseMenu = false;
 
     void Start()
     {
@@ -88,8 +89,15 @@ public class SaveUIManager : MonoBehaviour
             saveLoadPanel.SetActive(true);
         }
 
-        // Pause game
-        Time.timeScale = 0f;
+        // Check if opened from pause menu
+        wasOpenedFromPauseMenu = PauseMenuManager.Instance != null && PauseMenuManager.Instance.IsPaused();
+
+        // Only pause game if not already paused by pause menu
+        if (!wasOpenedFromPauseMenu)
+        {
+            Time.timeScale = 0f;
+        }
+
         RefreshSlots();
     }
 
@@ -98,8 +106,21 @@ public class SaveUIManager : MonoBehaviour
         if (saveLoadPanel != null)
             saveLoadPanel.SetActive(false);
 
-        // Resume game
-        Time.timeScale = 1f;
+        // Only resume game if we paused it (not if pause menu is handling it)
+        if (!wasOpenedFromPauseMenu)
+        {
+            Time.timeScale = 1f;
+        }
+        else
+        {
+            // Notify pause menu that save menu was closed
+            if (PauseMenuManager.Instance != null)
+            {
+                PauseMenuManager.Instance.OnSaveMenuClosed();
+            }
+        }
+
+        wasOpenedFromPauseMenu = false;
     }
 
     public void OnSlotClicked(int slotIndex)
@@ -113,6 +134,13 @@ public class SaveUIManager : MonoBehaviour
             {
                 SaveSystem.Instance.LoadGame(slotIndex);
                 CloseSaveLoadPanel();
+
+                // If we loaded from pause menu, also close pause menu
+                if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
+                {
+                    PauseMenuManager.Instance.ResumeGame();
+                }
+
                 Debug.Log("AutoSave loaded");
             }
             return;
@@ -124,6 +152,13 @@ public class SaveUIManager : MonoBehaviour
             // Load existing save
             SaveSystem.Instance.LoadGame(slotIndex);
             CloseSaveLoadPanel();
+
+            // If we loaded from pause menu, also close pause menu
+            if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
+            {
+                PauseMenuManager.Instance.ResumeGame();
+            }
+
             Debug.Log($"Game loaded from slot {slotIndex}");
         }
         else
@@ -132,6 +167,12 @@ public class SaveUIManager : MonoBehaviour
             SaveSystem.Instance.SaveGame(slotIndex);
             RefreshSlots();
             Debug.Log($"Game saved to slot {slotIndex}");
+
+            // If saving from pause menu, just close save panel (keep pause menu open)
+            if (wasOpenedFromPauseMenu)
+            {
+                CloseSaveLoadPanel();
+            }
         }
     }
 
@@ -150,6 +191,12 @@ public class SaveUIManager : MonoBehaviour
         {
             SaveSystem.Instance.CreateNewGame();
             CloseSaveLoadPanel();
+
+            // Close pause menu if it was open
+            if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
+            {
+                PauseMenuManager.Instance.ResumeGame();
+            }
 
             // Load first scene
             UnityEngine.SceneManagement.SceneManager.LoadScene("Room01_Foyer");
@@ -185,8 +232,8 @@ public class SaveUIManager : MonoBehaviour
 
     void Update()
     {
-        // ESC to toggle save menu
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // ESC to toggle save menu (only if pause menu is not handling it)
+        if (Input.GetKeyDown(KeyCode.S) && PauseMenuManager.Instance == null)
         {
             if (saveLoadPanel != null && saveLoadPanel.activeSelf)
             {
