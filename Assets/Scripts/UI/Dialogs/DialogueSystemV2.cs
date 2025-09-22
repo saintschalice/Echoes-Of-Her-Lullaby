@@ -41,6 +41,7 @@ public class DialogueSystemV2 : MonoBehaviour
 
     [Header("Player Controller")]
     public MonoBehaviour playerController; // Reference to your player controller
+    public GameObject joystickUI; // Reference to the joystick UI GameObject
 
     // Private variables
     private List<DialogueLine> currentDialogue = new List<DialogueLine>();
@@ -86,6 +87,27 @@ public class DialogueSystemV2 : MonoBehaviour
         if (playerController == null)
         {
             playerController = FindFirstObjectByType<MonoBehaviour>();
+        }
+
+        // Find joystick UI if not assigned
+        if (joystickUI == null)
+        {
+            // Try to find the joystick by name or component
+            GameObject foundJoystick = GameObject.Find("Joystick");
+            if (foundJoystick == null)
+            {
+                foundJoystick = GameObject.Find("PlayerLight2D");
+                if (foundJoystick != null)
+                {
+                    // Look for joystick in the player hierarchy
+                    Transform parent = foundJoystick.transform.parent;
+                    if (parent != null)
+                    {
+                        foundJoystick = parent.Find("Joystick")?.gameObject;
+                    }
+                }
+            }
+            joystickUI = foundJoystick;
         }
     }
 
@@ -143,6 +165,12 @@ public class DialogueSystemV2 : MonoBehaviour
         if (playerController != null)
         {
             playerController.enabled = false;
+        }
+
+        // Hide joystick UI
+        if (joystickUI != null)
+        {
+            joystickUI.SetActive(false);
         }
 
         // Show dialogue panel
@@ -367,6 +395,12 @@ public class DialogueSystemV2 : MonoBehaviour
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(false);
+        }
+
+        // Show joystick UI
+        if (joystickUI != null)
+        {
+            joystickUI.SetActive(true);
         }
 
         // Re-enable player movement

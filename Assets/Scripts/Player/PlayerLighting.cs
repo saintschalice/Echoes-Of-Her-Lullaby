@@ -36,6 +36,7 @@ public class PlayerLighting : MonoBehaviour
         playerLight.pointLightOuterRadius = baseRadius;
         playerLight.intensity = baseIntensity;
         playerLight.color = lightColor;
+        playerLight.falloffIntensity = 1f; 
     }
 
     void Update()
