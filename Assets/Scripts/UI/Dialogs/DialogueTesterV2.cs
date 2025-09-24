@@ -2,28 +2,9 @@ using UnityEngine;
 
 public class DialogueTesterV2 : MonoBehaviour
 {
-    void Update()
-    {
-        // Press T to test dialogue
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            TestSingleLine();
-        }
+    // Make these methods public so they can be called by a UI Button's OnClick() event.
 
-        // Press Y to test multi-line dialogue
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            TestMultiLineDialogue();
-        }
-
-        // Press U to test all speakers
-        if (Input.GetKeyDown(KeyCode.U))
-        {
-            TestAllSpeakers();
-        }
-    }
-
-    void TestSingleLine()
+    public void TestSingleLine()
     {
         if (DialogueSystemV2.Instance != null)
         {
@@ -35,7 +16,7 @@ public class DialogueTesterV2 : MonoBehaviour
         }
     }
 
-    void TestMultiLineDialogue()
+    public void TestMultiLineDialogue()
     {
         if (DialogueSystemV2.Instance != null)
         {
@@ -50,7 +31,7 @@ public class DialogueTesterV2 : MonoBehaviour
         }
     }
 
-    void TestAllSpeakers()
+    public void TestAllSpeakers()
     {
         if (DialogueSystemV2.Instance != null)
         {
