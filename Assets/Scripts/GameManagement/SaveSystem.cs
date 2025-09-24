@@ -102,13 +102,15 @@ public class SaveSystem : MonoBehaviour
         // Try to load existing save or create new one
         if (HasSaveFile(1))
         {
-            // Optionally auto-load the most recent save
-            // LoadGame(1);
+            LoadGame(1);
         }
         else
         {
-            CreateNewGame();
+            CreateNewGame(); // ADD THIS LINE - creates currentSaveData
         }
+
+        // Add this debug line
+        Debug.Log($"SaveSystem initialized - currentSaveData: {(currentSaveData != null ? "CHECK" : "NULL")}");
     }
 
     void Update()
