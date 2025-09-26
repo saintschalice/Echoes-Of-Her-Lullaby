@@ -1,0 +1,1170 @@
+﻿Folder PATH listing
+Volume serial number is 000000A7 0ABD:5762
+D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
+|   Art.meta
+|   Audio.meta
+|   DefaultVolumeProfile.asset
+|   DefaultVolumeProfile.asset.meta
+|   FolderStructure.txt
+|   InputSystem_Actions.inputactions
+|   InputSystem_Actions.inputactions.meta
+|   Prefabs.meta
+|   Resources.meta
+|   Scenes.meta
+|   Scripts.meta
+|   Settings.meta
+|   TextMesh Pro.meta
+|   UniversalRenderPipelineGlobalSettings.asset
+|   UniversalRenderPipelineGlobalSettings.asset.meta
+|   XR.meta
+|   _Recovery.meta
+|   
++---Art
+|   |   Animations.meta
+|   |   Fonts.meta
+|   |   Materials.meta
+|   |   README.md
+|   |   README.md.meta
+|   |   Sprites.meta
+|   |   Textures.meta
+|   |   TilePalettes.meta
+|   |   UI.meta
+|   |   
+|   +---Animations
+|   |   |   .gitkeep
+|   |   |   Lisa.meta
+|   |   |   
+|   |   \---Lisa
+|   |           Lisa_AnimatorController.controller
+|   |           Lisa_AnimatorController.controller.meta
+|   |           Lisa_Idle_Down.anim
+|   |           Lisa_Idle_Down.anim.meta
+|   |           Lisa_Idle_Left.anim
+|   |           Lisa_Idle_Left.anim.meta
+|   |           Lisa_Idle_Right.anim
+|   |           Lisa_Idle_Right.anim.meta
+|   |           Lisa_Idle_Up.anim
+|   |           Lisa_Idle_Up.anim.meta
+|   |           Lisa_Walk_Down.anim
+|   |           Lisa_Walk_Down.anim.meta
+|   |           Lisa_Walk_LeftDown.anim
+|   |           Lisa_Walk_LeftDown.anim.meta
+|   |           Lisa_Walk_RightDown.anim
+|   |           Lisa_Walk_RightDown.anim.meta
+|   |           Lisa_Walk_Up.anim
+|   |           Lisa_Walk_Up.anim.meta
+|   |           
+|   +---Fonts
+|   |       VCR_OSD_MONO SDF.asset
+|   |       VCR_OSD_MONO SDF.asset.meta
+|   |       VCR_OSD_MONO.ttf
+|   |       VCR_OSD_MONO.ttf.meta
+|   |       
+|   +---Materials
+|   |   |   .gitkeep
+|   |   |   Props.meta
+|   |   |   Tiles.meta
+|   |   |   
+|   |   +---Props
+|   |   \---Tiles
+|   |           roof1.asset
+|   |           roof1.asset.meta
+|   |           roof1.png
+|   |           roof1.png.meta
+|   |           roof1_0.asset
+|   |           roof1_0.asset.meta
+|   |           roof_diagonal.asset
+|   |           roof_diagonal.asset.meta
+|   |           roof_diagonal.png
+|   |           roof_diagonal.png.meta
+|   |           roof_diagonal_edge.asset
+|   |           roof_diagonal_edge.asset.meta
+|   |           roof_diagonal_edge.png
+|   |           roof_diagonal_edge.png.meta
+|   |           roof_diagonal_edge_corner.asset
+|   |           roof_diagonal_edge_corner.asset.meta
+|   |           roof_diagonal_edge_corner.png
+|   |           roof_diagonal_edge_corner.png.meta
+|   |           Tileset.png
+|   |           Tileset.png.meta
+|   |           Tileset_0.asset
+|   |           Tileset_0.asset.meta
+|   |           Tileset_1.asset
+|   |           Tileset_1.asset.meta
+|   |           Tileset_10.asset
+|   |           Tileset_10.asset.meta
+|   |           Tileset_100.asset
+|   |           Tileset_100.asset.meta
+|   |           Tileset_101.asset
+|   |           Tileset_101.asset.meta
+|   |           Tileset_102.asset
+|   |           Tileset_102.asset.meta
+|   |           Tileset_103.asset
+|   |           Tileset_103.asset.meta
+|   |           Tileset_104.asset
+|   |           Tileset_104.asset.meta
+|   |           Tileset_105.asset
+|   |           Tileset_105.asset.meta
+|   |           Tileset_106.asset
+|   |           Tileset_106.asset.meta
+|   |           Tileset_107.asset
+|   |           Tileset_107.asset.meta
+|   |           Tileset_108.asset
+|   |           Tileset_108.asset.meta
+|   |           Tileset_109.asset
+|   |           Tileset_109.asset.meta
+|   |           Tileset_11.asset
+|   |           Tileset_11.asset.meta
+|   |           Tileset_110.asset
+|   |           Tileset_110.asset.meta
+|   |           Tileset_111.asset
+|   |           Tileset_111.asset.meta
+|   |           Tileset_112.asset
+|   |           Tileset_112.asset.meta
+|   |           Tileset_113.asset
+|   |           Tileset_113.asset.meta
+|   |           Tileset_114.asset
+|   |           Tileset_114.asset.meta
+|   |           Tileset_115.asset
+|   |           Tileset_115.asset.meta
+|   |           Tileset_116.asset
+|   |           Tileset_116.asset.meta
+|   |           Tileset_117.asset
+|   |           Tileset_117.asset.meta
+|   |           Tileset_118.asset
+|   |           Tileset_118.asset.meta
+|   |           Tileset_119.asset
+|   |           Tileset_119.asset.meta
+|   |           Tileset_12.asset
+|   |           Tileset_12.asset.meta
+|   |           Tileset_120.asset
+|   |           Tileset_120.asset.meta
+|   |           Tileset_121.asset
+|   |           Tileset_121.asset.meta
+|   |           Tileset_122.asset
+|   |           Tileset_122.asset.meta
+|   |           Tileset_123.asset
+|   |           Tileset_123.asset.meta
+|   |           Tileset_124.asset
+|   |           Tileset_124.asset.meta
+|   |           Tileset_125.asset
+|   |           Tileset_125.asset.meta
+|   |           Tileset_126.asset
+|   |           Tileset_126.asset.meta
+|   |           Tileset_127.asset
+|   |           Tileset_127.asset.meta
+|   |           Tileset_128.asset
+|   |           Tileset_128.asset.meta
+|   |           Tileset_129.asset
+|   |           Tileset_129.asset.meta
+|   |           Tileset_13.asset
+|   |           Tileset_13.asset.meta
+|   |           Tileset_130.asset
+|   |           Tileset_130.asset.meta
+|   |           Tileset_131.asset
+|   |           Tileset_131.asset.meta
+|   |           Tileset_132.asset
+|   |           Tileset_132.asset.meta
+|   |           Tileset_133.asset
+|   |           Tileset_133.asset.meta
+|   |           Tileset_134.asset
+|   |           Tileset_134.asset.meta
+|   |           Tileset_135.asset
+|   |           Tileset_135.asset.meta
+|   |           Tileset_136.asset
+|   |           Tileset_136.asset.meta
+|   |           Tileset_137.asset
+|   |           Tileset_137.asset.meta
+|   |           Tileset_138.asset
+|   |           Tileset_138.asset.meta
+|   |           Tileset_139.asset
+|   |           Tileset_139.asset.meta
+|   |           Tileset_14.asset
+|   |           Tileset_14.asset.meta
+|   |           Tileset_140.asset
+|   |           Tileset_140.asset.meta
+|   |           Tileset_141.asset
+|   |           Tileset_141.asset.meta
+|   |           Tileset_142.asset
+|   |           Tileset_142.asset.meta
+|   |           Tileset_143.asset
+|   |           Tileset_143.asset.meta
+|   |           Tileset_144.asset
+|   |           Tileset_144.asset.meta
+|   |           Tileset_145.asset
+|   |           Tileset_145.asset.meta
+|   |           Tileset_146.asset
+|   |           Tileset_146.asset.meta
+|   |           Tileset_147.asset
+|   |           Tileset_147.asset.meta
+|   |           Tileset_148.asset
+|   |           Tileset_148.asset.meta
+|   |           Tileset_149.asset
+|   |           Tileset_149.asset.meta
+|   |           Tileset_15.asset
+|   |           Tileset_15.asset.meta
+|   |           Tileset_150.asset
+|   |           Tileset_150.asset.meta
+|   |           Tileset_151.asset
+|   |           Tileset_151.asset.meta
+|   |           Tileset_152.asset
+|   |           Tileset_152.asset.meta
+|   |           Tileset_153.asset
+|   |           Tileset_153.asset.meta
+|   |           Tileset_154.asset
+|   |           Tileset_154.asset.meta
+|   |           Tileset_155.asset
+|   |           Tileset_155.asset.meta
+|   |           Tileset_156.asset
+|   |           Tileset_156.asset.meta
+|   |           Tileset_157.asset
+|   |           Tileset_157.asset.meta
+|   |           Tileset_158.asset
+|   |           Tileset_158.asset.meta
+|   |           Tileset_159.asset
+|   |           Tileset_159.asset.meta
+|   |           Tileset_16.asset
+|   |           Tileset_16.asset.meta
+|   |           Tileset_160.asset
+|   |           Tileset_160.asset.meta
+|   |           Tileset_161.asset
+|   |           Tileset_161.asset.meta
+|   |           Tileset_162.asset
+|   |           Tileset_162.asset.meta
+|   |           Tileset_163.asset
+|   |           Tileset_163.asset.meta
+|   |           Tileset_164.asset
+|   |           Tileset_164.asset.meta
+|   |           Tileset_165.asset
+|   |           Tileset_165.asset.meta
+|   |           Tileset_166.asset
+|   |           Tileset_166.asset.meta
+|   |           Tileset_167.asset
+|   |           Tileset_167.asset.meta
+|   |           Tileset_168.asset
+|   |           Tileset_168.asset.meta
+|   |           Tileset_169.asset
+|   |           Tileset_169.asset.meta
+|   |           Tileset_17.asset
+|   |           Tileset_17.asset.meta
+|   |           Tileset_170.asset
+|   |           Tileset_170.asset.meta
+|   |           Tileset_171.asset
+|   |           Tileset_171.asset.meta
+|   |           Tileset_172.asset
+|   |           Tileset_172.asset.meta
+|   |           Tileset_173.asset
+|   |           Tileset_173.asset.meta
+|   |           Tileset_174.asset
+|   |           Tileset_174.asset.meta
+|   |           Tileset_175.asset
+|   |           Tileset_175.asset.meta
+|   |           Tileset_176.asset
+|   |           Tileset_176.asset.meta
+|   |           Tileset_177.asset
+|   |           Tileset_177.asset.meta
+|   |           Tileset_178.asset
+|   |           Tileset_178.asset.meta
+|   |           Tileset_179.asset
+|   |           Tileset_179.asset.meta
+|   |           Tileset_18.asset
+|   |           Tileset_18.asset.meta
+|   |           Tileset_180.asset
+|   |           Tileset_180.asset.meta
+|   |           Tileset_181.asset
+|   |           Tileset_181.asset.meta
+|   |           Tileset_182.asset
+|   |           Tileset_182.asset.meta
+|   |           Tileset_183.asset
+|   |           Tileset_183.asset.meta
+|   |           Tileset_184.asset
+|   |           Tileset_184.asset.meta
+|   |           Tileset_185.asset
+|   |           Tileset_185.asset.meta
+|   |           Tileset_186.asset
+|   |           Tileset_186.asset.meta
+|   |           Tileset_187.asset
+|   |           Tileset_187.asset.meta
+|   |           Tileset_188.asset
+|   |           Tileset_188.asset.meta
+|   |           Tileset_189.asset
+|   |           Tileset_189.asset.meta
+|   |           Tileset_19.asset
+|   |           Tileset_19.asset.meta
+|   |           Tileset_190.asset
+|   |           Tileset_190.asset.meta
+|   |           Tileset_191.asset
+|   |           Tileset_191.asset.meta
+|   |           Tileset_192.asset
+|   |           Tileset_192.asset.meta
+|   |           Tileset_193.asset
+|   |           Tileset_193.asset.meta
+|   |           Tileset_194.asset
+|   |           Tileset_194.asset.meta
+|   |           Tileset_195.asset
+|   |           Tileset_195.asset.meta
+|   |           Tileset_196.asset
+|   |           Tileset_196.asset.meta
+|   |           Tileset_197.asset
+|   |           Tileset_197.asset.meta
+|   |           Tileset_198.asset
+|   |           Tileset_198.asset.meta
+|   |           Tileset_199.asset
+|   |           Tileset_199.asset.meta
+|   |           Tileset_2.asset
+|   |           Tileset_2.asset.meta
+|   |           Tileset_20.asset
+|   |           Tileset_20.asset.meta
+|   |           Tileset_200.asset
+|   |           Tileset_200.asset.meta
+|   |           Tileset_201.asset
+|   |           Tileset_201.asset.meta
+|   |           Tileset_202.asset
+|   |           Tileset_202.asset.meta
+|   |           Tileset_203.asset
+|   |           Tileset_203.asset.meta
+|   |           Tileset_204.asset
+|   |           Tileset_204.asset.meta
+|   |           Tileset_205.asset
+|   |           Tileset_205.asset.meta
+|   |           Tileset_206.asset
+|   |           Tileset_206.asset.meta
+|   |           Tileset_207.asset
+|   |           Tileset_207.asset.meta
+|   |           Tileset_208.asset
+|   |           Tileset_208.asset.meta
+|   |           Tileset_209.asset
+|   |           Tileset_209.asset.meta
+|   |           Tileset_21.asset
+|   |           Tileset_21.asset.meta
+|   |           Tileset_210.asset
+|   |           Tileset_210.asset.meta
+|   |           Tileset_211.asset
+|   |           Tileset_211.asset.meta
+|   |           Tileset_212.asset
+|   |           Tileset_212.asset.meta
+|   |           Tileset_213.asset
+|   |           Tileset_213.asset.meta
+|   |           Tileset_214.asset
+|   |           Tileset_214.asset.meta
+|   |           Tileset_215.asset
+|   |           Tileset_215.asset.meta
+|   |           Tileset_216.asset
+|   |           Tileset_216.asset.meta
+|   |           Tileset_217.asset
+|   |           Tileset_217.asset.meta
+|   |           Tileset_218.asset
+|   |           Tileset_218.asset.meta
+|   |           Tileset_219.asset
+|   |           Tileset_219.asset.meta
+|   |           Tileset_22.asset
+|   |           Tileset_22.asset.meta
+|   |           Tileset_220.asset
+|   |           Tileset_220.asset.meta
+|   |           Tileset_221.asset
+|   |           Tileset_221.asset.meta
+|   |           Tileset_222.asset
+|   |           Tileset_222.asset.meta
+|   |           Tileset_223.asset
+|   |           Tileset_223.asset.meta
+|   |           Tileset_224.asset
+|   |           Tileset_224.asset.meta
+|   |           Tileset_225.asset
+|   |           Tileset_225.asset.meta
+|   |           Tileset_226.asset
+|   |           Tileset_226.asset.meta
+|   |           Tileset_227.asset
+|   |           Tileset_227.asset.meta
+|   |           Tileset_228.asset
+|   |           Tileset_228.asset.meta
+|   |           Tileset_229.asset
+|   |           Tileset_229.asset.meta
+|   |           Tileset_23.asset
+|   |           Tileset_23.asset.meta
+|   |           Tileset_230.asset
+|   |           Tileset_230.asset.meta
+|   |           Tileset_231.asset
+|   |           Tileset_231.asset.meta
+|   |           Tileset_232.asset
+|   |           Tileset_232.asset.meta
+|   |           Tileset_233.asset
+|   |           Tileset_233.asset.meta
+|   |           Tileset_234.asset
+|   |           Tileset_234.asset.meta
+|   |           Tileset_235.asset
+|   |           Tileset_235.asset.meta
+|   |           Tileset_236.asset
+|   |           Tileset_236.asset.meta
+|   |           Tileset_237.asset
+|   |           Tileset_237.asset.meta
+|   |           Tileset_238.asset
+|   |           Tileset_238.asset.meta
+|   |           Tileset_239.asset
+|   |           Tileset_239.asset.meta
+|   |           Tileset_24.asset
+|   |           Tileset_24.asset.meta
+|   |           Tileset_240.asset
+|   |           Tileset_240.asset.meta
+|   |           Tileset_241.asset
+|   |           Tileset_241.asset.meta
+|   |           Tileset_242.asset
+|   |           Tileset_242.asset.meta
+|   |           Tileset_243.asset
+|   |           Tileset_243.asset.meta
+|   |           Tileset_244.asset
+|   |           Tileset_244.asset.meta
+|   |           Tileset_245.asset
+|   |           Tileset_245.asset.meta
+|   |           Tileset_246.asset
+|   |           Tileset_246.asset.meta
+|   |           Tileset_25.asset
+|   |           Tileset_25.asset.meta
+|   |           Tileset_26.asset
+|   |           Tileset_26.asset.meta
+|   |           Tileset_27.asset
+|   |           Tileset_27.asset.meta
+|   |           Tileset_28.asset
+|   |           Tileset_28.asset.meta
+|   |           Tileset_29.asset
+|   |           Tileset_29.asset.meta
+|   |           Tileset_3.asset
+|   |           Tileset_3.asset.meta
+|   |           Tileset_30.asset
+|   |           Tileset_30.asset.meta
+|   |           Tileset_31.asset
+|   |           Tileset_31.asset.meta
+|   |           Tileset_32.asset
+|   |           Tileset_32.asset.meta
+|   |           Tileset_33.asset
+|   |           Tileset_33.asset.meta
+|   |           Tileset_34.asset
+|   |           Tileset_34.asset.meta
+|   |           Tileset_35.asset
+|   |           Tileset_35.asset.meta
+|   |           Tileset_36.asset
+|   |           Tileset_36.asset.meta
+|   |           Tileset_37.asset
+|   |           Tileset_37.asset.meta
+|   |           Tileset_38.asset
+|   |           Tileset_38.asset.meta
+|   |           Tileset_39.asset
+|   |           Tileset_39.asset.meta
+|   |           Tileset_4.asset
+|   |           Tileset_4.asset.meta
+|   |           Tileset_40.asset
+|   |           Tileset_40.asset.meta
+|   |           Tileset_41.asset
+|   |           Tileset_41.asset.meta
+|   |           Tileset_42.asset
+|   |           Tileset_42.asset.meta
+|   |           Tileset_43.asset
+|   |           Tileset_43.asset.meta
+|   |           Tileset_44.asset
+|   |           Tileset_44.asset.meta
+|   |           Tileset_45.asset
+|   |           Tileset_45.asset.meta
+|   |           Tileset_46.asset
+|   |           Tileset_46.asset.meta
+|   |           Tileset_47.asset
+|   |           Tileset_47.asset.meta
+|   |           Tileset_48.asset
+|   |           Tileset_48.asset.meta
+|   |           Tileset_49.asset
+|   |           Tileset_49.asset.meta
+|   |           Tileset_5.asset
+|   |           Tileset_5.asset.meta
+|   |           Tileset_50.asset
+|   |           Tileset_50.asset.meta
+|   |           Tileset_51.asset
+|   |           Tileset_51.asset.meta
+|   |           Tileset_52.asset
+|   |           Tileset_52.asset.meta
+|   |           Tileset_53.asset
+|   |           Tileset_53.asset.meta
+|   |           Tileset_54.asset
+|   |           Tileset_54.asset.meta
+|   |           Tileset_55.asset
+|   |           Tileset_55.asset.meta
+|   |           Tileset_56.asset
+|   |           Tileset_56.asset.meta
+|   |           Tileset_57.asset
+|   |           Tileset_57.asset.meta
+|   |           Tileset_58.asset
+|   |           Tileset_58.asset.meta
+|   |           Tileset_59.asset
+|   |           Tileset_59.asset.meta
+|   |           Tileset_6.asset
+|   |           Tileset_6.asset.meta
+|   |           Tileset_60.asset
+|   |           Tileset_60.asset.meta
+|   |           Tileset_61.asset
+|   |           Tileset_61.asset.meta
+|   |           Tileset_62.asset
+|   |           Tileset_62.asset.meta
+|   |           Tileset_63.asset
+|   |           Tileset_63.asset.meta
+|   |           Tileset_64.asset
+|   |           Tileset_64.asset.meta
+|   |           Tileset_65.asset
+|   |           Tileset_65.asset.meta
+|   |           Tileset_66.asset
+|   |           Tileset_66.asset.meta
+|   |           Tileset_67.asset
+|   |           Tileset_67.asset.meta
+|   |           Tileset_68.asset
+|   |           Tileset_68.asset.meta
+|   |           Tileset_69.asset
+|   |           Tileset_69.asset.meta
+|   |           Tileset_7.asset
+|   |           Tileset_7.asset.meta
+|   |           Tileset_70.asset
+|   |           Tileset_70.asset.meta
+|   |           Tileset_71.asset
+|   |           Tileset_71.asset.meta
+|   |           Tileset_72.asset
+|   |           Tileset_72.asset.meta
+|   |           Tileset_73.asset
+|   |           Tileset_73.asset.meta
+|   |           Tileset_74.asset
+|   |           Tileset_74.asset.meta
+|   |           Tileset_75.asset
+|   |           Tileset_75.asset.meta
+|   |           Tileset_76.asset
+|   |           Tileset_76.asset.meta
+|   |           Tileset_77.asset
+|   |           Tileset_77.asset.meta
+|   |           Tileset_78.asset
+|   |           Tileset_78.asset.meta
+|   |           Tileset_79.asset
+|   |           Tileset_79.asset.meta
+|   |           Tileset_8.asset
+|   |           Tileset_8.asset.meta
+|   |           Tileset_80.asset
+|   |           Tileset_80.asset.meta
+|   |           Tileset_81.asset
+|   |           Tileset_81.asset.meta
+|   |           Tileset_82.asset
+|   |           Tileset_82.asset.meta
+|   |           Tileset_83.asset
+|   |           Tileset_83.asset.meta
+|   |           Tileset_84.asset
+|   |           Tileset_84.asset.meta
+|   |           Tileset_85.asset
+|   |           Tileset_85.asset.meta
+|   |           Tileset_86.asset
+|   |           Tileset_86.asset.meta
+|   |           Tileset_87.asset
+|   |           Tileset_87.asset.meta
+|   |           Tileset_88.asset
+|   |           Tileset_88.asset.meta
+|   |           Tileset_89.asset
+|   |           Tileset_89.asset.meta
+|   |           Tileset_9.asset
+|   |           Tileset_9.asset.meta
+|   |           Tileset_90.asset
+|   |           Tileset_90.asset.meta
+|   |           Tileset_91.asset
+|   |           Tileset_91.asset.meta
+|   |           Tileset_92.asset
+|   |           Tileset_92.asset.meta
+|   |           Tileset_93.asset
+|   |           Tileset_93.asset.meta
+|   |           Tileset_94.asset
+|   |           Tileset_94.asset.meta
+|   |           Tileset_95.asset
+|   |           Tileset_95.asset.meta
+|   |           Tileset_96.asset
+|   |           Tileset_96.asset.meta
+|   |           Tileset_97.asset
+|   |           Tileset_97.asset.meta
+|   |           Tileset_98.asset
+|   |           Tileset_98.asset.meta
+|   |           Tileset_99.asset
+|   |           Tileset_99.asset.meta
+|   |           
+|   +---Sprites
+|   |   |   .gitkeep
+|   |   |   Lisa.meta
+|   |   |   
+|   |   \---Lisa
+|   |           Idle.png
+|   |           Idle.png.meta
+|   |           walk.png
+|   |           walk.png.meta
+|   |           
+|   +---Textures
+|   |       .gitkeep
+|   |       
+|   +---TilePalettes
+|   |       Room01_Palette2.prefab
+|   |       Room01_Palette2.prefab.meta
+|   |       
+|   \---UI
+|           emily_dialogue_box.png
+|           emily_dialogue_box.png.meta
+|           joystick_background.png
+|           joystick_background.png.meta
+|           joystick_handle.png
+|           joystick_handle.png.meta
+|           lisa_dialogue_box.png
+|           lisa_dialogue_box.png.meta
+|           menu_button.png
+|           menu_button.png.meta
+|           mystery_dialogue_box.png
+|           mystery_dialogue_box.png.meta
+|           save_box.png
+|           save_box.png.meta
+|           save_slot.png
+|           save_slot.png.meta
+|           
++---Audio
+|   |   Ambient.meta
+|   |   Music.meta
+|   |   README.md
+|   |   README.md.meta
+|   |   SFX.meta
+|   |   
+|   +---Ambient
+|   |       .gitkeep
+|   |       
+|   +---Music
+|   |       .gitkeep
+|   |       
+|   \---SFX
+|       |   .gitkeep
+|       |   UI.meta
+|       |   
+|       \---UI
+|               Emily_Dialogue.wav
+|               Emily_Dialogue.wav.meta
+|               Lisa_Dialogue.wav
+|               Lisa_Dialogue.wav.meta
+|               
++---Prefabs
+|   |   Audio.meta
+|   |   Interactables.meta
+|   |   Player.meta
+|   |   README.md
+|   |   README.md.meta
+|   |   UI.meta
+|   |   
+|   +---Audio
+|   |       .gitkeep
+|   |       
+|   +---Interactables
+|   |       .gitkeep
+|   |       
+|   +---Player
+|   |       .gitkeep
+|   |       
+|   \---UI
+|           .gitkeep
+|           SaveSlotPrefab.prefab
+|           SaveSlotPrefab.prefab.meta
+|           
++---Resources
+|   |   Config.meta
+|   |   Data.meta
+|   |   README.md
+|   |   README.md.meta
+|   |   
+|   +---Config
+|   |       .gitkeep
+|   |       
+|   \---Data
+|           .gitkeep
+|           
++---Scenes
+|       README.md
+|       README.md.meta
+|       Room01_Foyer.unity
+|       Room01_Foyer.unity.meta
+|       SampleScene.unity
+|       SampleScene.unity.meta
+|       
++---Scripts
+|   |   AI.meta
+|   |   Audio.meta
+|   |   GameManagement.meta
+|   |   Player.meta
+|   |   Puzzle.meta
+|   |   README.md
+|   |   README.md.meta
+|   |   UI.meta
+|   |   
+|   +---AI
+|   |       .gitkeep
+|   |       
+|   +---Audio
+|   |       .gitkeep
+|   |       
+|   +---GameManagement
+|   |       .gitkeep
+|   |       CameraFollow.cs
+|   |       CameraFollow.cs.meta
+|   |       CameraLighting.cs
+|   |       CameraLighting.cs.meta
+|   |       LightingOptimizer.cs
+|   |       LightingOptimizer.cs.meta
+|   |       SaveSlotUI.cs
+|   |       SaveSlotUI.cs.meta
+|   |       SaveSystem.cs
+|   |       SaveSystem.cs.meta
+|   |       SaveUIManager.cs
+|   |       SaveUIManager.cs.meta
+|   |       
+|   +---Player
+|   |       .gitkeep
+|   |       AtmosphericLighting.cs
+|   |       AtmosphericLighting.cs.meta
+|   |       JoystickPlayerController.cs
+|   |       JoystickPlayerController.cs.meta
+|   |       PlayerLighting.cs
+|   |       PlayerLighting.cs.meta
+|   |       VirtualJoystick.cs
+|   |       VirtualJoystick.cs.meta
+|   |       
+|   +---Puzzle
+|   |       .gitkeep
+|   |       
+|   \---UI
+|       |   .gitkeep
+|       |   Dialogs.meta
+|       |   
+|       \---Dialogs
+|               DialogueSystemV2.cs
+|               DialogueSystemV2.cs.meta
+|               DialogueTesterV2.cs
+|               DialogueTesterV2.cs.meta
+|               
++---Settings
+|   |   Lit2DSceneTemplate.scenetemplate
+|   |   Lit2DSceneTemplate.scenetemplate.meta
+|   |   Renderer2D.asset
+|   |   Renderer2D.asset.meta
+|   |   Scenes.meta
+|   |   UniversalRP.asset
+|   |   UniversalRP.asset.meta
+|   |   
+|   \---Scenes
+|           URP2DSceneTemplate.unity
+|           URP2DSceneTemplate.unity.meta
+|           
++---TextMesh Pro
+|   |   Examples & Extras.meta
+|   |   Fonts.meta
+|   |   Resources.meta
+|   |   Shaders.meta
+|   |   Sprites.meta
+|   |   
+|   +---Examples & Extras
+|   |   |   Fonts.meta
+|   |   |   Materials.meta
+|   |   |   Prefabs.meta
+|   |   |   Resources.meta
+|   |   |   Scenes.meta
+|   |   |   Scripts.meta
+|   |   |   Sprites.meta
+|   |   |   Textures.meta
+|   |   |   
+|   |   +---Fonts
+|   |   |       Anton OFL.txt
+|   |   |       Anton OFL.txt.meta
+|   |   |       Anton.ttf
+|   |   |       Anton.ttf.meta
+|   |   |       Bangers - OFL.txt
+|   |   |       Bangers - OFL.txt.meta
+|   |   |       Bangers.ttf
+|   |   |       Bangers.ttf.meta
+|   |   |       Electronic Highway Sign.TTF
+|   |   |       Electronic Highway Sign.TTF.meta
+|   |   |       Oswald-Bold - OFL.txt
+|   |   |       Oswald-Bold - OFL.txt.meta
+|   |   |       Oswald-Bold.ttf
+|   |   |       Oswald-Bold.ttf.meta
+|   |   |       Roboto-Bold - AFL.txt
+|   |   |       Roboto-Bold - AFL.txt.meta
+|   |   |       Roboto-Bold - License.txt
+|   |   |       Roboto-Bold - License.txt.meta
+|   |   |       Roboto-Bold.ttf
+|   |   |       Roboto-Bold.ttf.meta
+|   |   |       Unity - OFL.txt
+|   |   |       Unity - OFL.txt.meta
+|   |   |       Unity.ttf
+|   |   |       Unity.ttf.meta
+|   |   |       
+|   |   +---Materials
+|   |   |       Crate - Surface Shader Scene.mat
+|   |   |       Crate - Surface Shader Scene.mat.meta
+|   |   |       Crate - URP.mat
+|   |   |       Crate - URP.mat.meta
+|   |   |       Ground - Logo Scene.mat
+|   |   |       Ground - Logo Scene.mat.meta
+|   |   |       Ground - Surface Shader Scene.mat
+|   |   |       Ground - Surface Shader Scene.mat.meta
+|   |   |       Ground - URP.mat
+|   |   |       Ground - URP.mat.meta
+|   |   |       Small Crate_diffuse.mat
+|   |   |       Small Crate_diffuse.mat.meta
+|   |   |       
+|   |   +---Prefabs
+|   |   |       Text Popup.prefab
+|   |   |       Text Popup.prefab.meta
+|   |   |       TextMeshPro - Prefab 1.prefab
+|   |   |       TextMeshPro - Prefab 1.prefab.meta
+|   |   |       TextMeshPro - Prefab 2.prefab
+|   |   |       TextMeshPro - Prefab 2.prefab.meta
+|   |   |       
+|   |   +---Resources
+|   |   |   |   Color Gradient Presets.meta
+|   |   |   |   Fonts & Materials.meta
+|   |   |   |   Sprite Assets.meta
+|   |   |   |   
+|   |   |   +---Color Gradient Presets
+|   |   |   |       Blue to Purple - Vertical.asset
+|   |   |   |       Blue to Purple - Vertical.asset.meta
+|   |   |   |       Dark to Light Green - Vertical.asset
+|   |   |   |       Dark to Light Green - Vertical.asset.meta
+|   |   |   |       Light to Dark Green - Vertical.asset
+|   |   |   |       Light to Dark Green - Vertical.asset.meta
+|   |   |   |       Yellow to Orange - Vertical.asset
+|   |   |   |       Yellow to Orange - Vertical.asset.meta
+|   |   |   |       
+|   |   |   +---Fonts & Materials
+|   |   |   |       Anton SDF - Drop Shadow.mat
+|   |   |   |       Anton SDF - Drop Shadow.mat.meta
+|   |   |   |       Anton SDF - Outline.mat
+|   |   |   |       Anton SDF - Outline.mat.meta
+|   |   |   |       Anton SDF - Sunny Days.mat
+|   |   |   |       Anton SDF - Sunny Days.mat.meta
+|   |   |   |       Anton SDF.asset
+|   |   |   |       Anton SDF.asset.meta
+|   |   |   |       Bangers SDF - Drop Shadow - 2 Pass.mat
+|   |   |   |       Bangers SDF - Drop Shadow - 2 Pass.mat.meta
+|   |   |   |       Bangers SDF - Drop Shadow.mat
+|   |   |   |       Bangers SDF - Drop Shadow.mat.meta
+|   |   |   |       Bangers SDF - Outline.mat
+|   |   |   |       Bangers SDF - Outline.mat.meta
+|   |   |   |       Bangers SDF Glow.mat
+|   |   |   |       Bangers SDF Glow.mat.meta
+|   |   |   |       Bangers SDF Logo - URP.mat
+|   |   |   |       Bangers SDF Logo - URP.mat.meta
+|   |   |   |       Bangers SDF Logo.mat
+|   |   |   |       Bangers SDF Logo.mat.meta
+|   |   |   |       Bangers SDF.asset
+|   |   |   |       Bangers SDF.asset.meta
+|   |   |   |       Electronic Highway Sign SDF.asset
+|   |   |   |       Electronic Highway Sign SDF.asset.meta
+|   |   |   |       LiberationSans SDF - Metalic Green.mat
+|   |   |   |       LiberationSans SDF - Metalic Green.mat.meta
+|   |   |   |       LiberationSans SDF - Overlay.mat
+|   |   |   |       LiberationSans SDF - Overlay.mat.meta
+|   |   |   |       LiberationSans SDF - Soft Mask.mat
+|   |   |   |       LiberationSans SDF - Soft Mask.mat.meta
+|   |   |   |       Oswald Bold SDF.asset
+|   |   |   |       Oswald Bold SDF.asset.meta
+|   |   |   |       Roboto-Bold SDF - Drop Shadow.mat
+|   |   |   |       Roboto-Bold SDF - Drop Shadow.mat.meta
+|   |   |   |       Roboto-Bold SDF - HDRP Unlit.mat
+|   |   |   |       Roboto-Bold SDF - HDRP Unlit.mat.meta
+|   |   |   |       Roboto-Bold SDF - Surface.mat
+|   |   |   |       Roboto-Bold SDF - Surface.mat.meta
+|   |   |   |       Roboto-Bold SDF - URP.mat
+|   |   |   |       Roboto-Bold SDF - URP.mat.meta
+|   |   |   |       Roboto-Bold SDF.asset
+|   |   |   |       Roboto-Bold SDF.asset.meta
+|   |   |   |       Unity SDF - HDRP LIT - Bloom.mat
+|   |   |   |       Unity SDF - HDRP LIT - Bloom.mat.meta
+|   |   |   |       Unity SDF - HDRP LIT - Outline.mat
+|   |   |   |       Unity SDF - HDRP LIT - Outline.mat.meta
+|   |   |   |       Unity SDF.asset
+|   |   |   |       Unity SDF.asset.meta
+|   |   |   |       
+|   |   |   \---Sprite Assets
+|   |   |           Default Sprite Asset.asset
+|   |   |           Default Sprite Asset.asset.meta
+|   |   |           DropCap Numbers.asset
+|   |   |           DropCap Numbers.asset.meta
+|   |   |           
+|   |   +---Scenes
+|   |   |   |   01-  Single Line TextMesh Pro.unity
+|   |   |   |   01-  Single Line TextMesh Pro.unity.meta
+|   |   |   |   02 - Multi-line TextMesh Pro.unity
+|   |   |   |   02 - Multi-line TextMesh Pro.unity.meta
+|   |   |   |   03 - Line Justification.unity
+|   |   |   |   03 - Line Justification.unity.meta
+|   |   |   |   04 - Word Wrapping.unity
+|   |   |   |   04 - Word Wrapping.unity.meta
+|   |   |   |   05 - Style Tags.unity
+|   |   |   |   05 - Style Tags.unity.meta
+|   |   |   |   06 - Extra Rich Text Examples.unity
+|   |   |   |   06 - Extra Rich Text Examples.unity.meta
+|   |   |   |   07 - Superscript & Subscript Example.unity
+|   |   |   |   07 - Superscript & Subscript Example.unity.meta
+|   |   |   |   08 - Improved Text Alignment.unity
+|   |   |   |   08 - Improved Text Alignment.unity.meta
+|   |   |   |   09 - Margin Tag Example.unity
+|   |   |   |   09 - Margin Tag Example.unity.meta
+|   |   |   |   10 - Bullets & Numbered List Example.unity
+|   |   |   |   10 - Bullets & Numbered List Example.unity.meta
+|   |   |   |   11 - The Style Tag.unity
+|   |   |   |   11 - The Style Tag.unity.meta
+|   |   |   |   12 - Link Example.unity
+|   |   |   |   12 - Link Example.unity.meta
+|   |   |   |   12a - Text Interactions.unity
+|   |   |   |   12a - Text Interactions.unity.meta
+|   |   |   |   13 - Soft Hyphenation.unity
+|   |   |   |   13 - Soft Hyphenation.unity.meta
+|   |   |   |   14 - Multi Font & Sprites.unity
+|   |   |   |   14 - Multi Font & Sprites.unity.meta
+|   |   |   |   15 - Inline Graphics & Sprites.unity
+|   |   |   |   15 - Inline Graphics & Sprites.unity.meta
+|   |   |   |   16 - Linked text overflow mode example.unity
+|   |   |   |   16 - Linked text overflow mode example.unity.meta
+|   |   |   |   17 - Old Computer Terminal.unity
+|   |   |   |   17 - Old Computer Terminal.unity.meta
+|   |   |   |   18 - ScrollRect & Masking & Layout.unity
+|   |   |   |   18 - ScrollRect & Masking & Layout.unity.meta
+|   |   |   |   19 - Masking Texture & Soft Mask.unity
+|   |   |   |   19 - Masking Texture & Soft Mask.unity.meta
+|   |   |   |   20 - Input Field with Scrollbar.unity
+|   |   |   |   20 - Input Field with Scrollbar.unity.meta
+|   |   |   |   21 - Script Example.unity
+|   |   |   |   21 - Script Example.unity.meta
+|   |   |   |   22 - Basic Scripting Example.unity
+|   |   |   |   22 - Basic Scripting Example.unity.meta
+|   |   |   |   23 - Animating Vertex Attributes.unity
+|   |   |   |   23 - Animating Vertex Attributes.unity.meta
+|   |   |   |   24 - Surface Shader Example URP.unity
+|   |   |   |   24 - Surface Shader Example URP.unity.meta
+|   |   |   |   24 - Surface Shader Example.unity
+|   |   |   |   24 - Surface Shader Example.unity.meta
+|   |   |   |   25 - Sunny Days Example.unity
+|   |   |   |   25 - Sunny Days Example.unity.meta
+|   |   |   |   26 - Dropdown Placeholder Example.unity
+|   |   |   |   26 - Dropdown Placeholder Example.unity.meta
+|   |   |   |   27 - Double Pass Shader Example.unity
+|   |   |   |   27 - Double Pass Shader Example.unity.meta
+|   |   |   |   28 - HDRP Shader Example.meta
+|   |   |   |   28 - HDRP Shader Example.unity
+|   |   |   |   28 - HDRP Shader Example.unity.meta
+|   |   |   |   Benchmark (Floating Text).unity
+|   |   |   |   Benchmark (Floating Text).unity.meta
+|   |   |   |   
+|   |   |   \---28 - HDRP Shader Example
+|   |   |           Sky and Fog Volume Profile.asset
+|   |   |           Sky and Fog Volume Profile.asset.meta
+|   |   |           
+|   |   +---Scripts
+|   |   |       Benchmark01.cs
+|   |   |       Benchmark01.cs.meta
+|   |   |       Benchmark01_UGUI.cs
+|   |   |       Benchmark01_UGUI.cs.meta
+|   |   |       Benchmark02.cs
+|   |   |       Benchmark02.cs.meta
+|   |   |       Benchmark03.cs
+|   |   |       Benchmark03.cs.meta
+|   |   |       Benchmark04.cs
+|   |   |       Benchmark04.cs.meta
+|   |   |       CameraController.cs
+|   |   |       CameraController.cs.meta
+|   |   |       ChatController.cs
+|   |   |       ChatController.cs.meta
+|   |   |       DropdownSample.cs
+|   |   |       DropdownSample.cs.meta
+|   |   |       EnvMapAnimator.cs
+|   |   |       EnvMapAnimator.cs.meta
+|   |   |       ObjectSpin.cs
+|   |   |       ObjectSpin.cs.meta
+|   |   |       ShaderPropAnimator.cs
+|   |   |       ShaderPropAnimator.cs.meta
+|   |   |       SimpleScript.cs
+|   |   |       SimpleScript.cs.meta
+|   |   |       SkewTextExample.cs
+|   |   |       SkewTextExample.cs.meta
+|   |   |       TeleType.cs
+|   |   |       TeleType.cs.meta
+|   |   |       TextConsoleSimulator.cs
+|   |   |       TextConsoleSimulator.cs.meta
+|   |   |       TextMeshProFloatingText.cs
+|   |   |       TextMeshProFloatingText.cs.meta
+|   |   |       TextMeshSpawner.cs
+|   |   |       TextMeshSpawner.cs.meta
+|   |   |       TMPro_InstructionOverlay.cs
+|   |   |       TMPro_InstructionOverlay.cs.meta
+|   |   |       TMP_DigitValidator.cs
+|   |   |       TMP_DigitValidator.cs.meta
+|   |   |       TMP_ExampleScript_01.cs
+|   |   |       TMP_ExampleScript_01.cs.meta
+|   |   |       TMP_FrameRateCounter.cs
+|   |   |       TMP_FrameRateCounter.cs.meta
+|   |   |       TMP_PhoneNumberValidator.cs
+|   |   |       TMP_PhoneNumberValidator.cs.meta
+|   |   |       TMP_TextEventCheck.cs
+|   |   |       TMP_TextEventCheck.cs.meta
+|   |   |       TMP_TextEventHandler.cs
+|   |   |       TMP_TextEventHandler.cs.meta
+|   |   |       TMP_TextInfoDebugTool.cs
+|   |   |       TMP_TextInfoDebugTool.cs.meta
+|   |   |       TMP_TextSelector_A.cs
+|   |   |       TMP_TextSelector_A.cs.meta
+|   |   |       TMP_TextSelector_B.cs
+|   |   |       TMP_TextSelector_B.cs.meta
+|   |   |       TMP_UiFrameRateCounter.cs
+|   |   |       TMP_UiFrameRateCounter.cs.meta
+|   |   |       VertexColorCycler.cs
+|   |   |       VertexColorCycler.cs.meta
+|   |   |       VertexJitter.cs
+|   |   |       VertexJitter.cs.meta
+|   |   |       VertexShakeA.cs
+|   |   |       VertexShakeA.cs.meta
+|   |   |       VertexShakeB.cs
+|   |   |       VertexShakeB.cs.meta
+|   |   |       VertexZoom.cs
+|   |   |       VertexZoom.cs.meta
+|   |   |       WarpTextExample.cs
+|   |   |       WarpTextExample.cs.meta
+|   |   |       
+|   |   +---Sprites
+|   |   |       Default Sprites.png
+|   |   |       Default Sprites.png.meta
+|   |   |       DropCap Numbers.psd
+|   |   |       DropCap Numbers.psd.meta
+|   |   |       
+|   |   \---Textures
+|   |           Brushed Metal 3.jpg
+|   |           Brushed Metal 3.jpg.meta
+|   |           Floor Cement.jpg
+|   |           Floor Cement.jpg.meta
+|   |           Floor Tiles 1 - diffuse.jpg
+|   |           Floor Tiles 1 - diffuse.jpg.meta
+|   |           Fruit Jelly (B&W).jpg
+|   |           Fruit Jelly (B&W).jpg.meta
+|   |           Gradient Diagonal (Color).jpg
+|   |           Gradient Diagonal (Color).jpg.meta
+|   |           Gradient Horizontal (Color).jpg
+|   |           Gradient Horizontal (Color).jpg.meta
+|   |           Gradient Vertical (Color).jpg
+|   |           Gradient Vertical (Color).jpg.meta
+|   |           Mask Zig-n-Zag.psd
+|   |           Mask Zig-n-Zag.psd.meta
+|   |           Small Crate_diffuse.jpg
+|   |           Small Crate_diffuse.jpg.meta
+|   |           Small Crate_normal.jpg
+|   |           Small Crate_normal.jpg.meta
+|   |           Sunny Days - Seamless.jpg
+|   |           Sunny Days - Seamless.jpg.meta
+|   |           Text Overflow - Linked Text Image 1.png
+|   |           Text Overflow - Linked Text Image 1.png.meta
+|   |           Text Overflow - Linked Text UI Screenshot.png
+|   |           Text Overflow - Linked Text UI Screenshot.png.meta
+|   |           Wipe Pattern - Circle.psd
+|   |           Wipe Pattern - Circle.psd.meta
+|   |           Wipe Pattern - Diagonal.psd
+|   |           Wipe Pattern - Diagonal.psd.meta
+|   |           Wipe Pattern - Radial Double.psd
+|   |           Wipe Pattern - Radial Double.psd.meta
+|   |           Wipe Pattern - Radial Quad.psd
+|   |           Wipe Pattern - Radial Quad.psd.meta
+|   |           
+|   +---Fonts
+|   |       LiberationSans - OFL.txt
+|   |       LiberationSans - OFL.txt.meta
+|   |       LiberationSans.ttf
+|   |       LiberationSans.ttf.meta
+|   |       
+|   +---Resources
+|   |   |   Fonts & Materials.meta
+|   |   |   LineBreaking Following Characters.txt
+|   |   |   LineBreaking Following Characters.txt.meta
+|   |   |   LineBreaking Leading Characters.txt
+|   |   |   LineBreaking Leading Characters.txt.meta
+|   |   |   Sprite Assets.meta
+|   |   |   Style Sheets.meta
+|   |   |   TMP Settings.asset
+|   |   |   TMP Settings.asset.meta
+|   |   |   
+|   |   +---Fonts & Materials
+|   |   |       LiberationSans SDF - Drop Shadow.mat
+|   |   |       LiberationSans SDF - Drop Shadow.mat.meta
+|   |   |       LiberationSans SDF - Fallback.asset
+|   |   |       LiberationSans SDF - Fallback.asset.meta
+|   |   |       LiberationSans SDF - Outline.mat
+|   |   |       LiberationSans SDF - Outline.mat.meta
+|   |   |       LiberationSans SDF.asset
+|   |   |       LiberationSans SDF.asset.meta
+|   |   |       
+|   |   +---Sprite Assets
+|   |   |       EmojiOne.asset
+|   |   |       EmojiOne.asset.meta
+|   |   |       
+|   |   \---Style Sheets
+|   |           Default Style Sheet.asset
+|   |           Default Style Sheet.asset.meta
+|   |           
+|   +---Shaders
+|   |       SDFFunctions.hlsl
+|   |       SDFFunctions.hlsl.meta
+|   |       TMPro.cginc
+|   |       TMPro.cginc.meta
+|   |       TMPro_Mobile.cginc
+|   |       TMPro_Mobile.cginc.meta
+|   |       TMPro_Properties.cginc
+|   |       TMPro_Properties.cginc.meta
+|   |       TMPro_Surface.cginc
+|   |       TMPro_Surface.cginc.meta
+|   |       TMP_Bitmap-Custom-Atlas.shader
+|   |       TMP_Bitmap-Custom-Atlas.shader.meta
+|   |       TMP_Bitmap-Mobile.shader
+|   |       TMP_Bitmap-Mobile.shader.meta
+|   |       TMP_Bitmap.shader
+|   |       TMP_Bitmap.shader.meta
+|   |       TMP_SDF Overlay.shader
+|   |       TMP_SDF Overlay.shader.meta
+|   |       TMP_SDF SSD.shader
+|   |       TMP_SDF SSD.shader.meta
+|   |       TMP_SDF-HDRP LIT.shadergraph
+|   |       TMP_SDF-HDRP LIT.shadergraph.meta
+|   |       TMP_SDF-HDRP UNLIT.shadergraph
+|   |       TMP_SDF-HDRP UNLIT.shadergraph.meta
+|   |       TMP_SDF-Mobile Masking.shader
+|   |       TMP_SDF-Mobile Masking.shader.meta
+|   |       TMP_SDF-Mobile Overlay.shader
+|   |       TMP_SDF-Mobile Overlay.shader.meta
+|   |       TMP_SDF-Mobile SSD.shader
+|   |       TMP_SDF-Mobile SSD.shader.meta
+|   |       TMP_SDF-Mobile-2-Pass.shader
+|   |       TMP_SDF-Mobile-2-Pass.shader.meta
+|   |       TMP_SDF-Mobile.shader
+|   |       TMP_SDF-Mobile.shader.meta
+|   |       TMP_SDF-Surface-Mobile.shader
+|   |       TMP_SDF-Surface-Mobile.shader.meta
+|   |       TMP_SDF-Surface.shader
+|   |       TMP_SDF-Surface.shader.meta
+|   |       TMP_SDF-URP Lit.shadergraph
+|   |       TMP_SDF-URP Lit.shadergraph.meta
+|   |       TMP_SDF-URP Unlit.shadergraph
+|   |       TMP_SDF-URP Unlit.shadergraph.meta
+|   |       TMP_SDF.shader
+|   |       TMP_SDF.shader.meta
+|   |       TMP_Sprite.shader
+|   |       TMP_Sprite.shader.meta
+|   |       
+|   \---Sprites
+|           EmojiOne Attribution.txt
+|           EmojiOne Attribution.txt.meta
+|           EmojiOne.json
+|           EmojiOne.json.meta
+|           EmojiOne.png
+|           EmojiOne.png.meta
+|           
++---XR
+|       XRGeneralSettingsPerBuildTarget.asset
+|       XRGeneralSettingsPerBuildTarget.asset.meta
+|       
+\---_Recovery
+        0 (1).unity
+        0 (1).unity.meta
+        0.unity
+        0.unity.meta
+        
