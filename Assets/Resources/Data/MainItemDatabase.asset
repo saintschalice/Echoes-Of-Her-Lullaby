@@ -24,10 +24,21 @@ MonoBehaviour:
     memoryFragmentId: 
     requiredForPuzzle: front_door
   - itemId: foyer_mail
-    itemName: Mysterious Letter
-    description: A letter addressed to this house. The envelope is weathered and
-      old.
+    itemName: Sealed Mail
+    description: An unopened envelope from the mailbox. Tap to open and read the
+      letter inside.
     itemIcon: {fileID: 21300000, guid: 670765b769f0ead4fa40d6a9e048a4c5, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: foyer_letter
+    itemName: Mysterious Letter
+    description: 'A letter with cryptic instructions: "The flowers hide more than
+      beauty. Break the surface to reveal what lies beneath."'
+    itemIcon: {fileID: 21300000, guid: 2ee04ce02edf67d44aaeb16b6f86ea67, type: 3}
     isKeyItem: 1
     isUsable: 1
     isConsumable: 0

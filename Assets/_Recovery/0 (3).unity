@@ -1165,7 +1165,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -2.6801758, y: -0.30004883}
+  m_AnchoredPosition: {x: -2.6800537, y: -0.2999878}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &92777620
@@ -1185,9 +1185,9 @@ MonoBehaviour:
   interactionRadius: 1.5
   requiredTag: Player
   lockedIndicator: {fileID: 0}
-  lockedDoorSound: {fileID: 8300000, guid: 0fe64e4d5e490b147a5c0fc184e2a80a, type: 3}
+  lockedDoorSound: {fileID: 8300000, guid: 06b39b88981373b4bada9d7c5a801a47, type: 3}
   unlockDoorSound: {fileID: 0}
-  doorOpenSound: {fileID: 8300000, guid: 04057423e9d43b74889ba9f534b03aec, type: 3}
+  doorOpenSound: {fileID: 8300000, guid: aeac1e67378978a4ba49a292e2e892c0, type: 3}
   doorAnimator: {fileID: 0}
   openTrigger: Open
 --- !u!61 &92777621
@@ -4674,6 +4674,7 @@ GameObject:
   m_Component:
   - component: {fileID: 549374146}
   - component: {fileID: 549374148}
+  - component: {fileID: 549374147}
   m_Layer: 5
   m_Name: TutorialPanel
   m_TagString: Untagged
@@ -4703,6 +4704,36 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &549374147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549374145}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!222 &549374148
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6051,8 +6082,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 876938278}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.83446, y: -7.23933, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 3.8344603, y: -7.23933, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6289,6 +6320,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 948859363}
+  - component: {fileID: 948859362}
+  - component: {fileID: 948859361}
   - component: {fileID: 948859360}
   m_Layer: 0
   m_Name: InteractionManager
@@ -6317,8 +6350,43 @@ MonoBehaviour:
     been buried for decades. \r\nIf you're reading this, you're meant to find the
     truth.\r\n\r\nLook beyond what you see. \r\nThe flowers hide more than beauty.\r\nBreak
     the surface to reveal what lies beneath.\r\n\r\n- A Friend"
-  openMailSound: {fileID: 8300000, guid: 4bb1e69f7a466514b8243d3774dd6ef8, type: 3}
+  openMailSound: {fileID: 0}
   closeMailSound: {fileID: 0}
+--- !u!114 &948859361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948859359}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30ee20792175c4649a5a958f51416ec5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowerPotInteraction
+  intactFlowerPot: {fileID: 295401368}
+  brokenFlowerPot: {fileID: 284387423}
+  houseKey: {fileID: 1167163908}
+  interactionRadius: 1
+  requiredTag: Player
+  breakingSound: {fileID: 0}
+  keyFoundSound: {fileID: 0}
+--- !u!114 &948859362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948859359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be52daf980c3e0d41963cdfbfde35945, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MailboxInteraction
+  interactionRadius: 1
+  requiredTag: Player
+  openMailboxSound: {fileID: 0}
+  takeMailSound: {fileID: 0}
 --- !u!4 &948859363
 Transform:
   m_ObjectHideFlags: 0
@@ -10096,7 +10164,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1695707334
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15832,7 +15900,7 @@ MonoBehaviour:
   pickupLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  itemPickupSound: {fileID: 8300000, guid: ac2b1b95d8acf7c4c8e31f5e9f1cce07, type: 3}
+  itemPickupSound: {fileID: 0}
   itemUseSound: {fileID: 0}
   memoryTriggerSound: {fileID: 0}
 --- !u!4 &2013405995
@@ -16090,7 +16158,6 @@ GameObject:
   - component: {fileID: 2046881822}
   - component: {fileID: 2046881823}
   - component: {fileID: 2046881824}
-  - component: {fileID: 2046881825}
   m_Layer: 0
   m_Name: FlowerPotInteraction
   m_TagString: Untagged
@@ -16180,104 +16247,7 @@ MonoBehaviour:
   interactionRadius: 1.5
   requiredTag: Player
   breakingSound: {fileID: 8300000, guid: b3df64f4c6c2ec743954999cce24d879, type: 3}
-  keyFoundSound: {fileID: 8300000, guid: ac2b1b95d8acf7c4c8e31f5e9f1cce07, type: 3}
---- !u!82 &2046881825
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2046881820}
-  m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 2465441502368821945, guid: bf09e14411d39734ab9fb54db7e2c507, type: 2}
-  m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  keyFoundSound: {fileID: 0}
 --- !u!1 &2062624547
 GameObject:
   m_ObjectHideFlags: 0
@@ -19276,7 +19246,7 @@ SceneRoots:
   - {fileID: 413250121}
   - {fileID: 53316952}
   - {fileID: 995709745}
-  - {fileID: 1907158905}
-  - {fileID: 876938280}
   - {fileID: 2046881822}
   - {fileID: 325382354}
+  - {fileID: 876938280}
+  - {fileID: 1907158905}
