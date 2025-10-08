@@ -192,17 +192,11 @@ public class FlowerPotInteraction : MonoBehaviour
 
     void FirstExamine()
     {
-        // NEW: Check if player has read the mail OR letter (either one works!)
-        if (InventoryManager.Instance != null)
+        // NEW: Check if player has read the mail first
+        if (InventoryManager.Instance != null && !InventoryManager.Instance.HasItem(MAIL_ITEM_ID))
         {
-            bool hasMail = InventoryManager.Instance.HasItem(MAIL_ITEM_ID);
-            bool hasLetter = InventoryManager.Instance.HasItem(LETTER_ITEM_ID);
-
-            if (!hasMail && !hasLetter)
-            {
-                ShowDialogue("It's just an ordinary flower pot. Nothing special about it.");
-                return;
-            }
+            ShowDialogue("It's just an ordinary flower pot. Nothing special about it.");
+            return;
         }
 
         hasBeenExamined = true;
