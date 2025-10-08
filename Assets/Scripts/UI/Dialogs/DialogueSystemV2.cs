@@ -11,7 +11,7 @@ public class DialogueLine
     public string text;
     public string speakerName;
     public float typewriterSpeed = 0.05f;
-    public bool waitForInput = true;
+    // REMOVED: waitForInput - now ALWAYS waits for player tap
 }
 
 [System.Serializable]
@@ -30,6 +30,7 @@ public class DialogueSystemV2 : MonoBehaviour
     public Image dialogueBoxImage;
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI speakerNameText;
+    public GameObject tapToContinueIndicator; // NEW: "Tap to continue" icon/text
 
     [Header("Speaker Configurations")]
     public SpeakerData[] speakers;
@@ -37,11 +38,16 @@ public class DialogueSystemV2 : MonoBehaviour
     [Header("Audio")]
     public AudioSource audioSource;
     public float typingSoundVolume = 0.5f;
-    public int charactersPerSound = 1; // Play sound every X characters (1 = every character, 2 = every other character)
+    public int charactersPerSound = 1;
 
     [Header("Player Controller")]
-    public MonoBehaviour playerController; // Reference to your player controller
-    public GameObject joystickUI; // Reference to the joystick UI GameObject
+    public MonoBehaviour playerController;
+    public GameObject joystickUI;
+
+    [Header("Choice System")]
+    public GameObject choicePanel;
+    public GameObject choiceButtonPrefab;
+    public Transform choiceButtonParent;
 
     // Private variables
     private List<DialogueLine> currentDialogue = new List<DialogueLine>();
@@ -51,13 +57,15 @@ public class DialogueSystemV2 : MonoBehaviour
     private bool skipTyping = false;
     private Coroutine typingCoroutine;
     private string fullText = "";
-    private float baseTypingSoundVolume; // Store original volume
+    private float baseTypingSoundVolume;
+
+    // Choice system variables
+    private System.Action[] currentChoiceCallbacks;
 
     public static DialogueSystemV2 Instance { get; private set; }
 
     void Awake()
     {
-        // Singleton pattern
         if (Instance == null)
         {
             Instance = this;
@@ -69,7 +77,6 @@ public class DialogueSystemV2 : MonoBehaviour
             return;
         }
 
-        // Setup audio source if not assigned
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
@@ -77,23 +84,30 @@ public class DialogueSystemV2 : MonoBehaviour
             audioSource.loop = false;
         }
 
-        // Store base volume
         baseTypingSoundVolume = typingSoundVolume;
     }
 
     void Start()
     {
         UpdateDialogueVolume();
-
         ConnectToAudioMixer();
 
-        // Hide dialogue panel at start
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(false);
         }
 
-        // Find player controller if not assigned
+        if (choicePanel != null)
+        {
+            choicePanel.SetActive(false);
+        }
+
+        // Hide tap to continue indicator initially
+        if (tapToContinueIndicator != null)
+        {
+            tapToContinueIndicator.SetActive(false);
+        }
+
         if (playerController == null)
         {
             playerController = FindFirstObjectByType<JoystickPlayerController>();
@@ -103,10 +117,8 @@ public class DialogueSystemV2 : MonoBehaviour
             }
         }
 
-        // Find joystick UI if not assigned
         if (joystickUI == null)
         {
-            // Try to find the joystick by name or component
             GameObject foundJoystick = GameObject.Find("Joystick");
             Debug.Log("Found Joystick by name: " + (foundJoystick != null ? foundJoystick.name : "NULL"));
 
@@ -117,7 +129,6 @@ public class DialogueSystemV2 : MonoBehaviour
 
                 if (foundJoystick != null)
                 {
-                    // Look for joystick in the player hierarchy
                     Transform parent = foundJoystick.transform.parent;
                     if (parent != null)
                     {
@@ -136,14 +147,12 @@ public class DialogueSystemV2 : MonoBehaviour
     {
         if (audioSource != null)
         {
-            // Check if already connected via Inspector
             if (audioSource.outputAudioMixerGroup != null)
             {
                 Debug.Log("DialogueSystem AudioSource already connected to: " + audioSource.outputAudioMixerGroup.name);
                 return;
             }
 
-            // If not connected, try to find and connect automatically
             UnityEngine.Audio.AudioMixer[] mixers = Resources.FindObjectsOfTypeAll<UnityEngine.Audio.AudioMixer>();
 
             foreach (var mixer in mixers)
@@ -162,10 +171,6 @@ public class DialogueSystemV2 : MonoBehaviour
 
             Debug.LogWarning("Could not find Dialogue mixer group. Audio volume will be controlled locally.");
         }
-        else
-        {
-            Debug.LogWarning("AudioSource is null in ConnectToAudioMixer!");
-        }
     }
 
     public void UpdateDialogueVolume()
@@ -174,15 +179,12 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             float dialogueVolume = PlayerPrefs.GetFloat("DialogueVolume", 1f);
 
-            // If connected to audio mixer, don't modify audioSource.volume
             if (audioSource.outputAudioMixerGroup != null)
             {
-                // Volume is controlled by the mixer
                 Debug.Log($"Dialogue volume controlled by mixer: {dialogueVolume * 100}%");
             }
             else
             {
-                // Fallback: control volume directly
                 audioSource.volume = baseTypingSoundVolume * dialogueVolume;
                 Debug.Log($"Dialogue volume set directly: {audioSource.volume}");
             }
@@ -191,16 +193,15 @@ public class DialogueSystemV2 : MonoBehaviour
 
     void Update()
     {
-        // Handle input during dialogue
         if (isDialogueActive)
         {
-            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+            // MODIFIED: Only tap/click advances dialogue
+            if (Input.GetMouseButtonDown(0)) // Tap or left click
             {
                 HandleDialogueInput();
             }
         }
 
-        // Test input
         if (Input.GetKeyDown(KeyCode.T))
         {
             TestDialogue();
@@ -211,7 +212,7 @@ public class DialogueSystemV2 : MonoBehaviour
     {
         if (isTyping)
         {
-            // Skip typing animation and stop sounds immediately
+            // Skip typing animation
             skipTyping = true;
             if (audioSource != null)
             {
@@ -220,9 +221,83 @@ public class DialogueSystemV2 : MonoBehaviour
         }
         else
         {
-            // Move to next line or end dialogue
+            // Move to next line
             NextLine();
         }
+    }
+
+    public void ShowChoices(string[] choices, System.Action[] callbacks)
+    {
+        if (choicePanel == null || choiceButtonPrefab == null || choiceButtonParent == null)
+        {
+            Debug.LogWarning("Choice system not set up properly!");
+            return;
+        }
+
+        // Store callbacks
+        currentChoiceCallbacks = callbacks;
+
+        // Clear existing buttons
+        foreach (Transform child in choiceButtonParent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Create choice buttons
+        for (int i = 0; i < choices.Length; i++)
+        {
+            int index = i;
+            GameObject buttonObj = Instantiate(choiceButtonPrefab, choiceButtonParent);
+
+            Button button = buttonObj.GetComponent<Button>();
+            TextMeshProUGUI buttonText = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
+
+            if (buttonText != null)
+            {
+                buttonText.text = choices[i];
+            }
+
+            if (button != null)
+            {
+                button.onClick.AddListener(() => OnChoiceSelected(index));
+            }
+        }
+
+        // Show choice panel
+        choicePanel.SetActive(true);
+
+        // Hide main dialogue while showing choices
+        if (dialoguePanel != null)
+        {
+            dialoguePanel.SetActive(false);
+        }
+
+        // Hide tap to continue indicator during choices
+        if (tapToContinueIndicator != null)
+        {
+            tapToContinueIndicator.SetActive(false);
+        }
+    }
+
+    private void OnChoiceSelected(int choiceIndex)
+    {
+        // Hide choice panel
+        if (choicePanel != null)
+        {
+            choicePanel.SetActive(false);
+        }
+
+        // Execute callback
+        if (currentChoiceCallbacks != null && choiceIndex < currentChoiceCallbacks.Length)
+        {
+            currentChoiceCallbacks[choiceIndex]?.Invoke();
+        }
+
+        // Clear callbacks
+        currentChoiceCallbacks = null;
+
+        // Close dialogue
+        EndDialogue();
     }
 
     public void StartDialogue(DialogueLine[] lines)
@@ -233,35 +308,29 @@ public class DialogueSystemV2 : MonoBehaviour
             return;
         }
 
-        // Setup dialogue
         currentDialogue.Clear();
         currentDialogue.AddRange(lines);
         currentLineIndex = 0;
         isDialogueActive = true;
 
-        // Disable player movement
         if (playerController != null)
         {
             playerController.enabled = false;
         }
 
-        // Hide joystick UI
         if (joystickUI != null)
         {
             joystickUI.SetActive(false);
         }
 
-        // Show dialogue panel
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(true);
         }
 
-        // Ensure cursor is visible for dialogue interaction
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
-        // Start first line
         DisplayLine();
 
         Debug.Log($"Started dialogue with {lines.Length} lines");
@@ -274,9 +343,26 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             text = text,
             speakerName = speaker,
-            typewriterSpeed = 0.05f,
-            waitForInput = true
+            typewriterSpeed = 0.05f
+            // No waitForInput needed - script now ALWAYS waits for tap
         };
+
+        StartDialogue(lines);
+    }
+
+    // NEW: Convenience method for multiple single-line dialogues
+    public void StartDialogue(string[] texts, string speaker = "Lisa")
+    {
+        DialogueLine[] lines = new DialogueLine[texts.Length];
+        for (int i = 0; i < texts.Length; i++)
+        {
+            lines[i] = new DialogueLine
+            {
+                text = texts[i],
+                speakerName = speaker,
+                typewriterSpeed = 0.05f
+            };
+        }
 
         StartDialogue(lines);
     }
@@ -291,13 +377,17 @@ public class DialogueSystemV2 : MonoBehaviour
 
         DialogueLine currentLine = currentDialogue[currentLineIndex];
 
-        // Update speaker visuals
         UpdateSpeakerVisuals(currentLine.speakerName);
 
-        // Start typing animation
         if (typingCoroutine != null)
         {
             StopCoroutine(typingCoroutine);
+        }
+
+        // Hide tap to continue while typing
+        if (tapToContinueIndicator != null)
+        {
+            tapToContinueIndicator.SetActive(false);
         }
 
         typingCoroutine = StartCoroutine(TypeText(currentLine));
@@ -309,19 +399,16 @@ public class DialogueSystemV2 : MonoBehaviour
 
         if (speaker != null)
         {
-            // Update dialogue box sprite
             if (dialogueBoxImage != null && speaker.dialogueBoxSprite != null)
             {
                 dialogueBoxImage.sprite = speaker.dialogueBoxSprite;
             }
 
-            // Update text color
             if (dialogueText != null)
             {
                 dialogueText.color = speaker.textColor;
             }
 
-            // Update speaker name
             if (speakerNameText != null)
             {
                 speakerNameText.text = speakerName;
@@ -341,7 +428,6 @@ public class DialogueSystemV2 : MonoBehaviour
             }
         }
 
-        // Return default (first speaker) if not found
         if (speakers.Length > 0)
         {
             return speakers[0];
@@ -356,7 +442,6 @@ public class DialogueSystemV2 : MonoBehaviour
         skipTyping = false;
         fullText = line.text;
 
-        // Clear text
         if (dialogueText != null)
         {
             dialogueText.text = "";
@@ -365,24 +450,20 @@ public class DialogueSystemV2 : MonoBehaviour
         SpeakerData speaker = GetSpeakerData(line.speakerName);
         int soundCounter = 0;
 
-        // Type each character
         for (int i = 0; i < fullText.Length; i++)
         {
-            // Check if we should skip typing
             if (skipTyping)
             {
                 break;
             }
 
-            // Add next character
             if (dialogueText != null)
             {
                 dialogueText.text = fullText.Substring(0, i + 1);
             }
 
-            // Play typing sound based on character counter
             char currentChar = fullText[i];
-            if (!char.IsWhiteSpace(currentChar)) // Don't play sound for spaces
+            if (!char.IsWhiteSpace(currentChar))
             {
                 soundCounter++;
                 if (soundCounter >= charactersPerSound)
@@ -392,17 +473,14 @@ public class DialogueSystemV2 : MonoBehaviour
                 }
             }
 
-            // Wait for next character
             yield return new WaitForSeconds(line.typewriterSpeed);
         }
 
-        // Stop any lingering typing sounds
         if (audioSource != null)
         {
             audioSource.Stop();
         }
 
-        // Ensure full text is displayed
         if (dialogueText != null)
         {
             dialogueText.text = fullText;
@@ -413,31 +491,50 @@ public class DialogueSystemV2 : MonoBehaviour
 
         Debug.Log($"Finished typing: {fullText}");
 
-        // Auto-advance if not waiting for input
-        if (!line.waitForInput)
+        // MODIFIED: Show tap to continue indicator after typing finishes
+        // Dialogue NEVER auto-closes - player MUST tap to continue
+        if (tapToContinueIndicator != null)
         {
-            yield return new WaitForSeconds(2f);
-            NextLine();
+            tapToContinueIndicator.SetActive(true);
+
+            // Optional: Animate the indicator
+            StartCoroutine(AnimateTapIndicator());
         }
+    }
+
+    // NEW: Animate the "tap to continue" indicator
+    IEnumerator AnimateTapIndicator()
+    {
+        if (tapToContinueIndicator == null) yield break;
+
+        RectTransform indicator = tapToContinueIndicator.GetComponent<RectTransform>();
+        if (indicator == null) yield break;
+
+        Vector3 originalScale = indicator.localScale;
+        float time = 0f;
+
+        while (tapToContinueIndicator.activeSelf)
+        {
+            time += Time.unscaledDeltaTime * 2f; // Speed of pulse
+            float scale = 1f + Mathf.Sin(time) * 0.1f; // Pulse between 0.9 and 1.1
+            indicator.localScale = originalScale * scale;
+            yield return null;
+        }
+
+        indicator.localScale = originalScale;
     }
 
     void PlayTypingSound(SpeakerData speaker)
     {
         if (audioSource != null && speaker != null && speaker.typingSounds != null && speaker.typingSounds.Length > 0)
         {
-            // Stop any currently playing sound to prevent overlap
             audioSource.Stop();
-
-            // Reset pitch to normal (no distortion)
             audioSource.pitch = 1f;
 
-            // Pick a random sound from the speaker's collection
             AudioClip soundToPlay = speaker.typingSounds[Random.Range(0, speaker.typingSounds.Length)];
 
-            // Play the sound with appropriate volume
             float currentVolume = baseTypingSoundVolume;
 
-            // If not connected to mixer, apply dialogue volume setting
             if (audioSource.outputAudioMixerGroup == null)
             {
                 float dialogueVolume = PlayerPrefs.GetFloat("DialogueVolume", 1f);
@@ -469,42 +566,41 @@ public class DialogueSystemV2 : MonoBehaviour
         isDialogueActive = false;
         isTyping = false;
 
-        // Stop typing coroutine
         if (typingCoroutine != null)
         {
             StopCoroutine(typingCoroutine);
             typingCoroutine = null;
         }
 
-        // Stop any playing audio
         if (audioSource != null)
         {
             audioSource.Stop();
         }
 
-        // Hide dialogue panel
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(false);
         }
 
-        // Show joystick UI
+        // Hide tap to continue indicator
+        if (tapToContinueIndicator != null)
+        {
+            tapToContinueIndicator.SetActive(false);
+        }
+
         if (joystickUI != null)
         {
             joystickUI.SetActive(true);
         }
 
-        // Re-enable player movement
         if (playerController != null)
         {
             playerController.enabled = true;
         }
 
-        // Restore cursor for mobile/touch gameplay
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
-        // Clear dialogue data
         currentDialogue.Clear();
         currentLineIndex = 0;
     }
@@ -514,7 +610,6 @@ public class DialogueSystemV2 : MonoBehaviour
         return isDialogueActive;
     }
 
-    // Test function
     void TestDialogue()
     {
         DialogueLine[] testLines = new DialogueLine[]
