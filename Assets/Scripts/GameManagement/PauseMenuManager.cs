@@ -111,7 +111,6 @@ public class PauseMenuManager : MonoBehaviour
 
     void FindReferences()
     {
-        // Find SaveUIManager
         if (saveUIManager == null)
         {
             saveUIManager = SaveUIManager.Instance;
@@ -140,7 +139,6 @@ public class PauseMenuManager : MonoBehaviour
             }
         }
 
-        // Find Joystick UI
         if (joystickUI == null)
         {
             joystickUI = GameObject.Find("Joystick");
@@ -302,7 +300,6 @@ public class PauseMenuManager : MonoBehaviour
         if (joystickUI != null)
             joystickUI.SetActive(false);
 
-        // Force close inventory when pause menu opens
         InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
         if (inventoryUI != null)
         {
@@ -400,7 +397,6 @@ public class PauseMenuManager : MonoBehaviour
         button.colors = colors;
     }
 
-    // NEW: Master Volume Control
     public void SetMasterVolume(float volume)
     {
         masterVolume = volume;
@@ -413,7 +409,6 @@ public class PauseMenuManager : MonoBehaviour
         UpdateMasterValueText();
     }
 
-    // NEW: Updated to use AudioManager
     public void SetSFXVolume(float volume)
     {
         sfxVolume = volume;
@@ -426,7 +421,6 @@ public class PauseMenuManager : MonoBehaviour
         UpdateSFXValueText();
     }
 
-    // NEW: Updated to use AudioManager
     public void SetDialogueVolume(float volume)
     {
         dialogueVolume = volume;
@@ -439,7 +433,6 @@ public class PauseMenuManager : MonoBehaviour
         UpdateDialogueValueText();
     }
 
-    // NEW: Updated to use AudioManager
     public void SetMusicVolume(float volume)
     {
         musicVolume = volume;
@@ -452,7 +445,6 @@ public class PauseMenuManager : MonoBehaviour
         UpdateMusicValueText();
     }
 
-    // NEW: Ambient Volume Control
     public void SetAmbientVolume(float volume)
     {
         ambientVolume = volume;
@@ -621,6 +613,47 @@ public class PauseMenuManager : MonoBehaviour
 
         Debug.Log("[PauseMenu] Settings loaded");
     }
+
+    // NEW: Method to apply settings from loaded save data
+    public void ApplyLoadedSettings(float master, float sfx, float dialogue, float music, float ambient, float bright, float contr)
+    {
+        masterVolume = master;
+        sfxVolume = sfx;
+        dialogueVolume = dialogue;
+        musicVolume = music;
+        ambientVolume = ambient;
+        brightness = bright;
+        contrast = contr;
+
+        if (masterVolumeSlider != null) masterVolumeSlider.value = master;
+        if (sfxVolumeSlider != null) sfxVolumeSlider.value = sfx;
+        if (dialogueVolumeSlider != null) dialogueVolumeSlider.value = dialogue;
+        if (musicVolumeSlider != null) musicVolumeSlider.value = music;
+        if (ambientVolumeSlider != null) ambientVolumeSlider.value = ambient;
+        if (brightnessSlider != null) brightnessSlider.value = bright;
+        if (contrastSlider != null) contrastSlider.value = contr;
+
+        SetMasterVolume(master);
+        SetSFXVolume(sfx);
+        SetDialogueVolume(dialogue);
+        SetMusicVolume(music);
+        SetAmbientVolume(ambient);
+        SetBrightness(bright);
+        SetContrast(contr);
+
+        UpdateAllDisplayTexts();
+
+        Debug.Log("[PauseMenu] Settings applied from save data");
+    }
+
+    // Getters for SaveSystem
+    public float GetMasterVolume() => masterVolume;
+    public float GetSFXVolume() => sfxVolume;
+    public float GetDialogueVolume() => dialogueVolume;
+    public float GetMusicVolume() => musicVolume;
+    public float GetAmbientVolume() => ambientVolume;
+    public float GetBrightness() => brightness;
+    public float GetContrast() => contrast;
 
     public bool IsPaused()
     {

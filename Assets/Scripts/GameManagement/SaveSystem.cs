@@ -17,7 +17,7 @@ public class GameSaveData
     public List<string> collectedMemoryFragments = new List<string>();
     public List<string> completedPuzzles = new List<string>();
     public List<string> triggeredDialogues = new List<string>();
-    public int lullabySongProgress; // How many fragments collected
+    public int lullabySongProgress;
 
     // Inventory
     public List<string> inventoryItems = new List<string>();
@@ -26,11 +26,16 @@ public class GameSaveData
     // Room States
     public Dictionary<string, RoomState> roomStates = new Dictionary<string, RoomState>();
 
-    // Game Settings
+    // Audio Settings
     public float masterVolume = 1f;
-    public float musicVolume = 1f;
     public float sfxVolume = 1f;
-    public bool subtitlesEnabled = true;
+    public float dialogueVolume = 1f;
+    public float musicVolume = 1f;
+    public float ambientVolume = 1f;
+
+    // Video Settings
+    public float brightness = 0.5f;
+    public float contrast = 0.5f;
 
     // Metadata
     public string saveDate;
@@ -47,6 +52,15 @@ public class GameSaveData
         lullabySongProgress = 0;
         saveSlot = 1;
         saveName = "Save Game";
+
+        // Default settings
+        masterVolume = 1f;
+        sfxVolume = 1f;
+        dialogueVolume = 1f;
+        musicVolume = 1f;
+        ambientVolume = 1f;
+        brightness = 0.5f;
+        contrast = 0.5f;
     }
 }
 
@@ -66,7 +80,7 @@ public class SaveSystem : MonoBehaviour
     [Header("Save Settings")]
     public int maxSaveSlots = 3;
     public bool autoSaveEnabled = true;
-    public float autoSaveInterval = 120f; // 2 minutes
+    public float autoSaveInterval = 120f;
 
     [Header("References")]
     public Transform player;
@@ -77,7 +91,6 @@ public class SaveSystem : MonoBehaviour
 
     public static SaveSystem Instance { get; private set; }
 
-    // Events
     public System.Action<GameSaveData> OnGameLoaded;
     public System.Action<GameSaveData> OnGameSaved;
 
@@ -91,7 +104,6 @@ public class SaveSystem : MonoBehaviour
         }
         else if (Instance != this)
         {
-            // If another SaveSystem exists, keep the original one and destroy the new duplicate
             Destroy(gameObject);
             return;
         }
@@ -105,23 +117,34 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
-
-
     void Start()
     {
         sessionStartTime = Time.time;
 
-        // Try to load existing save or create new one
+        // Find player reference if not assigned
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+                Debug.Log($"[SaveSystem] Found player: {player.name}");
+            }
+            else
+            {
+                Debug.LogError("[SaveSystem] Player not found! Make sure Lisa has 'Player' tag");
+            }
+        }
+
         if (HasSaveFile(1))
         {
             LoadGame(1);
         }
         else
         {
-            CreateNewGame(); // ADD THIS LINE - creates currentSaveData
+            CreateNewGame();
         }
 
-        // Add this debug line
         Debug.Log($"SaveSystem initialized - currentSaveData: {(currentSaveData != null ? "CHECK" : "NULL")}");
     }
 
@@ -130,7 +153,6 @@ public class SaveSystem : MonoBehaviour
         UpdatePlaytime();
         HandleAutoSave();
 
-        // Debug save/load keys
         if (Input.GetKeyDown(KeyCode.F5))
         {
             QuickSave();
@@ -185,7 +207,6 @@ public class SaveSystem : MonoBehaviour
     {
         currentSaveData = new GameSaveData();
         currentSaveData.saveName = "New Game";
-
         Debug.Log("Created new game save data");
     }
 
@@ -197,17 +218,15 @@ public class SaveSystem : MonoBehaviour
             return;
         }
 
-        // Auto-generate save name based on current room
         string roomDisplayName = SaveUIManager.GetRoomDisplayName(currentSaveData.currentScene);
         string autoSaveName = roomDisplayName;
 
-        // Update save metadata
         currentSaveData.saveSlot = slot;
         currentSaveData.saveDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         currentSaveData.saveName = autoSaveName;
 
-        // Update current player position and scene
         UpdatePlayerData();
+        UpdateSettingsData();
 
         try
         {
@@ -228,21 +247,25 @@ public class SaveSystem : MonoBehaviour
 
     public void AutoSave()
     {
-        SaveGame(0); // Use slot 0 for AutoSave
+        SaveGame(0);
         Debug.Log("AutoSave completed");
     }
 
-    // Call this when player enters a new room to autosave progress
     public void OnRoomEntered(string roomName)
     {
         if (currentSaveData != null)
         {
             currentSaveData.currentScene = roomName;
-            AutoSave(); // Automatically save when entering new rooms
+
+            // Mark room as visited
+            RoomState roomState = GetRoomState(roomName);
+            roomState.hasBeenVisited = true;
+            UpdateRoomState(roomName, roomState);
+
+            AutoSave();
         }
     }
 
-    // Call this when player completes significant story beats
     public void OnStoryProgressMade()
     {
         AutoSave();
@@ -263,7 +286,6 @@ public class SaveSystem : MonoBehaviour
             string json = File.ReadAllText(filePath);
             currentSaveData = JsonUtility.FromJson<GameSaveData>(json);
 
-            // Apply loaded data to game
             ApplyLoadedData();
 
             Debug.Log($"Game loaded from slot {slot}");
@@ -323,32 +345,43 @@ public class SaveSystem : MonoBehaviour
     {
         if (currentSaveData == null) return;
 
-        // Update player position
         if (player != null)
         {
             currentSaveData.playerPosition = player.position;
         }
 
-        // Update current scene
         currentSaveData.currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+    }
+
+    void UpdateSettingsData()
+    {
+        if (currentSaveData == null) return;
+
+        // Get settings from PauseMenuManager if available
+        if (PauseMenuManager.Instance != null)
+        {
+            currentSaveData.masterVolume = PauseMenuManager.Instance.GetMasterVolume();
+            currentSaveData.sfxVolume = PauseMenuManager.Instance.GetSFXVolume();
+            currentSaveData.dialogueVolume = PauseMenuManager.Instance.GetDialogueVolume();
+            currentSaveData.musicVolume = PauseMenuManager.Instance.GetMusicVolume();
+            currentSaveData.ambientVolume = PauseMenuManager.Instance.GetAmbientVolume();
+            currentSaveData.brightness = PauseMenuManager.Instance.GetBrightness();
+            currentSaveData.contrast = PauseMenuManager.Instance.GetContrast();
+        }
     }
 
     void ApplyLoadedData()
     {
         if (currentSaveData == null) return;
 
-        // Load scene if different
         string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         if (currentScene != currentSaveData.currentScene)
         {
             UnityEngine.SceneManagement.SceneManager.LoadScene(currentSaveData.currentScene);
         }
 
-        // Apply player position (after scene loads)
         StartCoroutine(ApplyPlayerPositionDelayed());
-
-        // Apply audio settings
-        ApplyAudioSettings();
+        ApplySettings();
     }
 
     System.Collections.IEnumerator ApplyPlayerPositionDelayed()
@@ -358,18 +391,40 @@ public class SaveSystem : MonoBehaviour
         if (player != null && currentSaveData != null)
         {
             player.position = currentSaveData.playerPosition;
+            Debug.Log($"Player position loaded: {currentSaveData.playerPosition}");
         }
     }
 
-    void ApplyAudioSettings()
+    void ApplySettings()
     {
         if (currentSaveData == null) return;
 
-        // Apply audio settings (you'll need to connect these to your audio manager)
-        AudioListener.volume = currentSaveData.masterVolume;
+        // Apply to AudioManager
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.SetMasterVolume(currentSaveData.masterVolume);
+            AudioManager.Instance.SetSFXVolume(currentSaveData.sfxVolume);
+            AudioManager.Instance.SetDialogueVolume(currentSaveData.dialogueVolume);
+            AudioManager.Instance.SetMusicVolume(currentSaveData.musicVolume);
+            AudioManager.Instance.SetAmbientVolume(currentSaveData.ambientVolume);
+        }
+
+        // Apply to PauseMenuManager
+        if (PauseMenuManager.Instance != null)
+        {
+            PauseMenuManager.Instance.ApplyLoadedSettings(
+                currentSaveData.masterVolume,
+                currentSaveData.sfxVolume,
+                currentSaveData.dialogueVolume,
+                currentSaveData.musicVolume,
+                currentSaveData.ambientVolume,
+                currentSaveData.brightness,
+                currentSaveData.contrast
+            );
+        }
     }
 
-    // Public methods for game progression
+    // Public progression methods
     public void MarkRoomCompleted(string roomName)
     {
         if (currentSaveData != null && !currentSaveData.completedRooms.Contains(roomName))
@@ -409,8 +464,6 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
-
-
     public void RemoveInventoryItem(string itemId)
     {
         if (currentSaveData != null && currentSaveData.inventoryItems.Contains(itemId))
@@ -424,7 +477,6 @@ public class SaveSystem : MonoBehaviour
             }
         }
     }
-
 
     public void MarkObjectExamined(string objectId)
     {
@@ -450,7 +502,6 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
-    // Room state management
     public RoomState GetRoomState(string roomName)
     {
         if (currentSaveData == null) return new RoomState();
@@ -471,7 +522,6 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
-    // Quick save/load
     public void QuickSave()
     {
         SaveGame(1, "Quick Save");
@@ -491,7 +541,7 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
-    // Getters for current save data
+    // Getters
     public GameSaveData GetCurrentSaveData()
     {
         return currentSaveData;
