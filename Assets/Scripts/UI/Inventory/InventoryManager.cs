@@ -309,14 +309,7 @@ public class InventoryManager : MonoBehaviour
     void PlaySound(AudioClip clip)
     {
         if (clip == null) return;
-
-        AudioSource audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-
-        audioSource.PlayOneShot(clip);
+        AudioManager.Instance?.PlaySFX(clip);
     }
 
     public int GetItemCount()

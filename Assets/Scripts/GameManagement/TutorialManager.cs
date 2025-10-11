@@ -8,14 +8,17 @@ public class TutorialManager : MonoBehaviour
     [Header("Tutorial UI")]
     public GameObject tutorialPanel;
     public TextMeshProUGUI tutorialText;
-    public Image tutorialImage; // Optional: Show images for tutorials
+    public Image tutorialImage;
     public Button continueButton;
-    public GameObject fingerPointer; // Optional: Pointing finger animation
+    public GameObject fingerPointer;
 
     [Header("Tutorial Steps")]
-    public GameObject joystickHighlight; // Highlight joystick
-    public GameObject mailboxHighlight; // Highlight mailbox
-    public GameObject inventoryButtonHighlight; // Highlight inventory button
+    public GameObject joystickHighlight;
+    public GameObject mailboxHighlight;
+    public GameObject inventoryButtonHighlight;
+
+    [Header("References")]
+    public DialogueSystemV2 dialogueSystem;
 
     [Header("Audio")]
     public AudioClip tutorialSound;
@@ -24,13 +27,11 @@ public class TutorialManager : MonoBehaviour
     private bool tutorialActive = false;
     private bool tutorialCompleted = false;
 
-    // Tutorial state tracking
     private bool hasMovedJoystick = false;
     private bool hasExaminedMailbox = false;
     private bool hasTakenMail = false;
     private bool hasOpenedInventory = false;
 
-    // Save state identifier
     private const string TUTORIAL_COMPLETED_ID = "Tutorial_Completed";
 
     public static TutorialManager Instance { get; private set; }
@@ -49,7 +50,9 @@ public class TutorialManager : MonoBehaviour
 
     void Start()
     {
-        // Setup audio
+        // FIND REFERENCES AT RUNTIME
+        FindReferences();
+
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -57,21 +60,81 @@ public class TutorialManager : MonoBehaviour
             audioSource.playOnAwake = false;
         }
 
-        // Hide all highlights initially
         HideAllHighlights();
 
-        // Hide tutorial panel
         if (tutorialPanel != null)
             tutorialPanel.SetActive(false);
 
-        // Setup continue button
         if (continueButton != null)
         {
             continueButton.onClick.AddListener(OnContinueClicked);
         }
 
-        // Check if tutorial should start
         CheckTutorialStatus();
+    }
+
+    // NEW: Find all required references at runtime
+    void FindReferences()
+    {
+        // Find DialogueSystemV2
+        if (dialogueSystem == null)
+        {
+            dialogueSystem = DialogueSystemV2.Instance;
+
+            if (dialogueSystem == null)
+            {
+                dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
+            }
+
+            if (dialogueSystem == null)
+            {
+                Debug.LogError("[Tutorial] DialogueSystemV2 not found!");
+            }
+            else
+            {
+                Debug.Log("[Tutorial] DialogueSystemV2 found successfully!");
+            }
+        }
+
+        // Find Tutorial Panel
+        if (tutorialPanel == null)
+        {
+            tutorialPanel = GameObject.Find("TutorialPanel");
+
+            if (tutorialPanel == null)
+            {
+                GameObject mainCanvas = GameObject.Find("MainCanvas");
+                if (mainCanvas != null)
+                {
+                    Transform panelTransform = mainCanvas.transform.Find("TutorialPanel");
+                    if (panelTransform != null)
+                    {
+                        tutorialPanel = panelTransform.gameObject;
+                    }
+                }
+            }
+
+            if (tutorialPanel == null)
+            {
+                Debug.LogError("[Tutorial] TutorialPanel not found!");
+            }
+            else
+            {
+                Debug.Log("[Tutorial] TutorialPanel found successfully!");
+            }
+        }
+
+        // Find tutorial text if not set
+        if (tutorialText == null && tutorialPanel != null)
+        {
+            tutorialText = tutorialPanel.GetComponentInChildren<TextMeshProUGUI>();
+        }
+
+        // Find continue button if not set
+        if (continueButton == null && tutorialPanel != null)
+        {
+            continueButton = tutorialPanel.GetComponentInChildren<Button>();
+        }
     }
 
     void CheckTutorialStatus()
@@ -81,7 +144,6 @@ public class TutorialManager : MonoBehaviour
             tutorialCompleted = SaveSystem.Instance.WasObjectExamined(TUTORIAL_COMPLETED_ID);
         }
 
-        // Start tutorial if not completed
         if (!tutorialCompleted)
         {
             StartCoroutine(StartTutorialSequence());
@@ -90,20 +152,16 @@ public class TutorialManager : MonoBehaviour
 
     IEnumerator StartTutorialSequence()
     {
-        yield return new WaitForSeconds(1f); // Wait 1 second after scene loads
+        yield return new WaitForSeconds(1f);
 
-        // Step 1: Movement Tutorial
         ShowTutorialStep(
             "Welcome to Echoes of Her Lullaby!\n\nUse the joystick to move around.\nTap objects to examine them.",
             joystickHighlight
         );
 
-        // Wait for player to move
         yield return new WaitUntil(() => hasMovedJoystick);
-
         yield return new WaitForSeconds(0.5f);
 
-        // Step 2: Mailbox Tutorial
         ShowTutorialStep(
             "Great! Now approach the mailbox and tap on it to examine it.",
             mailboxHighlight
@@ -114,26 +172,21 @@ public class TutorialManager : MonoBehaviour
     {
         tutorialActive = true;
 
-        // Show panel
         if (tutorialPanel != null)
             tutorialPanel.SetActive(true);
 
-        // Set text
         if (tutorialText != null)
             tutorialText.text = message;
 
-        // Show highlight
         HideAllHighlights();
         if (highlight != null)
             highlight.SetActive(true);
 
-        // Play sound
         if (tutorialSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(tutorialSound);
         }
 
-        // Pause game during tutorial
         Time.timeScale = 0f;
 
         Debug.Log($"[Tutorial] {message}");
@@ -147,8 +200,6 @@ public class TutorialManager : MonoBehaviour
             tutorialPanel.SetActive(false);
 
         HideAllHighlights();
-
-        // Resume game
         Time.timeScale = 1f;
     }
 
@@ -167,7 +218,6 @@ public class TutorialManager : MonoBehaviour
         HideTutorialStep();
     }
 
-    // Public methods called by other scripts
     public void OnPlayerMoved()
     {
         if (!hasMovedJoystick && !tutorialCompleted)
@@ -227,7 +277,6 @@ public class TutorialManager : MonoBehaviour
         Debug.Log("[Tutorial] Tutorial completed!");
     }
 
-    // Public accessors
     public bool IsTutorialActive()
     {
         return tutorialActive;

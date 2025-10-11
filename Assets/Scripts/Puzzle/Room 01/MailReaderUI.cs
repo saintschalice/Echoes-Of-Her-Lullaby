@@ -15,22 +15,24 @@ public class MailReaderUI : MonoBehaviour
     public string mailContent = @"To the current resident,
 
 This house holds secrets that have been buried for decades. 
+
 If you're reading this, you're meant to find the truth.
 
 Look beyond what you see. 
+
 The flowers hide more than beauty.
+
 Break the surface to reveal what lies beneath.
 
 - A Friend";
 
-    [Header("Audio")]
+    [Header("Audio - SFX")]
     public AudioClip openMailSound;
     public AudioClip closeMailSound;
 
-    private AudioSource audioSource;
+    // REMOVED: No more AudioSource needed!
     private bool hasBeenRead = false;
 
-    // Save state identifier
     private const string MAIL_READ_ID = "Foyer_Mail_Read";
 
     public static MailReaderUI Instance { get; private set; }
@@ -49,14 +51,6 @@ Break the surface to reveal what lies beneath.
 
     void Start()
     {
-        // Setup audio
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-        }
-
         // Setup UI
         if (mailPanel != null)
         {
@@ -70,6 +64,8 @@ Break the surface to reveal what lies beneath.
 
         // Check save state
         CheckSaveState();
+
+        Debug.Log("[MailReader] MailReaderUI initialized with AudioManager integration");
     }
 
     public void OpenMail()
@@ -85,10 +81,10 @@ Break the surface to reveal what lies beneath.
             SaveSystem.Instance.MarkObjectExamined(MAIL_READ_ID);
         }
 
-        // Play sound
-        if (openMailSound != null && audioSource != null)
+        // NEW: Play sound through AudioManager (categorized as SFX)
+        if (openMailSound != null)
         {
-            audioSource.PlayOneShot(openMailSound);
+            AudioManager.Instance?.PlaySFX(openMailSound);
         }
 
         // Show mail panel
@@ -100,20 +96,27 @@ Break the surface to reveal what lies beneath.
             mailContentText.text = mailContent;
         }
 
+        // NEW: Force close inventory when mail opens
+        InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
+        if (inventoryUI != null)
+        {
+            inventoryUI.ForceCloseInventory();
+        }
+
         // Pause game
         Time.timeScale = 0f;
 
-        Debug.Log("Mail opened and read!");
+        Debug.Log("[MailReader] Mail opened and read!");
     }
 
     public void CloseMail()
     {
         if (mailPanel == null) return;
 
-        // Play sound
-        if (closeMailSound != null && audioSource != null)
+        // NEW: Play sound through AudioManager (categorized as SFX)
+        if (closeMailSound != null)
         {
-            audioSource.PlayOneShot(closeMailSound);
+            AudioManager.Instance?.PlaySFX(closeMailSound);
         }
 
         // Hide panel
@@ -122,7 +125,7 @@ Break the surface to reveal what lies beneath.
         // Resume game
         Time.timeScale = 1f;
 
-        // No hint dialogue - player discovers on their own
+        Debug.Log("[MailReader] Mail closed");
     }
 
     void CheckSaveState()
@@ -145,5 +148,11 @@ Break the surface to reveal what lies beneath.
         {
             CloseMail();
         }
+    }
+
+    // Optional: Public method to check if mail panel is currently open
+    public bool IsMailOpen()
+    {
+        return mailPanel != null && mailPanel.activeSelf;
     }
 }

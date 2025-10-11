@@ -5,12 +5,14 @@ using System.Collections.Generic;
 
 public class SaveUIManager : MonoBehaviour
 {
+    public static SaveUIManager Instance { get; private set; }
+
     [Header("UI Panels")]
     public GameObject saveLoadPanel;
 
     [Header("Save Slot Prefab")]
     public GameObject saveSlotPrefab;
-    public Transform slotParent; // Single parent for all slots
+    public Transform slotParent;
 
     [Header("Buttons")]
     public Button closePanelButton;
@@ -19,13 +21,115 @@ public class SaveUIManager : MonoBehaviour
     private List<SaveSlotUI> saveSlots = new List<SaveSlotUI>();
     private bool wasOpenedFromPauseMenu = false;
 
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
     void Start()
     {
+        // FIND REFERENCES AT RUNTIME (if not set in inspector)
+        FindReferences();
+
         SetupUI();
         CreateSaveSlots();
 
         if (saveLoadPanel != null)
             saveLoadPanel.SetActive(false);
+    }
+
+    // NEW: Find references if they're missing
+    void FindReferences()
+    {
+        // Find Save/Load Panel if not set
+        if (saveLoadPanel == null)
+        {
+            saveLoadPanel = GameObject.Find("SaveLoadPanel");
+
+            if (saveLoadPanel == null)
+            {
+                // Try finding in ButtonCanvas
+                GameObject buttonCanvas = GameObject.Find("ButtonCanvas");
+                if (buttonCanvas != null)
+                {
+                    Transform panelTransform = buttonCanvas.transform.Find("SaveLoadPanel");
+                    if (panelTransform != null)
+                    {
+                        saveLoadPanel = panelTransform.gameObject;
+                    }
+                }
+            }
+
+            if (saveLoadPanel == null)
+            {
+                Debug.LogError("[SaveUI] SaveLoadPanel not found!");
+            }
+            else
+            {
+                Debug.Log("[SaveUI] SaveLoadPanel found successfully!");
+            }
+        }
+
+        // Find SlotParent if not set
+        if (slotParent == null && saveLoadPanel != null)
+        {
+            Transform slotParentTransform = saveLoadPanel.transform.Find("SlotParent");
+            if (slotParentTransform == null)
+            {
+                slotParentTransform = saveLoadPanel.transform.Find("Slots");
+            }
+            if (slotParentTransform == null)
+            {
+                slotParentTransform = saveLoadPanel.transform.Find("SaveSlotContainer");
+            }
+
+            if (slotParentTransform != null)
+            {
+                slotParent = slotParentTransform;
+                Debug.Log("[SaveUI] SlotParent found successfully!");
+            }
+            else
+            {
+                Debug.LogWarning("[SaveUI] SlotParent not found in SaveLoadPanel!");
+            }
+        }
+
+        // Find buttons if not set
+        if (closePanelButton == null && saveLoadPanel != null)
+        {
+            Button[] buttons = saveLoadPanel.GetComponentsInChildren<Button>();
+            foreach (Button btn in buttons)
+            {
+                if (btn.name.Contains("Close") || btn.name.Contains("Back"))
+                {
+                    closePanelButton = btn;
+                    Debug.Log("[SaveUI] Close button found: " + btn.name);
+                    break;
+                }
+            }
+        }
+
+        if (newGameButton == null && saveLoadPanel != null)
+        {
+            Button[] buttons = saveLoadPanel.GetComponentsInChildren<Button>();
+            foreach (Button btn in buttons)
+            {
+                if (btn.name.Contains("NewGame") || btn.name.Contains("New"))
+                {
+                    newGameButton = btn;
+                    Debug.Log("[SaveUI] New Game button found: " + btn.name);
+                    break;
+                }
+            }
+        }
     }
 
     void SetupUI()
@@ -39,24 +143,33 @@ public class SaveUIManager : MonoBehaviour
 
     void CreateSaveSlots()
     {
-        if (SaveSystem.Instance == null) return;
+        if (SaveSystem.Instance == null)
+        {
+            Debug.LogWarning("[SaveUI] SaveSystem.Instance is null!");
+            return;
+        }
 
         // Create AutoSave slot (slot 0)
-        CreateSaveSlot(0, false); // AutoSave is load-only
+        CreateSaveSlot(0, false);
 
         // Create regular save slots (1-3)
         int maxSlots = SaveSystem.Instance.maxSaveSlots;
         for (int i = 1; i <= maxSlots; i++)
         {
-            CreateSaveSlot(i, true); // Regular slots can save/load
+            CreateSaveSlot(i, true);
         }
 
         RefreshSlots();
+        Debug.Log($"[SaveUI] Created {saveSlots.Count} save slots");
     }
 
     void CreateSaveSlot(int slotIndex, bool canSave)
     {
-        if (saveSlotPrefab == null || slotParent == null) return;
+        if (saveSlotPrefab == null || slotParent == null)
+        {
+            Debug.LogWarning("[SaveUI] Missing saveSlotPrefab or slotParent!");
+            return;
+        }
 
         GameObject slotObj = Instantiate(saveSlotPrefab, slotParent);
         SaveSlotUI slotUI = slotObj.GetComponent<SaveSlotUI>();
@@ -98,9 +211,16 @@ public class SaveUIManager : MonoBehaviour
             Time.timeScale = 0f;
         }
 
-        RefreshSlots();
-    }
+        // NEW: Force close inventory when save/load panel opens
+        InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
+        if (inventoryUI != null)
+        {
+            inventoryUI.ForceCloseInventory();
+        }
 
+        RefreshSlots();
+        Debug.Log("[SaveUI] Save/Load panel opened");
+    }
     public void CloseSaveLoadPanel()
     {
         if (saveLoadPanel != null)
@@ -121,6 +241,7 @@ public class SaveUIManager : MonoBehaviour
         }
 
         wasOpenedFromPauseMenu = false;
+        Debug.Log("[SaveUI] Save/Load panel closed");
     }
 
     public void OnSlotClicked(int slotIndex)
@@ -135,13 +256,12 @@ public class SaveUIManager : MonoBehaviour
                 SaveSystem.Instance.LoadGame(slotIndex);
                 CloseSaveLoadPanel();
 
-                // If we loaded from pause menu, also close pause menu
                 if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
                 {
                     PauseMenuManager.Instance.ResumeGame();
                 }
 
-                Debug.Log("AutoSave loaded");
+                Debug.Log("[SaveUI] AutoSave loaded");
             }
             return;
         }
@@ -149,26 +269,22 @@ public class SaveUIManager : MonoBehaviour
         // Regular slots: Save if empty, Load if filled
         if (SaveSystem.Instance.HasSaveFile(slotIndex))
         {
-            // Load existing save
             SaveSystem.Instance.LoadGame(slotIndex);
             CloseSaveLoadPanel();
 
-            // If we loaded from pause menu, also close pause menu
             if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
             {
                 PauseMenuManager.Instance.ResumeGame();
             }
 
-            Debug.Log($"Game loaded from slot {slotIndex}");
+            Debug.Log($"[SaveUI] Game loaded from slot {slotIndex}");
         }
         else
         {
-            // Save to empty slot with auto-generated name
             SaveSystem.Instance.SaveGame(slotIndex);
             RefreshSlots();
-            Debug.Log($"Game saved to slot {slotIndex}");
+            Debug.Log($"[SaveUI] Game saved to slot {slotIndex}");
 
-            // If saving from pause menu, just close save panel (keep pause menu open)
             if (wasOpenedFromPauseMenu)
             {
                 CloseSaveLoadPanel();
@@ -178,11 +294,11 @@ public class SaveUIManager : MonoBehaviour
 
     public void OnDeleteSlotClicked(int slotIndex)
     {
-        if (SaveSystem.Instance == null || slotIndex == 0) return; // Can't delete AutoSave
+        if (SaveSystem.Instance == null || slotIndex == 0) return;
 
         SaveSystem.Instance.DeleteSave(slotIndex);
         RefreshSlots();
-        Debug.Log($"Deleted save slot {slotIndex}");
+        Debug.Log($"[SaveUI] Deleted save slot {slotIndex}");
     }
 
     public void StartNewGame()
@@ -192,18 +308,16 @@ public class SaveUIManager : MonoBehaviour
             SaveSystem.Instance.CreateNewGame();
             CloseSaveLoadPanel();
 
-            // Close pause menu if it was open
             if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
             {
                 PauseMenuManager.Instance.ResumeGame();
             }
 
-            // Load first scene
             UnityEngine.SceneManagement.SceneManager.LoadScene("Room01_Foyer");
+            Debug.Log("[SaveUI] Starting new game");
         }
     }
 
-    // Get display name for room scenes
     public static string GetRoomDisplayName(string sceneName)
     {
         switch (sceneName)
@@ -232,7 +346,6 @@ public class SaveUIManager : MonoBehaviour
 
     void Update()
     {
-        // ESC to toggle save menu (only if pause menu is not handling it)
         if (Input.GetKeyDown(KeyCode.S) && PauseMenuManager.Instance == null)
         {
             if (saveLoadPanel != null && saveLoadPanel.activeSelf)
@@ -245,23 +358,21 @@ public class SaveUIManager : MonoBehaviour
             }
         }
 
-        // F5 for quick save to slot 1
         if (Input.GetKeyDown(KeyCode.F5))
         {
             if (SaveSystem.Instance != null)
             {
                 SaveSystem.Instance.SaveGame(1);
-                Debug.Log("Quick saved to slot 1");
+                Debug.Log("[SaveUI] Quick saved to slot 1");
             }
         }
 
-        // F9 for quick load from slot 1
         if (Input.GetKeyDown(KeyCode.F9))
         {
             if (SaveSystem.Instance != null && SaveSystem.Instance.HasSaveFile(1))
             {
                 SaveSystem.Instance.LoadGame(1);
-                Debug.Log("Quick loaded from slot 1");
+                Debug.Log("[SaveUI] Quick loaded from slot 1");
             }
         }
     }

@@ -215,6 +215,42 @@ public class InventoryUI : MonoBehaviour
         Debug.Log($"[InventoryUI] Toggled inventory - now open: {isOpen}");
     }
 
+    bool ShouldBlockInventory()
+    {
+        // Block if dialogue is active
+        if (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+        {
+            return true;
+        }
+
+        // Block if pause menu is open
+        if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.IsPaused())
+        {
+            return true;
+        }
+
+        // Block if save/load menu is open
+        if (SaveUIManager.Instance != null && SaveUIManager.Instance.saveLoadPanel != null
+            && SaveUIManager.Instance.saveLoadPanel.activeSelf)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    // NEW: Force close inventory (called by other systems)
+    public void ForceCloseInventory()
+    {
+        if (isOpen)
+        {
+            isOpen = false;
+            SetVisible(false);
+            HideItemTooltip();
+            Debug.Log("[InventoryUI] Inventory force closed");
+        }
+    }
+
     public void OpenInventory()
     {
         isOpen = true;

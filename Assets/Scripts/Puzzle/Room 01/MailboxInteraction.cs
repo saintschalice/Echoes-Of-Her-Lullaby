@@ -6,11 +6,11 @@ public class MailboxInteraction : MonoBehaviour
     public float interactionRadius = 1.5f;
     public string requiredTag = "Player";
 
-    [Header("Audio")]
+    [Header("Audio - SFX")]
     public AudioClip openMailboxSound;
     public AudioClip takeMailSound;
 
-    private AudioSource audioSource;
+    // REMOVED: No more AudioSource needed!
     private bool hasBeenOpened = false;
     private bool mailTaken = false;
     private bool playerInRange = false;
@@ -27,13 +27,6 @@ public class MailboxInteraction : MonoBehaviour
 
     void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-        }
-
         dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
         mainCamera = Camera.main;
 
@@ -42,9 +35,7 @@ public class MailboxInteraction : MonoBehaviour
 
     void Update()
     {
-        // CRITICAL FIX: Always sync state with save data
         SyncStateWithSave();
-
         CheckPlayerDistance();
 
         if (waitingForDialogueClose)
@@ -62,7 +53,6 @@ public class MailboxInteraction : MonoBehaviour
             return;
         }
 
-        // Only allow interaction if NOT already opened
         if (playerInRange && !hasBeenOpened && !waitingForResponse)
         {
             if (Input.GetMouseButtonDown(0))
@@ -75,15 +65,11 @@ public class MailboxInteraction : MonoBehaviour
         }
     }
 
-    // NEW: Sync state with SAVE DATA not inventory
     void SyncStateWithSave()
     {
         if (SaveSystem.Instance == null) return;
 
-        // Check if mailbox was opened (this is the SOURCE OF TRUTH)
         hasBeenOpened = SaveSystem.Instance.WasObjectExamined(MAILBOX_OPENED_ID);
-
-        // If opened, mail was automatically taken
         mailTaken = hasBeenOpened;
     }
 
@@ -163,41 +149,47 @@ public class MailboxInteraction : MonoBehaviour
     void OpenMailbox()
     {
         hasBeenOpened = true;
-        mailTaken = true; // Mail goes straight to inventory
+        mailTaken = true;
 
-        // Play sounds
-        if (openMailboxSound != null && audioSource != null)
+        // NEW: Play sounds through AudioManager (categorized as SFX)
+        if (openMailboxSound != null)
         {
-            audioSource.PlayOneShot(openMailboxSound);
+            AudioManager.Instance?.PlaySFX(openMailboxSound, transform.position);
         }
 
-        if (takeMailSound != null && audioSource != null)
+        // Play take mail sound with slight delay for better audio feedback
+        if (takeMailSound != null)
         {
-            audioSource.PlayOneShot(takeMailSound);
+            Invoke(nameof(PlayTakeMailSound), 0.3f);
         }
 
-        // Mark as opened in save
         if (SaveSystem.Instance != null)
         {
             SaveSystem.Instance.MarkObjectExamined(MAILBOX_OPENED_ID);
         }
 
-        // Add mail DIRECTLY to inventory (no physical object)
         if (InventoryManager.Instance != null)
         {
             InventoryManager.Instance.AddItem(MAIL_ITEM_ID);
         }
 
-        // Notify tutorial
         if (TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnMailTaken();
         }
 
-        // Show dialogue
         ShowDialogue("There's a letter inside! I took it and put it in my inventory.");
 
         Debug.Log("Mail added directly to inventory!");
+    }
+
+    // NEW: Separate method for delayed take mail sound
+    void PlayTakeMailSound()
+    {
+        if (takeMailSound != null)
+        {
+            AudioManager.Instance?.PlaySFX(takeMailSound, transform.position);
+        }
     }
 
     void ShowDialogue(string message)
@@ -214,7 +206,6 @@ public class MailboxInteraction : MonoBehaviour
 
     void CheckSaveState()
     {
-        // Will be synced every frame in Update
         if (SaveSystem.Instance == null) return;
 
         hasBeenOpened = SaveSystem.Instance.WasObjectExamined(MAILBOX_OPENED_ID);

@@ -89,11 +89,23 @@ public class SaveSystem : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             InitializeSaveSystem();
         }
-        else
+        else if (Instance != this)
         {
+            // If another SaveSystem exists, keep the original one and destroy the new duplicate
             Destroy(gameObject);
+            return;
+        }
+
+        if (currentSaveData == null)
+        {
+            if (HasSaveFile(1))
+                LoadGame(1);
+            else
+                CreateNewGame();
         }
     }
+
+
 
     void Start()
     {
@@ -388,16 +400,31 @@ public class SaveSystem : MonoBehaviour
         if (currentSaveData != null && !currentSaveData.inventoryItems.Contains(itemId))
         {
             currentSaveData.inventoryItems.Add(itemId);
+            Debug.Log("[SaveSystem] Added item: " + itemId);
+
+            if (autoSaveEnabled)
+            {
+                AutoSave();
+            }
         }
     }
 
+
+
     public void RemoveInventoryItem(string itemId)
     {
-        if (currentSaveData != null)
+        if (currentSaveData != null && currentSaveData.inventoryItems.Contains(itemId))
         {
             currentSaveData.inventoryItems.Remove(itemId);
+            Debug.Log("[SaveSystem] Removed item: " + itemId);
+
+            if (autoSaveEnabled)
+            {
+                AutoSave();
+            }
         }
     }
+
 
     public void MarkObjectExamined(string objectId)
     {
@@ -453,6 +480,15 @@ public class SaveSystem : MonoBehaviour
     public void QuickLoad()
     {
         LoadGame(1);
+    }
+
+    public void ClearObjectExamined(string objectId)
+    {
+        if (currentSaveData != null && currentSaveData.examinedObjects != null)
+        {
+            currentSaveData.examinedObjects.Remove(objectId);
+            Debug.Log($"[SaveSystem] Cleared examined object: {objectId}");
+        }
     }
 
     // Getters for current save data

@@ -12,7 +12,7 @@ public class FrontDoorInteraction : MonoBehaviour
     public string requiredTag = "Player";
 
     [Header("Visual Indicators")]
-    public GameObject lockedIndicator; // Optional: Show lock icon
+    public GameObject lockedIndicator;
 
     [Header("Audio")]
     public AudioClip lockedDoorSound;
@@ -28,13 +28,13 @@ public class FrontDoorInteraction : MonoBehaviour
     private bool doorUnlocked = false;
     private bool isOpening = false;
     private DialogueSystemV2 dialogueSystem;
-    private Camera mainCamera;
 
-    // Save state identifier
     private const string DOOR_UNLOCKED_ID = "FrontDoor_Unlocked";
 
     void Start()
     {
+        Debug.LogError("[FrontDoor] SCRIPT IS RUNNING - INITIALIZATION COMPLETE!");
+
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -43,45 +43,46 @@ public class FrontDoorInteraction : MonoBehaviour
         }
 
         dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
-        mainCamera = Camera.main;
 
         if (lockedIndicator != null)
             lockedIndicator.SetActive(true);
 
         CheckSaveState();
+
+        // Verify setup
+        Collider2D col = GetComponent<Collider2D>();
+        Debug.Log($"[FrontDoor] GameObject: {gameObject.name}");
+        Debug.Log($"[FrontDoor] Layer: {LayerMask.LayerToName(gameObject.layer)}");
+        Debug.Log($"[FrontDoor] Has Collider2D: {col != null}");
+        if (col != null)
+        {
+            Debug.Log($"[FrontDoor] Collider is Trigger: {col.isTrigger}");
+        }
     }
 
     void Update()
     {
         CheckPlayerDistance();
-
-        // Handle TOUCH/CLICK interaction ONLY
-        if (playerInRange && !isOpening)
-        {
-            if (Input.GetMouseButtonDown(0)) // Left click or touch
-            {
-                if (IsTappedOn())
-                {
-                    AttemptOpenDoor();
-                }
-            }
-        }
+        // REMOVED: Input.GetMouseButtonDown(0) check - only OnMouseDown should handle clicks
     }
 
-    bool IsTappedOn()
+    void OnMouseDown()
     {
-        if (mainCamera == null) return false;
+        Debug.LogError("[FrontDoor] =============== MOUSE CLICKED ON DOOR! ===============");
 
-        Vector2 touchPosition = Input.mousePosition;
-        Ray ray = mainCamera.ScreenPointToRay(touchPosition);
-        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-        if (hit.collider != null)
+        if (!playerInRange)
         {
-            return hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform);
+            Debug.LogError("[FrontDoor] Player not in range - need to be within " + interactionRadius + " units");
+            return;
         }
 
-        return false;
+        if (isOpening)
+        {
+            Debug.Log("[FrontDoor] Door is already opening");
+            return;
+        }
+
+        AttemptOpenDoor();
     }
 
     void CheckPlayerDistance()
@@ -91,25 +92,39 @@ public class FrontDoorInteraction : MonoBehaviour
         if (player != null)
         {
             float distance = Vector2.Distance(transform.position, player.transform.position);
+            bool wasInRange = playerInRange;
             playerInRange = distance <= interactionRadius;
+
+            // Log when range status changes
+            if (wasInRange != playerInRange)
+            {
+                Debug.Log($"[FrontDoor] Player range changed: {playerInRange} (distance: {distance:F2})");
+            }
+        }
+        else
+        {
+            playerInRange = false;
         }
     }
 
     void AttemptOpenDoor()
     {
-        // Check if player has the key
+        Debug.Log("[FrontDoor] Attempting to open door...");
+
+        // Check if we need a key
         if (InventoryManager.Instance == null || !InventoryManager.Instance.HasItem(requiredItemId))
         {
             ShowLockedMessage();
             return;
         }
 
-        // Player has the key - unlock and open door
         UnlockAndOpenDoor();
     }
 
     void ShowLockedMessage()
     {
+        Debug.Log("[FrontDoor] Door is locked!");
+
         if (lockedDoorSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(lockedDoorSound);
@@ -120,6 +135,8 @@ public class FrontDoorInteraction : MonoBehaviour
 
     void UnlockAndOpenDoor()
     {
+        Debug.Log("[FrontDoor] Unlocking and opening door!");
+
         isOpening = true;
         doorUnlocked = true;
 
@@ -143,6 +160,8 @@ public class FrontDoorInteraction : MonoBehaviour
 
     void OpenDoor()
     {
+        Debug.Log("[FrontDoor] Opening door...");
+
         if (doorOpenSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(doorOpenSound);
@@ -158,6 +177,8 @@ public class FrontDoorInteraction : MonoBehaviour
 
     void LoadNextScene()
     {
+        Debug.Log($"[FrontDoor] Loading scene: {nextSceneName}");
+
         if (SaveSystem.Instance != null)
         {
             SaveSystem.Instance.OnRoomEntered(nextSceneName);
@@ -174,7 +195,7 @@ public class FrontDoorInteraction : MonoBehaviour
         }
         else
         {
-            Debug.Log($"Lisa: {message}");
+            Debug.Log($"[Dialogue] Lisa: {message}");
         }
     }
 
