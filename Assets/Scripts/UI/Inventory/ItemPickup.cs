@@ -22,7 +22,6 @@ public class ItemPickup : MonoBehaviour
     [Header("UI Feedback")]
     public GameObject interactionPrompt;
     public TextMeshProUGUI promptText;
-    public Canvas worldSpaceCanvas;
 
     [Header("Animation")]
     public float bobAmount = 0.5f;
@@ -37,11 +36,14 @@ public class ItemPickup : MonoBehaviour
     private Transform playerTransform;
     private Vector3 startPosition;
     private InventoryItem itemData;
-    private bool isRegistered = false;
+    private string uniquePickupId; // FIXED: Unique ID for this specific pickup instance
 
     void Start()
     {
         startPosition = transform.position;
+
+        // FIXED: Create unique ID using scene name + position + item ID
+        uniquePickupId = $"{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}_pickup_{itemId}_{transform.position.x:F2}_{transform.position.y:F2}_{transform.position.z:F2}";
 
         // Get item data from database
         if (InventoryManager.Instance?.itemDatabase != null)
@@ -56,7 +58,6 @@ public class ItemPickup : MonoBehaviour
                 // Update sprite if not manually set
                 if (itemSprite != null && itemSprite.sprite == null && itemData.itemIcon != null)
                 {
-                    // Convert Sprite to Sprite for SpriteRenderer
                     itemSprite.sprite = itemData.itemIcon;
                 }
             }
@@ -68,34 +69,25 @@ public class ItemPickup : MonoBehaviour
             interactionPrompt.SetActive(false);
         }
 
-        // Check if already picked up
+        // FIXED: Check if THIS SPECIFIC pickup was already collected
         CheckPickupStatus();
-
-        // Register with save system
-        RegisterWithSaveSystem();
     }
 
     void CheckPickupStatus()
     {
-        if (SaveSystem.Instance != null && SaveSystem.Instance.HasItem(itemId))
-        {
-            // Item already picked up, hide it
-            if (hideAfterPickup)
-            {
-                gameObject.SetActive(false);
-            }
-            isPickedUp = true;
-        }
-    }
-
-    void RegisterWithSaveSystem()
-    {
         if (SaveSystem.Instance != null)
         {
-            // Mark object as examined if it was
-            string objectId = $"pickup_{itemId}_{transform.position}";
-            SaveSystem.Instance.MarkObjectExamined(objectId);
-            isRegistered = true;
+            // FIXED: Check if this specific pickup instance was examined (picked up)
+            if (SaveSystem.Instance.WasObjectExamined(uniquePickupId))
+            {
+                // This specific item instance was already picked up
+                if (hideAfterPickup)
+                {
+                    gameObject.SetActive(false);
+                }
+                isPickedUp = true;
+                Debug.Log($"Item {itemId} at {transform.position} was already picked up");
+            }
         }
     }
 
@@ -166,12 +158,19 @@ public class ItemPickup : MonoBehaviour
     {
         if (isPickedUp || InventoryManager.Instance == null) return;
 
-        // Add to inventory
+        // FIXED: Add to inventory (this adds the item TYPE to inventory)
         bool success = InventoryManager.Instance.AddItem(itemId);
 
         if (success)
         {
             isPickedUp = true;
+
+            // FIXED: Mark THIS SPECIFIC pickup instance as collected
+            if (SaveSystem.Instance != null)
+            {
+                SaveSystem.Instance.MarkObjectExamined(uniquePickupId);
+                Debug.Log($"Marked pickup as collected: {uniquePickupId}");
+            }
 
             // Play pickup sound
             if (pickupSound != null)
@@ -196,13 +195,6 @@ public class ItemPickup : MonoBehaviour
             else if (hideAfterPickup)
             {
                 gameObject.SetActive(false);
-            }
-
-            // Mark as examined in save system
-            if (SaveSystem.Instance != null && isRegistered)
-            {
-                string objectId = $"pickup_{itemId}_{transform.position}";
-                SaveSystem.Instance.MarkObjectExamined(objectId);
             }
 
             Debug.Log($"Picked up: {itemData?.itemName ?? itemId}");
@@ -294,4 +286,5 @@ public class ItemPickup : MonoBehaviour
     public string GetItemId() => itemId;
     public InventoryItem GetItemData() => itemData;
     public bool IsPickedUp() => isPickedUp;
+    public string GetUniquePickupId() => uniquePickupId; // NEW: Expose unique ID
 }

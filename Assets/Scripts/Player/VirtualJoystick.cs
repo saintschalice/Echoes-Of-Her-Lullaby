@@ -10,8 +10,7 @@ public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler,
 
     [Header("Settings")]
     public float handleRange = 50f;
-    public bool snapX = false;
-    public bool snapY = false;
+    public bool force4Directional = true; // NEW: Force 4-directional movement
 
     [Header("Output")]
     public Vector2 inputVector = Vector2.zero;
@@ -22,22 +21,17 @@ public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler,
 
     void Start()
     {
-        // Get components
         canvas = GetComponentInParent<Canvas>();
 
-        // Set background reference if not assigned
         if (background == null)
             background = GetComponent<RectTransform>();
 
-        // Set handle reference if not assigned
         if (handle == null)
             handle = transform.GetChild(0).GetComponent<RectTransform>();
 
-        // Set handle range based on background size if not set
         if (handleRange == 50f)
             handleRange = background.sizeDelta.x / 2f - handle.sizeDelta.x / 2f;
 
-        // Get camera for screen space conversion
         if (canvas.renderMode == RenderMode.ScreenSpaceCamera)
             cam = canvas.worldCamera;
     }
@@ -60,25 +54,22 @@ public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler,
             inputVector = inputVector.normalized;
         }
 
-        // Apply snapping if enabled
-        if (snapX)
+        // NEW: Force 4-directional movement (no diagonals)
+        if (force4Directional)
         {
-            if (inputVector.x > 0)
-                inputVector.x = 1;
-            else if (inputVector.x < 0)
-                inputVector.x = -1;
-            else
-                inputVector.x = 0;
-        }
-
-        if (snapY)
-        {
-            if (inputVector.y > 0)
-                inputVector.y = 1;
-            else if (inputVector.y < 0)
-                inputVector.y = -1;
-            else
+            // Determine which direction is dominant
+            if (Mathf.Abs(inputVector.x) > Mathf.Abs(inputVector.y))
+            {
+                // Horizontal movement is dominant
                 inputVector.y = 0;
+                inputVector.x = inputVector.x > 0 ? 1 : -1;
+            }
+            else
+            {
+                // Vertical movement is dominant
+                inputVector.x = 0;
+                inputVector.y = inputVector.y > 0 ? 1 : -1;
+            }
         }
 
         // Move handle

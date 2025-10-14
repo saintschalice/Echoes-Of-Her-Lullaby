@@ -1,8 +1,46 @@
 using UnityEngine;
+using System.Collections; // ADD THIS LINE - Required for IEnumerator
 
 public class DialogueTesterV2 : MonoBehaviour
 {
-    // Make these methods public so they can be called by a UI Button's OnClick() event.
+    void Update()
+    {
+        // Your existing Update code...
+
+        // Add this new test
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            TestChoiceSystem();
+        }
+    }
+
+    void TestChoiceSystem()
+    {
+        DialogueSystemV2.Instance.StartDialogue("Should I break this pot?", "Lisa");
+        StartCoroutine(ShowChoicesAfterDelay());
+    }
+
+    IEnumerator ShowChoicesAfterDelay()
+    {
+        yield return new WaitForSeconds(2f);
+
+        DialogueSystemV2.Instance.ShowChoices(
+            new string[] { "Yes, break it", "No, leave it" },
+            new System.Action[] { OnChoiceYes, OnChoiceNo }
+        );
+    }
+
+    void OnChoiceYes()
+    {
+        Debug.Log("Player chose YES!");
+        DialogueSystemV2.Instance.StartDialogue("You chose to break the pot!", "Lisa");
+    }
+
+    void OnChoiceNo()
+    {
+        Debug.Log("Player chose NO!");
+        DialogueSystemV2.Instance.StartDialogue("You decided to leave it alone.", "Lisa");
+    }
 
     public void TestSingleLine()
     {

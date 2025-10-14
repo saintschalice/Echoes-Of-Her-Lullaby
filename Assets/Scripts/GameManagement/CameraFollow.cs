@@ -1,10 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.SceneManagement;
 
 public class CameraFollow : MonoBehaviour
 {
     [Header("Follow Settings")]
-    public Transform target; // Lisa (player character)
+    public Transform target;
     public float followSpeed = 5f;
     public Vector3 offset = new Vector3(0, 0, -10);
 
@@ -24,21 +25,53 @@ public class CameraFollow : MonoBehaviour
     public bool useSmoothing = true;
     public float smoothTime = 0.3f;
 
+    [Header("Auto-Refresh")]
+    public bool autoRefreshOnSceneLoad = true;
+
     // Internal variables
     private Vector3 velocity = Vector3.zero;
     private float cameraHalfHeight;
     private float cameraHalfWidth;
     private Bounds tilemapBounds;
+    private bool roomSmallerThanCamera = false;
+    private Vector3 lockedCameraPosition;
+    private string lastSceneName = "";
 
-    // Public boundary properties (for external access)
+    // Public boundary properties
     public float minX { get; private set; }
     public float maxX { get; private set; }
     public float minY { get; private set; }
     public float maxY { get; private set; }
 
+    void Awake()
+    {
+        if (autoRefreshOnSceneLoad)
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"[CameraFollow] Scene loaded: {scene.name}, refreshing boundaries...");
+
+        // Wait a frame for tilemaps to be ready
+        StartCoroutine(RefreshBoundariesDelayed());
+    }
+
+    System.Collections.IEnumerator RefreshBoundariesDelayed()
+    {
+        yield return new WaitForEndOfFrame();
+        RefreshTilemapBoundaries();
+    }
+
     void Start()
     {
-        // Find target if not assigned
         if (target == null)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -46,10 +79,8 @@ public class CameraFollow : MonoBehaviour
                 target = player.transform;
         }
 
-        // Calculate camera dimensions
         CalculateCameraSize();
 
-        // Set up boundaries
         if (useTilemapBoundaries)
         {
             UpdateTilemapBoundaries();
@@ -58,22 +89,35 @@ public class CameraFollow : MonoBehaviour
         {
             SetManualBoundaries();
         }
+
+        lastSceneName = SceneManager.GetActiveScene().name;
     }
 
     void Update()
     {
-        // Recalculate camera size if aspect ratio changes (for testing different ratios)
         Camera cam = GetComponent<Camera>();
         float currentHalfWidth = cam.orthographicSize * cam.aspect;
 
         if (Mathf.Abs(currentHalfWidth - cameraHalfWidth) > 0.1f)
         {
-            Debug.Log($"Aspect ratio changed from {cameraHalfWidth / cam.orthographicSize:F2} to {cam.aspect:F2}");
+            Debug.Log($"[CameraFollow] Aspect ratio changed from {cameraHalfWidth / cam.orthographicSize:F2} to {cam.aspect:F2}");
             CalculateCameraSize();
 
             if (useTilemapBoundaries)
             {
                 SetBoundariesFromTilemap();
+            }
+        }
+
+        // Check if scene changed (for persistent cameras)
+        string currentScene = SceneManager.GetActiveScene().name;
+        if (currentScene != lastSceneName)
+        {
+            lastSceneName = currentScene;
+            Debug.Log($"[CameraFollow] Scene changed to: {currentScene}");
+            if (useTilemapBoundaries)
+            {
+                UpdateTilemapBoundaries();
             }
         }
     }
@@ -93,21 +137,22 @@ public class CameraFollow : MonoBehaviour
             cameraHalfWidth = cameraHalfHeight * cam.aspect;
         }
 
-        Debug.Log($"Camera size calculated - Aspect: {cam.aspect:F2}, Half Width: {cameraHalfWidth:F2}, Half Height: {cameraHalfHeight:F2}");
+        Debug.Log($"[CameraFollow] Camera size - Half Width: {cameraHalfWidth:F2}, Half Height: {cameraHalfHeight:F2}");
     }
 
     void UpdateTilemapBoundaries()
     {
-        if (boundaryTilemaps == null || boundaryTilemaps.Length == 0)
-        {
-            // Auto-find tilemaps if none assigned
-            AutoFindTilemaps();
-        }
+        // Always refresh tilemaps from current scene
+        AutoFindTilemaps();
 
-        if (boundaryTilemaps.Length > 0)
+        if (boundaryTilemaps != null && boundaryTilemaps.Length > 0)
         {
             tilemapBounds = CalculateCombinedTilemapBounds();
             SetBoundariesFromTilemap();
+        }
+        else
+        {
+            Debug.LogWarning("[CameraFollow] No tilemaps found! Camera will be unbounded.");
         }
     }
 
@@ -118,20 +163,20 @@ public class CameraFollow : MonoBehaviour
 
         foreach (Tilemap tilemap in allTilemaps)
         {
-            // Only include tilemaps that have tiles (non-empty)
             if (tilemap.cellBounds.size.x > 0 && tilemap.cellBounds.size.y > 0)
             {
-                // Exclude UI or overlay tilemaps (you can customize this filter)
+                // Exclude UI and overlay tilemaps
                 if (!tilemap.gameObject.name.ToLower().Contains("ui") &&
                     !tilemap.gameObject.name.ToLower().Contains("overlay"))
                 {
                     validTilemaps.Add(tilemap);
+                    Debug.Log($"[CameraFollow] Found tilemap: {tilemap.gameObject.name} ({tilemap.cellBounds.size})");
                 }
             }
         }
 
         boundaryTilemaps = validTilemaps.ToArray();
-        Debug.Log($"Auto-found {boundaryTilemaps.Length} tilemaps for camera boundaries");
+        Debug.Log($"[CameraFollow] Auto-found {boundaryTilemaps.Length} valid tilemaps for boundaries");
     }
 
     Bounds CalculateCombinedTilemapBounds()
@@ -146,6 +191,7 @@ public class CameraFollow : MonoBehaviour
             combinedBounds.Encapsulate(tileBounds);
         }
 
+        Debug.Log($"[CameraFollow] Combined tilemap bounds: Center({combinedBounds.center}), Size({combinedBounds.size})");
         return combinedBounds;
     }
 
@@ -159,29 +205,54 @@ public class CameraFollow : MonoBehaviour
 
     void SetBoundariesFromTilemap()
     {
-        // Calculate boundaries ensuring camera doesn't show empty space
-        minX = tilemapBounds.min.x + cameraHalfWidth + boundaryPadding;
-        maxX = tilemapBounds.max.x - cameraHalfWidth - boundaryPadding;
-        minY = tilemapBounds.min.y + cameraHalfHeight + boundaryPadding;
-        maxY = tilemapBounds.max.y - cameraHalfHeight - boundaryPadding;
+        float tilemapWidth = tilemapBounds.size.x;
+        float tilemapHeight = tilemapBounds.size.y;
 
-        // Prevent invalid boundaries
-        if (minX > maxX)
-        {
-            float centerX = tilemapBounds.center.x;
-            minX = centerX - 0.1f;
-            maxX = centerX + 0.1f;
-        }
-        if (minY > maxY)
-        {
-            float centerY = tilemapBounds.center.y;
-            minY = centerY - 0.1f;
-            maxY = centerY + 0.1f;
-        }
+        // Check if room is smaller than camera view
+        bool xTooSmall = tilemapWidth <= (cameraHalfWidth * 2 + boundaryPadding * 2);
+        bool yTooSmall = tilemapHeight <= (cameraHalfHeight * 2 + boundaryPadding * 2);
 
-        Debug.Log($"Tilemap boundaries set: X({minX:F2} to {maxX:F2}), Y({minY:F2} to {maxY:F2})");
-        Debug.Log($"Tilemap bounds: min({tilemapBounds.min.x:F2}, {tilemapBounds.min.y:F2}), max({tilemapBounds.max.x:F2}, {tilemapBounds.max.y:F2})");
-        Debug.Log($"Camera half-width: {cameraHalfWidth:F2}, boundary padding: {boundaryPadding:F2}");
+        roomSmallerThanCamera = xTooSmall || yTooSmall;
+
+        if (roomSmallerThanCamera)
+        {
+            // Lock camera to center of room
+            lockedCameraPosition = new Vector3(
+                tilemapBounds.center.x,
+                tilemapBounds.center.y,
+                offset.z
+            );
+
+            Debug.Log($"[CameraFollow] Room smaller than camera! Locking at center: {lockedCameraPosition}");
+
+            // Set boundaries to center
+            minX = maxX = tilemapBounds.center.x;
+            minY = maxY = tilemapBounds.center.y;
+        }
+        else
+        {
+            // Normal boundary calculation
+            minX = tilemapBounds.min.x + cameraHalfWidth + boundaryPadding;
+            maxX = tilemapBounds.max.x - cameraHalfWidth - boundaryPadding;
+            minY = tilemapBounds.min.y + cameraHalfHeight + boundaryPadding;
+            maxY = tilemapBounds.max.y - cameraHalfHeight - boundaryPadding;
+
+            // Safety check
+            if (minX > maxX)
+            {
+                float centerX = tilemapBounds.center.x;
+                minX = maxX = centerX;
+                Debug.LogWarning($"[CameraFollow] X boundaries invalid, centering at {centerX}");
+            }
+            if (minY > maxY)
+            {
+                float centerY = tilemapBounds.center.y;
+                minY = maxY = centerY;
+                Debug.LogWarning($"[CameraFollow] Y boundaries invalid, centering at {centerY}");
+            }
+
+            Debug.Log($"[CameraFollow] Boundaries set: X({minX:F2} to {maxX:F2}), Y({minY:F2} to {maxY:F2})");
+        }
     }
 
     void SetManualBoundaries()
@@ -190,20 +261,31 @@ public class CameraFollow : MonoBehaviour
         maxX = manualMaxX;
         minY = manualMinY;
         maxY = manualMaxY;
+        roomSmallerThanCamera = false;
+        Debug.Log($"[CameraFollow] Using manual boundaries: X({minX} to {maxX}), Y({minY} to {maxY})");
     }
 
     void LateUpdate()
     {
         if (target == null) return;
 
-        // Calculate desired position
-        Vector3 desiredPosition = target.position + offset;
+        Vector3 desiredPosition;
 
-        // Apply boundaries
-        if (useTilemapBoundaries || useManualBoundaries)
+        if (roomSmallerThanCamera)
         {
-            desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
-            desiredPosition.y = Mathf.Clamp(desiredPosition.y, minY, maxY);
+            // Lock camera to center of small room
+            desiredPosition = lockedCameraPosition;
+        }
+        else
+        {
+            // Normal follow behavior with boundaries
+            desiredPosition = target.position + offset;
+
+            if (useTilemapBoundaries || useManualBoundaries)
+            {
+                desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
+                desiredPosition.y = Mathf.Clamp(desiredPosition.y, minY, maxY);
+            }
         }
 
         // Move camera
@@ -217,7 +299,7 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    // Public methods for external control
+    // Public methods
     public void SetBoundaries(float newMinX, float newMaxX, float newMinY, float newMaxY)
     {
         minX = newMinX;
@@ -226,12 +308,15 @@ public class CameraFollow : MonoBehaviour
         maxY = newMaxY;
         useManualBoundaries = true;
         useTilemapBoundaries = false;
+        roomSmallerThanCamera = false;
+        Debug.Log($"[CameraFollow] Manual boundaries set: X({minX} to {maxX}), Y({minY} to {maxY})");
     }
 
     public void RefreshTilemapBoundaries()
     {
         if (useTilemapBoundaries)
         {
+            Debug.Log("[CameraFollow] Manually refreshing tilemap boundaries...");
             UpdateTilemapBoundaries();
         }
     }
@@ -247,14 +332,14 @@ public class CameraFollow : MonoBehaviour
         UpdateTilemapBoundaries();
     }
 
-    // Visualize boundaries in Scene view
     void OnDrawGizmosSelected()
     {
         if (useTilemapBoundaries || useManualBoundaries)
         {
-            Gizmos.color = Color.cyan;
+            // Draw boundaries
+            Gizmos.color = roomSmallerThanCamera ? Color.red : Color.cyan;
             Vector3 center = new Vector3((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, transform.position.z);
-            Vector3 size = new Vector3(maxX - minX, maxY - minY, 0);
+            Vector3 size = new Vector3(Mathf.Max(0.1f, maxX - minX), Mathf.Max(0.1f, maxY - minY), 0);
             Gizmos.DrawWireCube(center, size);
 
             // Draw camera bounds

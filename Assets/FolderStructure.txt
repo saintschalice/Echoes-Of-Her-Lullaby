@@ -1,11 +1,12 @@
 ﻿Folder PATH listing
-Volume serial number is 000000A7 0ABD:5762
+Volume serial number is 0000004D 0ABD:5762
 D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 |   Art.meta
 |   Audio.meta
 |   DefaultVolumeProfile.asset
 |   DefaultVolumeProfile.asset.meta
 |   FolderStructure.txt
+|   FolderStructure.txt.meta
 |   InputSystem_Actions.inputactions
 |   InputSystem_Actions.inputactions.meta
 |   Prefabs.meta
@@ -62,10 +63,26 @@ D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 |   |       
 |   +---Materials
 |   |   |   .gitkeep
+|   |   |   Items.meta
 |   |   |   Props.meta
 |   |   |   Tiles.meta
 |   |   |   
+|   |   +---Items
+|   |   |       item_house_key.png
+|   |   |       item_house_key.png.meta
+|   |   |       
 |   |   +---Props
+|   |   |       broken_flower_pot.png
+|   |   |       broken_flower_pot.png.meta
+|   |   |       flower_pot.png
+|   |   |       flower_pot.png.meta
+|   |   |       mailbox.png
+|   |   |       mailbox.png.meta
+|   |   |       table_set.asset
+|   |   |       table_set.asset.meta
+|   |   |       table_set.png
+|   |   |       table_set.png.meta
+|   |   |       
 |   |   \---Tiles
 |   |           roof1.asset
 |   |           roof1.asset.meta
@@ -602,20 +619,36 @@ D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 |   \---UI
 |           emily_dialogue_box.png
 |           emily_dialogue_box.png.meta
+|           inventory_icon.png
+|           inventory_icon.png.meta
+|           item_bg.png
+|           item_bg.png.meta
+|           item_panel_bg.png
+|           item_panel_bg.png.meta
 |           joystick_background.png
 |           joystick_background.png.meta
 |           joystick_handle.png
 |           joystick_handle.png.meta
+|           key_item_bg.png
+|           key_item_bg.png.meta
 |           lisa_dialogue_box.png
 |           lisa_dialogue_box.png.meta
+|           menu_box.png
+|           menu_box.png.meta
 |           menu_button.png
 |           menu_button.png.meta
 |           mystery_dialogue_box.png
 |           mystery_dialogue_box.png.meta
+|           pause_icon.png
+|           pause_icon.png.meta
 |           save_box.png
 |           save_box.png.meta
 |           save_slot.png
 |           save_slot.png.meta
+|           settings_box.png
+|           settings_box.png.meta
+|           tooltip_bg.png
+|           tooltip_bg.png.meta
 |           
 +---Audio
 |   |   Ambient.meta
@@ -659,6 +692,8 @@ D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 |   |       
 |   \---UI
 |           .gitkeep
+|           InventorySlot.prefab
+|           InventorySlot.prefab.meta
 |           SaveSlotPrefab.prefab
 |           SaveSlotPrefab.prefab.meta
 |           
@@ -673,6 +708,8 @@ D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 |   |       
 |   \---Data
 |           .gitkeep
+|           MainItemDatabase.asset
+|           MainItemDatabase.asset.meta
 |           
 +---Scenes
 |       README.md
@@ -697,15 +734,23 @@ D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 |   |       
 |   +---Audio
 |   |       .gitkeep
+|   |       MainAudioMixer.mixer
+|   |       MainAudioMixer.mixer.meta
 |   |       
 |   +---GameManagement
 |   |       .gitkeep
+|   |       AddHouseKeys.cs
+|   |       AddHouseKeys.cs.meta
+|   |       ButtonKeyPressHandler.cs
+|   |       ButtonKeyPressHandler.cs.meta
 |   |       CameraFollow.cs
 |   |       CameraFollow.cs.meta
 |   |       CameraLighting.cs
 |   |       CameraLighting.cs.meta
 |   |       LightingOptimizer.cs
 |   |       LightingOptimizer.cs.meta
+|   |       PauseMenuManager.cs
+|   |       PauseMenuManager.cs.meta
 |   |       SaveSlotUI.cs
 |   |       SaveSlotUI.cs.meta
 |   |       SaveSystem.cs
@@ -726,16 +771,37 @@ D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 |   |       
 |   +---Puzzle
 |   |       .gitkeep
+|   |       FlowerPotInteraction.cs
+|   |       FlowerPotInteraction.cs.meta
 |   |       
 |   \---UI
 |       |   .gitkeep
 |       |   Dialogs.meta
+|       |   Inventory.meta
 |       |   
-|       \---Dialogs
-|               DialogueSystemV2.cs
-|               DialogueSystemV2.cs.meta
-|               DialogueTesterV2.cs
-|               DialogueTesterV2.cs.meta
+|       +---Dialogs
+|       |       DialogueSystemV2.cs
+|       |       DialogueSystemV2.cs.meta
+|       |       DialogueTesterV2.cs
+|       |       DialogueTesterV2.cs.meta
+|       |       
+|       \---Inventory
+|               InventoryDebugger.cs
+|               InventoryDebugger.cs.meta
+|               InventoryItem.cs
+|               InventoryItem.cs.meta
+|               InventoryManager.cs
+|               InventoryManager.cs.meta
+|               InventorySlot.cs
+|               InventorySlot.cs.meta
+|               InventoryUI.cs
+|               InventoryUI.cs.meta
+|               ItemDatabase.cs
+|               ItemDatabase.cs.meta
+|               ItemPickup.cs
+|               ItemPickup.cs.meta
+|               PuzzleInteractable.cs
+|               PuzzleInteractable.cs.meta
 |               
 +---Settings
 |   |   Lit2DSceneTemplate.scenetemplate
@@ -1165,6 +1231,8 @@ D:\ECHOESOFHERLULLABY\ECHOES OF HER LULLABY\ASSETS
 \---_Recovery
         0 (1).unity
         0 (1).unity.meta
+        0 (2).unity
+        0 (2).unity.meta
         0.unity
         0.unity.meta
         

@@ -1,0 +1,11 @@
+// Dialogue sounds (typing)
+AudioManager.Instance.PlayDialogue(clip, volume);
+
+// Sound effects (pickups, UI, puzzles)
+AudioManager.Instance.PlaySFX(clip);
+
+// Music (background, lullaby)
+AudioManager.Instance.PlayMusic(clip, loop: true, fadeTime: 2f);
+
+// Ambient (room atmosphere, wind, rain)
+AudioManager.Instance.PlayAmbient(clip, loop: true, fadeTime: 2f);

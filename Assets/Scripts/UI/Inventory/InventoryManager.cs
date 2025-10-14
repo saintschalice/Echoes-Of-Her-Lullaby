@@ -24,6 +24,10 @@ public class InventoryManager : MonoBehaviour
     public System.Action<InventoryItem> OnItemRemoved;
     public System.Action<InventoryItem> OnItemUsed;
 
+    // Item IDs for mail transformation
+    private const string MAIL_ITEM_ID = "foyer_mail";
+    private const string LETTER_ITEM_ID = "foyer_letter";
+
     public static InventoryManager Instance { get; private set; }
 
     void Awake()
@@ -42,13 +46,11 @@ public class InventoryManager : MonoBehaviour
 
     void Start()
     {
-        // Find UI if not assigned
         if (inventoryUI == null)
         {
             inventoryUI = FindFirstObjectByType<InventoryUI>();
         }
 
-        // Load inventory from save system
         LoadInventoryFromSave();
     }
 
@@ -59,29 +61,21 @@ public class InventoryManager : MonoBehaviour
         GameSaveData saveData = SaveSystem.Instance.GetCurrentSaveData();
         if (saveData != null && saveData.inventoryItems != null)
         {
-            // Inventory is loaded from save system automatically
-            // Just refresh the UI
             RefreshUI();
         }
     }
 
     public List<InventoryItem> GetAllItems()
     {
-        Debug.Log($"[InventoryManager] GetAllItems called");
-        Debug.Log($"[InventoryManager] SaveSystem.Instance: {(SaveSystem.Instance != null ? "CHECK" : "NULL")}");
-        Debug.Log($"[InventoryManager] itemDatabase: {(itemDatabase != null ? "CHECK" : "NULL")}");
-
         if (SaveSystem.Instance == null || itemDatabase == null)
             return new List<InventoryItem>();
 
         GameSaveData saveData = SaveSystem.Instance.GetCurrentSaveData();
-        Debug.Log($"[InventoryManager] saveData: {(saveData != null ? "CHECK" : "NULL")}");
-        Debug.Log($"[InventoryManager] saveData.inventoryItems count: {(saveData?.inventoryItems?.Count ?? 0)}");
 
         if (saveData?.inventoryItems == null)
             return new List<InventoryItem>();
- 
-     List<InventoryItem> items = new List<InventoryItem>();
+
+        List<InventoryItem> items = new List<InventoryItem>();
 
         foreach (string itemId in saveData.inventoryItems)
         {
@@ -121,23 +115,18 @@ public class InventoryManager : MonoBehaviour
             return false;
         }
 
-        // Check if already have the item (for non-stackable items)
         if (HasItem(itemId) && !item.isConsumable)
         {
             Debug.Log($"Already have item: {item.itemName}");
             return false;
         }
 
-        // Add to save system
         SaveSystem.Instance?.AddInventoryItem(itemId);
 
-        // Play pickup sound
         PlaySound(itemPickupSound);
 
-        // Trigger events
         OnItemAdded?.Invoke(item);
 
-        // Handle memory fragments
         if (item.triggersMemory && !string.IsNullOrEmpty(item.memoryFragmentId))
         {
             SaveSystem.Instance?.AddMemoryFragment(item.memoryFragmentId);
@@ -145,7 +134,6 @@ public class InventoryManager : MonoBehaviour
             TriggerMemorySequence(item);
         }
 
-        // Refresh UI
         RefreshUI();
 
         Debug.Log($"Added item to inventory: {item.itemName}");
@@ -158,13 +146,10 @@ public class InventoryManager : MonoBehaviour
 
         InventoryItem item = GetItem(itemId);
 
-        // Remove from save system
         SaveSystem.Instance?.RemoveInventoryItem(itemId);
 
-        // Trigger events
         OnItemRemoved?.Invoke(item);
 
-        // Refresh UI
         RefreshUI();
 
         Debug.Log($"Removed item from inventory: {item?.itemName}");
@@ -182,18 +167,20 @@ public class InventoryManager : MonoBehaviour
             return false;
         }
 
-        // Play use sound
         PlaySound(itemUseSound);
 
-        // Handle item usage based on type
+        // NEW: Handle mail -> letter transformation
+        if (itemId == MAIL_ITEM_ID)
+        {
+            return TransformMailToLetter();
+        }
+
         bool wasUsed = HandleItemUsage(item);
 
         if (wasUsed)
         {
-            // Trigger events
             OnItemUsed?.Invoke(item);
 
-            // Remove if consumable
             if (item.isConsumable)
             {
                 RemoveItem(itemId);
@@ -205,9 +192,47 @@ public class InventoryManager : MonoBehaviour
         return wasUsed;
     }
 
+    // NEW: Transform mail into readable letter
+    bool TransformMailToLetter()
+    {
+        Debug.Log("Transforming mail into letter...");
+
+        // Remove mail from inventory
+        SaveSystem.Instance?.RemoveInventoryItem(MAIL_ITEM_ID);
+
+        // Add letter to inventory
+        SaveSystem.Instance?.AddInventoryItem(LETTER_ITEM_ID);
+
+        // Refresh UI to show new item
+        RefreshUI();
+
+        // Open mail reader
+        MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
+        if (mailReader != null)
+        {
+            mailReader.OpenMail();
+        }
+        else
+        {
+            Debug.LogWarning("MailReaderUI not found!");
+        }
+
+        return true;
+    }
+
     bool HandleItemUsage(InventoryItem item)
     {
-        // Handle memory trigger items
+        // Handle readable letter
+        if (item.itemId == LETTER_ITEM_ID)
+        {
+            MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
+            if (mailReader != null)
+            {
+                mailReader.OpenMail();
+                return true;
+            }
+        }
+
         if (item.triggersMemory && !string.IsNullOrEmpty(item.memoryFragmentId))
         {
             if (!SaveSystem.Instance.HasMemoryFragment(item.memoryFragmentId))
@@ -218,21 +243,17 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
-        // Handle puzzle items
         if (!string.IsNullOrEmpty(item.requiredForPuzzle))
         {
-            // Try to use item with nearby puzzle
             return TryUsePuzzleItem(item);
         }
 
-        // Default: just show description
         ShowItemDescription(item);
         return true;
     }
 
     bool TryUsePuzzleItem(InventoryItem item)
     {
-        // Find nearby puzzle systems that can use this item
         PuzzleInteractable[] nearbyPuzzles = FindObjectsByType<PuzzleInteractable>(FindObjectsSortMode.None);
 
         foreach (var puzzle in nearbyPuzzles)
@@ -247,18 +268,15 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
-        // No nearby puzzle found
         ShowItemDescription(item);
         return false;
     }
 
     void TriggerMemorySequence(InventoryItem item)
     {
-        // Hook into your dialogue/memory system
         DialogueSystemV2 dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
         if (dialogueSystem != null)
         {
-            // Trigger memory dialogue using the correct method
             string memoryDialogue = $"*Lisa examines the {item.itemName}*\n\n{item.description}";
             dialogueSystem.StartDialogue(memoryDialogue, "Lisa");
         }
@@ -268,7 +286,6 @@ public class InventoryManager : MonoBehaviour
 
     void ShowItemDescription(InventoryItem item)
     {
-        // Show item description in dialogue system
         DialogueSystemV2 dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
         if (dialogueSystem != null)
         {
@@ -292,18 +309,9 @@ public class InventoryManager : MonoBehaviour
     void PlaySound(AudioClip clip)
     {
         if (clip == null) return;
-
-        // Hook into your audio system
-        AudioSource audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-
-        audioSource.PlayOneShot(clip);
+        AudioManager.Instance?.PlaySFX(clip);
     }
 
-    // Public utility methods
     public int GetItemCount()
     {
         return GetAllItems().Count;
@@ -324,17 +332,15 @@ public class InventoryManager : MonoBehaviour
         return GetItemCount() > 0;
     }
 
-    // For puzzle systems to check requirements
     public bool HasRequiredItems(List<string> requiredItemIds)
     {
         return requiredItemIds.All(itemId => HasItem(itemId));
     }
 
-    // Debug methods
     [ContextMenu("Debug Add Test Item")]
     void DebugAddTestItem()
     {
-        AddItem("house_key"); // Replace with actual item ID from your database
+        AddItem("house_key");
     }
 
     [ContextMenu("Debug Print Inventory")]
@@ -350,7 +356,6 @@ public class InventoryManager : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // Draw pickup range
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, pickupRange);
     }

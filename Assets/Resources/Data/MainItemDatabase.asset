@@ -15,10 +15,31 @@ MonoBehaviour:
   allItems:
   - itemId: house_key
     itemName: House Key
-    description: An old brass key. It might unlock something in this house
+    description: An old brass key. It might unlock something in this house.
     itemIcon: {fileID: 21300000, guid: 0e54f3ad87e78104b8c386d1aec5c6ab, type: 3}
     isKeyItem: 1
-    isUsable: 0
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: front_door
+  - itemId: foyer_mail
+    itemName: Sealed Mail
+    description: An unopened envelope from the mailbox. Tap to open and read the
+      letter inside.
+    itemIcon: {fileID: 21300000, guid: 670765b769f0ead4fa40d6a9e048a4c5, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: foyer_letter
+    itemName: Mysterious Letter
+    description: A letter with cryptic instructions.
+    itemIcon: {fileID: 21300000, guid: 2ee04ce02edf67d44aaeb16b6f86ea67, type: 3}
+    isKeyItem: 1
+    isUsable: 1
     isConsumable: 0
     triggersMemory: 0
     memoryFragmentId: 
