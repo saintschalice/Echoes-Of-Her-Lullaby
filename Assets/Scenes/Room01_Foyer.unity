@@ -771,7 +771,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomSpawnPoint
   roomName: Room01_Foyer
-  isDefaultSpawnPoint: 1
+  isDefaultSpawnPoint: 0
   spawnPointID: Main
   matchRotation: 0
   gizmoColor: {r: 0, g: 1, b: 0, a: 1}
