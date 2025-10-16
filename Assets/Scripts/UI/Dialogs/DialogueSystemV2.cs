@@ -56,6 +56,9 @@ public class DialogueSystemV2 : MonoBehaviour
     private string fullText = "";
     private System.Action[] currentChoiceCallbacks;
 
+    public System.Action OnDialogueStarted;
+    public System.Action OnDialogueEnded;
+
     public static DialogueSystemV2 Instance { get; private set; }
 
     void Awake()
@@ -225,6 +228,14 @@ public class DialogueSystemV2 : MonoBehaviour
             Debug.LogWarning("No dialogue lines provided!");
             return;
         }
+
+        // Notify UIStateManager
+        if (UIStateManager.Instance != null)
+        {
+            UIStateManager.Instance.PrepareForDialogue();
+        }
+
+        OnDialogueStarted?.Invoke();
 
         currentDialogue.Clear();
         currentDialogue.AddRange(lines);
@@ -513,6 +524,14 @@ public class DialogueSystemV2 : MonoBehaviour
 
         currentDialogue.Clear();
         currentLineIndex = 0;
+
+        // ADD THESE LINES - Notify UIStateManager AFTER cleaning up
+        if (UIStateManager.Instance != null)
+        {
+            UIStateManager.Instance.DialogueComplete();
+        }
+
+        OnDialogueEnded?.Invoke();
     }
 
     public bool IsDialogueActive()
