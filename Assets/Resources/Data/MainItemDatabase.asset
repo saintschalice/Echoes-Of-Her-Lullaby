@@ -44,3 +44,117 @@ MonoBehaviour:
     triggersMemory: 0
     memoryFragmentId: 
     requiredForPuzzle: 
+  - itemId: living_room_small_key
+    itemName: Small Golden Key
+    description: A small brass key found behind fallen books.
+    itemIcon: {fileID: 21300000, guid: 6dcf5795ff887da49a3563d8cde9ec0e, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: mr_snuggles
+    itemName: Mr. Snuggles
+    description: A worn teddy bear. Why does this name feel so familiar?
+    itemIcon: {fileID: 1762600211799945471, guid: 98f85bf9fe3fa0c48907da71306b9424, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: broken_music_box
+    itemName: Broken Music Box
+    description: n old music box missing its winding key.
+    itemIcon: {fileID: 7876067675566361589, guid: 94e35c3bcb52c7649bede79bad800d7d, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: winding_key
+    itemName: Winding Key
+    description: A small key that winds up music boxes.
+    itemIcon: {fileID: 21300000, guid: b7205bb893f96cf488279f5a44a1e24a, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: music_box_complete
+    itemName: Music Box
+    description: A complete music box. It plays a hauntingly familiar lullaby.
+    itemIcon: {fileID: -9213807683977597615, guid: 544eade8404d51442befd40bf51cbf12, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 1
+    memoryFragmentId: lullaby_fragment_1
+    requiredForPuzzle: 
+  - itemId: diary_page_1
+    itemName: Diary Page 1
+    description: '"Mr. snuggles likes to steal things from me... He always steals
+      my winding key and I can''t play my music"'
+    itemIcon: {fileID: 21300000, guid: f5b72a6715f6a664199c896b781d1b48, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: diary_page_2
+    itemName: Diary Page 2
+    description: '"Sometimes the house gets really quiet and cold. That''s when my
+      friend is thinking hard about something important."'
+    itemIcon: {fileID: 21300000, guid: 15dcb37a4f3127041b961afec31cf29d, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: diary_page_3
+    itemName: Diary Page 3
+    description: '"I asked my friend why she looks so sad sometimes. She just hummed
+      my favorite song instead of answering."'
+    itemIcon: {fileID: 21300000, guid: 22ea88f59388b02479efafa52efaa444, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: diary_page_4
+    itemName: Diary Page 4
+    description: '"My friend doesn''t like it when people are loud. She gets upset
+      and makes things move around the room."'
+    itemIcon: {fileID: 21300000, guid: 55ae862f6e02086419be9423a077b346, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: diary_complete
+    itemName: Complete Diary Entry
+    description: All four diary pages combined.
+    itemIcon: {fileID: 21300000, guid: f5b72a6715f6a664199c896b781d1b48, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: hallway_door_key
+    itemName: Hallway Door Key
+    description: A key that unlocks the door to the hallway.
+    itemIcon: {fileID: 21300000, guid: 0e54f3ad87e78104b8c386d1aec5c6ab, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: hallway_door

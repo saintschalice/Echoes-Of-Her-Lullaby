@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -192,10 +192,96 @@ public class InventoryManager : MonoBehaviour
         return wasUsed;
     }
 
+    public bool CombineItems(string itemAId, string itemBId, string resultItemId)
+    {
+        // Ensure both items exist
+        if (!HasItem(itemAId) || !HasItem(itemBId))
+        {
+            Debug.LogWarning($"[InventoryManager] CombineItems failed - missing items: {itemAId}, {itemBId}");
+            return false;
+        }
+
+        // Remove both items from SaveSystem
+        SaveSystem.Instance?.RemoveInventoryItem(itemAId);
+        SaveSystem.Instance?.RemoveInventoryItem(itemBId);
+
+        // Add the combined result
+        InventoryItem combinedItem = itemDatabase?.GetItem(resultItemId);
+        if (combinedItem == null)
+        {
+            Debug.LogError($"[InventoryManager] Result item not found in database: {resultItemId}");
+            return false;
+        }
+
+        SaveSystem.Instance?.AddInventoryItem(resultItemId);
+
+        Debug.Log($"[InventoryManager] Combined {itemAId} + {itemBId} → {resultItemId}");
+
+        // Refresh inventory UI
+        RefreshUI();
+
+        // Trigger any UI or logic listeners
+        OnItemAdded?.Invoke(combinedItem);
+
+        // Optional: play pickup or success sound
+        PlaySound(itemPickupSound);
+
+        return true;
+    }
+
+
+
+
+    public bool CombineMultipleItems(string[] itemIds, string resultItemId)
+    {
+        // Check if player has all items
+        foreach (string itemId in itemIds)
+        {
+            if (!HasItem(itemId))
+            {
+                Debug.Log($"[InventoryManager] Missing item: {itemId}");
+                return false;
+            }
+        }
+
+        // Remove all source items
+        foreach (string itemId in itemIds)
+        {
+            SaveSystem.Instance?.RemoveInventoryItem(itemId);
+        }
+
+        // Add combined item
+        InventoryItem resultItem = itemDatabase?.GetItem(resultItemId);
+        if (resultItem == null)
+        {
+            Debug.LogError($"[InventoryManager] Result item not found: {resultItemId}");
+            return false;
+        }
+
+        SaveSystem.Instance?.AddInventoryItem(resultItemId);
+        OnItemAdded?.Invoke(resultItem);
+        RefreshUI();
+        PlaySound(itemPickupSound);
+
+        Debug.Log($"[InventoryManager] Combined {itemIds.Length} items into {resultItemId}");
+        return true;
+    }
+
+
+    public void AddItemAndSave(string itemId)
+    {
+        AddItem(itemId);
+        if (SaveSystem.Instance != null)
+        {
+            SaveSystem.Instance.AddInventoryItem(itemId);
+        }
+    }
+
+
     // NEW: Transform mail into readable letter
     bool TransformMailToLetter()
     {
-        Debug.Log("Transforming mail into letter...");
+        Debug.Log("[InventoryManager] Transforming mail into letter...");
 
         // Remove mail from inventory
         SaveSystem.Instance?.RemoveInventoryItem(MAIL_ITEM_ID);
@@ -206,7 +292,7 @@ public class InventoryManager : MonoBehaviour
         // Refresh UI to show new item
         RefreshUI();
 
-        // Open mail reader
+        // ✅ Open the mail UI immediately
         MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
         if (mailReader != null)
         {
@@ -214,7 +300,7 @@ public class InventoryManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("MailReaderUI not found!");
+            Debug.LogWarning("[InventoryManager] MailReaderUI not found in the scene.");
         }
 
         return true;
@@ -222,7 +308,7 @@ public class InventoryManager : MonoBehaviour
 
     bool HandleItemUsage(InventoryItem item)
     {
-        // Handle readable letter
+        // ✅ If player uses the readable letter
         if (item.itemId == LETTER_ITEM_ID)
         {
             MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
@@ -233,6 +319,7 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
+        // Handle memory fragments
         if (item.triggersMemory && !string.IsNullOrEmpty(item.memoryFragmentId))
         {
             if (!SaveSystem.Instance.HasMemoryFragment(item.memoryFragmentId))
@@ -243,14 +330,17 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
+        // Handle puzzle-related items
         if (!string.IsNullOrEmpty(item.requiredForPuzzle))
         {
             return TryUsePuzzleItem(item);
         }
 
+        // Default: show item description
         ShowItemDescription(item);
         return true;
     }
+
 
     bool TryUsePuzzleItem(InventoryItem item)
     {
@@ -271,13 +361,12 @@ public class InventoryManager : MonoBehaviour
         ShowItemDescription(item);
         return false;
     }
-
     void TriggerMemorySequence(InventoryItem item)
     {
         DialogueSystemV2 dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
         if (dialogueSystem != null)
         {
-            string memoryDialogue = $"*Lisa examines the {item.itemName}*\n\n{item.description}";
+            string memoryDialogue = $"Lisa examines the {item.itemName}\n\n{item.description}";
             dialogueSystem.StartDialogue(memoryDialogue, "Lisa");
         }
 
@@ -289,7 +378,7 @@ public class InventoryManager : MonoBehaviour
         DialogueSystemV2 dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
         if (dialogueSystem != null)
         {
-            string description = $"*{item.itemName}*\n\n{item.description}";
+            string description = $"{item.itemName}\n\n{item.description}";
             dialogueSystem.StartDialogue(description, "Lisa");
         }
         else

@@ -162,6 +162,7 @@ GameObject:
   - component: {fileID: 141409651}
   - component: {fileID: 141409652}
   - component: {fileID: 141409653}
+  - component: {fileID: 141409654}
   m_Layer: 0
   m_Name: Bookshelf_2
   m_TagString: Untagged
@@ -292,6 +293,21 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.2, y: 5}
   m_EdgeRadius: 0
+--- !u!114 &141409654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141409650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 3
+  interactionRange: 2
+  interactPrompt: {fileID: 0}
 --- !u!1 &178078046
 GameObject:
   m_ObjectHideFlags: 0
@@ -303,6 +319,7 @@ GameObject:
   - component: {fileID: 178078047}
   - component: {fileID: 178078049}
   - component: {fileID: 178078048}
+  - component: {fileID: 178078050}
   m_Layer: 0
   m_Name: CoffeeTable_Key
   m_TagString: Untagged
@@ -326,7 +343,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -5.549988, y: 1.5800171}
+  m_AnchoredPosition: {x: -5.5200195, y: 1.0599976}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &178078048
@@ -363,7 +380,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: 0.2}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -373,7 +390,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.8, y: 1.8}
+  m_Size: {x: 2.8, y: 1.2}
   m_EdgeRadius: 0
 --- !u!212 &178078049
 SpriteRenderer:
@@ -421,7 +438,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 8
+  m_SortingOrder: 9
   m_Sprite: {fileID: 21300000, guid: c9d9862beac8f3d4fab2794ae4f072b2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -433,6 +450,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &178078050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 178078046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 8
+  interactionRange: 2
+  interactPrompt: {fileID: 0}
 --- !u!1 &230134234
 GameObject:
   m_ObjectHideFlags: 0
@@ -479,6 +511,93 @@ Grid:
   m_CellGap: {x: 0, y: 0, z: 0}
   m_CellLayout: 0
   m_CellSwizzle: 0
+--- !u!1 &413753360
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 413753366}
+  - component: {fileID: 413753365}
+  - component: {fileID: 413753364}
+  - component: {fileID: 413753361}
+  m_Layer: 0
+  m_Name: Room02_Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &413753361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413753360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2296260f18201b4984a6414d09dad21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DiaryCombinationHandler
+--- !u!114 &413753364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413753360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 803809505a640c4408e0712ad5b77ac0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemExaminationHandler
+--- !u!114 &413753365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413753360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 845e0799530a9e341ac68479ac6d39d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Room02_LivingRoomController
+  tv: {fileID: 1651509289}
+  rockingChair: {fileID: 653811731}
+  coffeeTable_Key: {fileID: 178078046}
+  books_Pushed: {fileID: 695383517}
+  smallKey: {fileID: 862271085}
+  tvAnimator: {fileID: 1651509293}
+  rockingChairAnimator: {fileID: 653811733}
+  tvStaticSound: {fileID: 8300000, guid: a8113b7936f70624cbad0a6d96b14ed6, type: 3}
+  rockingChairSound: {fileID: 8300000, guid: 7037244f2d502df41ac0bac01f472ef4, type: 3}
+  lullabyFragment: {fileID: 8300000, guid: 1e8420f3aadd3564dac91f5b9ea86955, type: 3}
+  bookshelfShakeSound: {fileID: 8300000, guid: 987531a1e2fb18b49bc85921a3332b30, type: 3}
+  keyRevealSound: {fileID: 8300000, guid: 2f4c65ea1c5e9da438ea6e66ee47638e, type: 3}
+  shakeIntensity: 0.1
+  shakeDuration: 0.5
+  jumpBackDistance: 1
+  jumpBackDuration: 0.3
+  emilyDialogueSound: {fileID: 0}
+--- !u!4 &413753366
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413753360}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.13977, y: 0.55219, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &447072375
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,6 +609,7 @@ GameObject:
   - component: {fileID: 447072376}
   - component: {fileID: 447072377}
   - component: {fileID: 447072378}
+  - component: {fileID: 447072379}
   m_Layer: 0
   m_Name: ToyBox
   m_TagString: Untagged
@@ -620,6 +740,21 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.5, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &447072379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 447072375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 4
+  interactionRange: 2
+  interactPrompt: {fileID: 0}
 --- !u!1 &488648830
 GameObject:
   m_ObjectHideFlags: 0
@@ -2493,7 +2628,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -5.549988, y: 1.5800171}
+  m_AnchoredPosition: {x: -5.5200195, y: 1.0599976}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &633210658
@@ -2530,7 +2665,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: 0.2}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -2540,7 +2675,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.8, y: 1.8}
+  m_Size: {x: 2.8, y: 1.2}
   m_EdgeRadius: 0
 --- !u!212 &633210659
 SpriteRenderer:
@@ -2648,7 +2783,7 @@ Animator:
   m_GameObject: {fileID: 653811731}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 1e3ab1e82a6716046b41bb3374ce3902, type: 2}
+  m_Controller: {fileID: 9100000, guid: b191dbe00fb427745abb90bd54d47d7e, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -2843,6 +2978,7 @@ GameObject:
   m_Component:
   - component: {fileID: 695383518}
   - component: {fileID: 695383519}
+  - component: {fileID: 695383520}
   m_Layer: 0
   m_Name: Books_Pushed
   m_TagString: Untagged
@@ -2927,6 +3063,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &695383520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 695383517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 0
+  interactionRange: 2
+  interactPrompt: {fileID: 0}
 --- !u!1 &862271085
 GameObject:
   m_ObjectHideFlags: 0
@@ -2937,6 +3088,8 @@ GameObject:
   m_Component:
   - component: {fileID: 862271086}
   - component: {fileID: 862271087}
+  - component: {fileID: 862271088}
+  - component: {fileID: 862271089}
   m_Layer: 0
   m_Name: SmallKey
   m_TagString: Untagged
@@ -3018,9 +3171,61 @@ SpriteRenderer:
   m_Size: {x: 2, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &862271088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 862271085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 7
+  interactionRange: 1
+  interactPrompt: {fileID: 0}
+--- !u!70 &862271089
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 862271085}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.42, y: 0.22}
+  m_Direction: 0
 --- !u!1 &876427314
 GameObject:
   m_ObjectHideFlags: 0
@@ -3196,6 +3401,7 @@ GameObject:
   - component: {fileID: 877174863}
   - component: {fileID: 877174864}
   - component: {fileID: 877174865}
+  - component: {fileID: 877174866}
   m_Layer: 0
   m_Name: Bookshelf
   m_TagString: Untagged
@@ -3326,6 +3532,21 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.2, y: 5}
   m_EdgeRadius: 0
+--- !u!114 &877174866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877174862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 2
+  interactionRange: 2
+  interactPrompt: {fileID: 0}
 --- !u!1 &939663426
 GameObject:
   m_ObjectHideFlags: 0
@@ -3337,6 +3558,7 @@ GameObject:
   - component: {fileID: 939663427}
   - component: {fileID: 939663428}
   - component: {fileID: 939663429}
+  - component: {fileID: 939663430}
   m_Layer: 0
   m_Name: Couch
   m_TagString: Untagged
@@ -3360,7 +3582,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -5.4400024, y: -1.2199707}
+  m_AnchoredPosition: {x: -5.5200195, y: -1.6599731}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!212 &939663428
@@ -3409,7 +3631,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 8
+  m_SortingOrder: 10
   m_Sprite: {fileID: 21300000, guid: e4d4746d5d60fd248965ef3119e77c27, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -3465,8 +3687,23 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 5, y: 2.5}
+  m_Size: {x: 5, y: 1.8}
   m_EdgeRadius: 0
+--- !u!114 &939663430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939663426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 5
+  interactionRange: 2
+  interactPrompt: {fileID: 0}
 --- !u!1 &1154413327
 GameObject:
   m_ObjectHideFlags: 0
@@ -6029,6 +6266,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1280327699}
   - component: {fileID: 1280327700}
+  - component: {fileID: 1280327701}
+  - component: {fileID: 1280327702}
   m_Layer: 0
   m_Name: Loose_Floorboard
   m_TagString: Untagged
@@ -6113,6 +6352,67 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1280327701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280327698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 6
+  interactionRange: 1.5
+  interactPrompt: {fileID: 0}
+--- !u!61 &1280327702
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1280327698}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.25, y: 0.25}
+    newSize: {x: 2.5, y: 5}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.25, y: 0.25}
+  m_EdgeRadius: 0
 --- !u!1 &1376765104
 GameObject:
   m_ObjectHideFlags: 0
@@ -6331,7 +6631,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -6384,6 +6684,7 @@ GameObject:
   - component: {fileID: 1396615900}
   - component: {fileID: 1396615901}
   - component: {fileID: 1396615902}
+  - component: {fileID: 1396615903}
   m_Layer: 0
   m_Name: Frame_1
   m_TagString: Untagged
@@ -6514,6 +6815,21 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2, y: 1.5}
   m_EdgeRadius: 0
+--- !u!114 &1396615903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1396615899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 1
+  interactionRange: 2.5
+  interactPrompt: {fileID: 0}
 --- !u!1 &1651509289
 GameObject:
   m_ObjectHideFlags: 0
@@ -6525,6 +6841,8 @@ GameObject:
   - component: {fileID: 1651509290}
   - component: {fileID: 1651509291}
   - component: {fileID: 1651509292}
+  - component: {fileID: 1651509293}
+  - component: {fileID: 1651509294}
   m_Layer: 0
   m_Name: TV
   m_TagString: Untagged
@@ -6603,7 +6921,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.5, y: 5}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -6648,13 +6966,50 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 2, y: 2}
-    newSize: {x: 2.5, y: 5}
+    newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   m_Size: {x: 1.8, y: 1.5}
   m_EdgeRadius: 0
+--- !u!95 &1651509293
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651509289}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: f0247010ee5c9d9419746cdc711fc970, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1651509294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651509289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 0
+  interactionRange: 2.5
+  interactPrompt: {fileID: 0}
 --- !u!1 &1760041725
 GameObject:
   m_ObjectHideFlags: 0
@@ -6726,7 +7081,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: 0.2}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -6736,7 +7091,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.8, y: 1.8}
+  m_Size: {x: 2.8, y: 1.2}
   m_EdgeRadius: 0
 --- !u!212 &1760041728
 SpriteRenderer:
@@ -6784,7 +7139,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 8
+  m_SortingOrder: 7
   m_Sprite: {fileID: 21300000, guid: 349d8ca2d9b17684299dc41744a22b82, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -6998,6 +7353,7 @@ GameObject:
   - component: {fileID: 2134432713}
   - component: {fileID: 2134432714}
   - component: {fileID: 2134432715}
+  - component: {fileID: 2134432716}
   m_Layer: 0
   m_Name: Frame_2
   m_TagString: Untagged
@@ -7128,6 +7484,21 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2, y: 1.5}
   m_EdgeRadius: 0
+--- !u!114 &2134432716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2134432712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
+  type: 1
+  interactionRange: 2.5
+  interactPrompt: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -7135,5 +7506,6 @@ SceneRoots:
   - {fileID: 1159376201}
   - {fileID: 1831027689}
   - {fileID: 1202173653}
+  - {fileID: 413753366}
   - {fileID: 132711426}
   - {fileID: 1377504228}
