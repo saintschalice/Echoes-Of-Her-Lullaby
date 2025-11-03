@@ -61,6 +61,7 @@ public class DiaryReaderUI : MonoBehaviour
 
         DisplayPage();
         DisablePlayerControls();
+        InventoryManager.Instance.CloseInventoryUI();
     }
 
     // ------------------------------
@@ -73,6 +74,8 @@ public class DiaryReaderUI : MonoBehaviour
 
         EnablePlayerControls();
         currentContent = null;
+
+        InventoryManager.Instance?.NotifyActionEnded();
     }
 
     public void CloseDiary() => CloseReader(); // alias

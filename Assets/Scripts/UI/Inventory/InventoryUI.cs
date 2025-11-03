@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -25,7 +25,7 @@ public class InventoryUI : MonoBehaviour
     private List<InventorySlot> slots = new List<InventorySlot>();
     private InventoryManager inventoryManager;
     private bool isOpen = false;
-    private bool hasNotifiedTutorial = false; // NEW: Track tutorial notification
+    private bool hasNotifiedTutorial = false;
 
     void Start()
     {
@@ -73,7 +73,7 @@ public class InventoryUI : MonoBehaviour
 
         SetupScrollRect();
 
-        RectTransform panelRect = inventoryPanel.GetComponent<RectTransform>();
+        /* RectTransform panelRect = inventoryPanel.GetComponent<RectTransform>();
         if (panelRect != null)
         {
             panelRect.anchorMin = new Vector2(0.5f, 0f);
@@ -85,7 +85,7 @@ public class InventoryUI : MonoBehaviour
             {
                 panelRect.sizeDelta = new Vector2(400, 80);
             }
-        }
+        } */
     }
 
     void SetupScrollRect()
@@ -97,6 +97,7 @@ public class InventoryUI : MonoBehaviour
             return;
         }
 
+        // Ensure the slotParent (your "Content" object) is assigned
         if (scrollRect.content == null || scrollRect.content != slotParent)
         {
             RectTransform slotParentRect = slotParent.GetComponent<RectTransform>();
@@ -106,24 +107,14 @@ public class InventoryUI : MonoBehaviour
             }
         }
 
-        scrollRect.horizontal = true;
-        scrollRect.vertical = false;
+        // --- The GridLayoutGroup and a ContentSizeFitter will handle all layouting. ---
+        // We just ensure the scroll direction is correct.
+
+        scrollRect.horizontal = true; // Allow horizontal scrolling
+        scrollRect.vertical = false;  // Disable vertical scrolling
         scrollRect.movementType = ScrollRect.MovementType.Clamped;
 
-        if (scrollRect.content != null)
-        {
-            HorizontalLayoutGroup layout = slotParent.GetComponent<HorizontalLayoutGroup>();
-            float spacing = layout != null ? layout.spacing : 5f;
-            float slotWidth = 60f;
-            float contentWidth = (maxSlots * slotWidth) + ((maxSlots - 1) * spacing);
-
-            scrollRect.content.anchorMin = new Vector2(0, 0);
-            scrollRect.content.anchorMax = new Vector2(0, 1);
-            scrollRect.content.pivot = new Vector2(0, 0.5f);
-            scrollRect.content.anchoredPosition = new Vector2(0, 0);
-            scrollRect.content.sizeDelta = new Vector2(contentWidth, 0);
-        }
-
+        // Ensure the viewport has a mask
         Transform viewport = scrollRect.transform.Find("Viewport");
         if (viewport != null)
         {
@@ -132,9 +123,12 @@ public class InventoryUI : MonoBehaviour
 
             if (mask == null && rectMask == null)
             {
+                // Add a mask if one doesn't exist, otherwise scrolling won't look right
                 viewport.gameObject.AddComponent<RectMask2D>();
             }
         }
+
+        Debug.Log("[InventoryUI] ScrollRect configured for GridLayout.");
     }
 
     void CreateSlots()
@@ -164,12 +158,6 @@ public class InventoryUI : MonoBehaviour
             if (slot != null)
             {
                 slots.Add(slot);
-
-                RectTransform slotRect = slotObj.GetComponent<RectTransform>();
-                if (slotRect != null)
-                {
-                    slotRect.sizeDelta = new Vector2(60, 60);
-                }
             }
             else
             {
@@ -205,7 +193,6 @@ public class InventoryUI : MonoBehaviour
         SetVisible(isOpen);
         RefreshInventory();
 
-        // NEW: Notify tutorial when inventory is opened (Step 4 completion)
         if (isOpen && !hasNotifiedTutorial && TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnInventoryOpened();
@@ -217,19 +204,16 @@ public class InventoryUI : MonoBehaviour
 
     bool ShouldBlockInventory()
     {
-        // Block if dialogue is active
         if (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             return true;
         }
 
-        // Block if pause menu is open
         if (PauseMenuManager.Instance != null && PauseMenuManager.Instance.IsPaused())
         {
             return true;
         }
 
-        // Block if save/load menu is open
         if (SaveUIManager.Instance != null && SaveUIManager.Instance.saveLoadPanel != null
             && SaveUIManager.Instance.saveLoadPanel.activeSelf)
         {
@@ -239,7 +223,6 @@ public class InventoryUI : MonoBehaviour
         return false;
     }
 
-    // NEW: Force close inventory (called by other systems)
     public void ForceCloseInventory()
     {
         if (isOpen)
@@ -257,7 +240,6 @@ public class InventoryUI : MonoBehaviour
         SetVisible(true);
         RefreshInventory();
 
-        // NEW: Notify tutorial
         if (!hasNotifiedTutorial && TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnInventoryOpened();
@@ -328,6 +310,7 @@ public class InventoryUI : MonoBehaviour
         RefreshInventory();
     }
 
+    // ✅ FIXED: Tooltip stays where you positioned it in Unity
     public void ShowItemTooltip(InventoryItem item, Vector3 position)
     {
         if (tooltipPanel == null || item == null) return;
@@ -338,13 +321,10 @@ public class InventoryUI : MonoBehaviour
         if (tooltipDescription != null)
             tooltipDescription.text = item.description;
 
+        // Simply show the tooltip - it will appear where you positioned it in Unity
         tooltipPanel.SetActive(true);
 
-        RectTransform tooltipRect = tooltipPanel.GetComponent<RectTransform>();
-        if (tooltipRect != null)
-        {
-            tooltipRect.position = position + Vector3.up * 180;
-        }
+        // No position changes - the tooltip stays exactly where you put it!
     }
 
     public void HideItemTooltip()

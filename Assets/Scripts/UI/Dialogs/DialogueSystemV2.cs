@@ -229,6 +229,8 @@ public class DialogueSystemV2 : MonoBehaviour
             return;
         }
 
+        InventoryManager.Instance?.NotifyActionStarted();
+
         // Notify UIStateManager
         if (UIStateManager.Instance != null)
         {
@@ -532,6 +534,7 @@ public class DialogueSystemV2 : MonoBehaviour
         }
 
         OnDialogueEnded?.Invoke();
+        InventoryManager.Instance?.NotifyActionEnded();
     }
 
     public bool IsDialogueActive()

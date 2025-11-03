@@ -64,30 +64,21 @@ public class JoystickPlayerController : MonoBehaviour
 
     void HandleMovement()
     {
+        // D-pad already gives us pure cardinal directions (1,0), (0,1), (-1,0), (0,-1)
         Vector2 moveDirection = joystick.Direction();
-        Vector2 cardinalDirection = Vector2.zero;
-        bool isMoving = moveDirection.magnitude > 0.1f;
-
-        if (isMoving)
-        {
-            if (Mathf.Abs(moveDirection.x) > Mathf.Abs(moveDirection.y))
-            {
-                cardinalDirection = moveDirection.x > 0 ? Vector2.right : Vector2.left;
-            }
-            else
-            {
-                cardinalDirection = moveDirection.y > 0 ? Vector2.up : Vector2.down;
-            }
-        }
+        
+        Debug.Log($"[PlayerController] moveDirection: {moveDirection}, magnitude: {moveDirection.magnitude}");
 
         if (usePhysics && rb != null)
         {
-            rb.linearVelocity = cardinalDirection * moveSpeed;
+            rb.linearVelocity = moveDirection * moveSpeed;
+            Debug.Log($"[PlayerController] Setting velocity: {rb.linearVelocity}");
         }
         else
         {
-            Vector3 movement = new Vector3(cardinalDirection.x, cardinalDirection.y, 0) * moveSpeed * Time.deltaTime;
+            Vector3 movement = new Vector3(moveDirection.x, moveDirection.y, 0) * moveSpeed * Time.deltaTime;
             transform.Translate(movement);
+            Debug.Log($"[PlayerController] Translating: {movement}");
         }
     }
 
@@ -97,23 +88,13 @@ public class JoystickPlayerController : MonoBehaviour
 
         Vector2 moveDirection = joystick.Direction();
         bool isMoving = moveDirection.magnitude > 0.1f;
-        Vector2 cardinalDirection = Vector2.zero;
 
         if (isMoving)
         {
-            if (Mathf.Abs(moveDirection.x) > Mathf.Abs(moveDirection.y))
-            {
-                cardinalDirection = moveDirection.x > 0 ? Vector2.right : Vector2.left;
-            }
-            else
-            {
-                cardinalDirection = moveDirection.y > 0 ? Vector2.up : Vector2.down;
-            }
-
-            lastDirection = cardinalDirection;
+            lastDirection = moveDirection;
         }
 
-        Vector2 animDirection = isMoving ? cardinalDirection : lastDirection;
+        Vector2 animDirection = isMoving ? moveDirection : lastDirection;
 
         animator.SetBool("isWalking", isMoving);
         animator.SetFloat("InputX", animDirection.x);

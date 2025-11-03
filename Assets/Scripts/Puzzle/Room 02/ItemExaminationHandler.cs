@@ -160,7 +160,7 @@ public class ItemExaminationHandler : MonoBehaviour
             return;
         }
 
-        // ✅ FIX: Check if player already has winding key OR if music box is already complete
+        // FIX: Check if player already has winding key OR if music box is already complete
         bool hasWindingKey = (SaveSystem.Instance != null && SaveSystem.Instance.HasItem("winding_key"))
                              || (InventoryManager.Instance != null && InventoryManager.Instance.HasItem("winding_key"));
 
@@ -252,6 +252,8 @@ public class ItemExaminationHandler : MonoBehaviour
         {
             DialogueSystemV2.Instance?.StartDialogue("A small winding key. It might fit into something.", "Lisa");
         }
+
+        InventoryManager.Instance.CloseInventoryUI();
     }
 
     System.Collections.IEnumerator HandleWindingKeyAfterDialogue()
@@ -289,8 +291,11 @@ public class ItemExaminationHandler : MonoBehaviour
             () => {
                 DialogueSystemV2.Instance?.StartDialogue("I'll keep them separate for now.", "Lisa");
                 // Inventory stays open naturally
+                InventoryManager.Instance.CloseInventoryUI();
             }
-            }
+
+            } 
+
         );
 
         Debug.Log("[ItemExamination] Showing combine choice");

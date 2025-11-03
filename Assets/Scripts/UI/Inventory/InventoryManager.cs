@@ -30,6 +30,8 @@ public class InventoryManager : MonoBehaviour
 
     public static InventoryManager Instance { get; private set; }
 
+    private bool wasInventoryOpenBeforeAction = false;
+
     void Awake()
     {
         if (Instance == null)
@@ -62,6 +64,31 @@ public class InventoryManager : MonoBehaviour
         if (saveData != null && saveData.inventoryItems != null)
         {
             RefreshUI();
+        }
+    }
+
+    public void NotifyActionStarted()
+    {
+        if (inventoryUI != null && inventoryUI.IsOpen)
+        {
+            wasInventoryOpenBeforeAction = true;
+            inventoryUI.ForceCloseInventory();
+        }
+        else
+        {
+            wasInventoryOpenBeforeAction = false;
+        }
+    }
+
+    public void NotifyActionEnded()
+    {
+        if (wasInventoryOpenBeforeAction)
+        {
+            if (inventoryUI != null)
+            {
+                inventoryUI.OpenInventory();
+            }
+            wasInventoryOpenBeforeAction = false; // Reset flag
         }
     }
 
@@ -192,6 +219,7 @@ public class InventoryManager : MonoBehaviour
         return wasUsed;
     }
 
+
     public bool CombineItems(string itemAId, string itemBId, string resultItemId)
     {
         // Ensure both items exist
@@ -267,8 +295,12 @@ public class InventoryManager : MonoBehaviour
         return true;
     }
 
-
-    public void AddItemAndSave(string itemId)
+    public void CloseInventoryUI()
+    {
+        if (inventoryUI != null)
+            inventoryUI.ForceCloseInventory();
+    }
+public void AddItemAndSave(string itemId)
     {
         AddItem(itemId);
         if (SaveSystem.Instance != null)
@@ -283,19 +315,16 @@ public class InventoryManager : MonoBehaviour
     {
         Debug.Log("[InventoryManager] Transforming mail into letter...");
 
-        // Remove mail from inventory
+        // ... (code to remove mail, add letter) ...
         SaveSystem.Instance?.RemoveInventoryItem(MAIL_ITEM_ID);
-
-        // Add letter to inventory
         SaveSystem.Instance?.AddInventoryItem(LETTER_ITEM_ID);
-
-        // Refresh UI to show new item
         RefreshUI();
 
-        // ✅ Open the mail UI immediately
         MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
         if (mailReader != null)
         {
+            // NEW: Notify manager before opening the UI
+            NotifyActionStarted();
             mailReader.OpenMail();
         }
         else
@@ -308,7 +337,7 @@ public class InventoryManager : MonoBehaviour
 
     bool HandleItemUsage(InventoryItem item)
     {
-        // ✅ If player uses the readable letter
+        // If player uses the readable letter
         if (item.itemId == LETTER_ITEM_ID)
         {
             MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
@@ -326,6 +355,19 @@ public class InventoryManager : MonoBehaviour
             {
                 SaveSystem.Instance?.AddMemoryFragment(item.memoryFragmentId);
                 TriggerMemorySequence(item);
+                return true;
+            }
+        }
+
+        // Handle Diary (NEW)
+        if (item.itemId == "diary_complete")
+        {
+            DiaryReaderUI diaryReader = FindFirstObjectByType<DiaryReaderUI>();
+            if (diaryReader != null)
+            {
+                // NEW: Notify manager before opening the UI
+                NotifyActionStarted();
+                diaryReader.ShowDiary();
                 return true;
             }
         }

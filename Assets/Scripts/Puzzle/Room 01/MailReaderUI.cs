@@ -126,6 +126,8 @@ Break the surface to reveal what lies beneath.
         Time.timeScale = 1f;
 
         Debug.Log("[MailReader] Mail closed");
+
+        InventoryManager.Instance?.NotifyActionEnded();
     }
 
     void CheckSaveState()
