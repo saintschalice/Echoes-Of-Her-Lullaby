@@ -1,31 +1,50 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// Dynamic Diary Reader UI that is persistent across scenes.
+/// Accepts any number of pages and displays them.
+/// </summary>
 public class DiaryReaderUI : MonoBehaviour
 {
+    public static DiaryReaderUI Instance { get; private set; }
+
     [Header("UI Components")]
     public GameObject diaryPanel;
-    public Image[] diaryPageImages; // 4 image slots for diary pages
+    public Image[] diaryPageImages; // array of image slots (you can keep only the first used; we handle single-image paging)
     public Button closeButton;
     public Button nextPageButton;
     public Button previousPageButton;
     public TextMeshProUGUI pageNumberText;
-    public TextMeshProUGUI titleText; // For showing "Diary"
+    public TextMeshProUGUI titleText;
 
     [Header("Player UI References")]
-    [Tooltip("Assign your Joystick GameObject here manually.")]
-    public GameObject joystickObject;
+    public GameObject joystickObject; // optional: will be disabled when diary is open
+
+    [Header("Optional Default Pages")]
+    // If you want to seed a few pages from the inspector, add them here
+    public Sprite[] defaultPages;
+
+    private List<Sprite> currentContent = new List<Sprite>();
+    private int currentPage = 0;
     private JoystickPlayerController playerController;
 
-    [Header("Diary Page Sprites")]
-    public Sprite diaryPage1Sprite;
-    public Sprite diaryPage2Sprite;
-    public Sprite diaryPage3Sprite;
-    public Sprite diaryPage4Sprite;
-
-    private int currentPage = 0;
-    private Sprite[] currentContent;
+    void Awake()
+    {
+        // Singleton & persistence
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
 
     void Start()
     {
@@ -41,81 +60,100 @@ public class DiaryReaderUI : MonoBehaviour
         if (previousPageButton != null)
             previousPageButton.onClick.AddListener(PreviousPage);
 
-        // Cache player controller for reuse
+        // Cache player controller if present in scene
         playerController = FindFirstObjectByType<JoystickPlayerController>();
+
+        // Subscribe to global manager (if present)
+        if (GlobalDiaryManager.Instance != null)
+            GlobalDiaryManager.Instance.OnPagesChanged += OnGlobalPagesChanged;
+
+        // Seed default pages if inspector provided (optional)
+        if (defaultPages != null && defaultPages.Length > 0)
+        {
+            foreach (var s in defaultPages)
+                if (s != null) currentContent.Add(s);
+        }
     }
 
-    // ------------------------------
-    // Show full diary
-    // ------------------------------
+    void OnDestroy()
+    {
+        if (GlobalDiaryManager.Instance != null)
+            GlobalDiaryManager.Instance.OnPagesChanged -= OnGlobalPagesChanged;
+    }
+
+    void OnGlobalPagesChanged()
+    {
+        UpdatePages(GlobalDiaryManager.Instance.GetCollectedSprites());
+    }
+
+    /// <summary>
+    /// Programmatically load a set of pages into the diary UI (replaces current list).
+    /// </summary>
+    public void UpdatePages(List<Sprite> pages)
+    {
+        currentContent = pages != null ? new List<Sprite>(pages) : new List<Sprite>();
+        currentPage = Mathf.Clamp(currentPage, 0, Mathf.Max(0, currentContent.Count - 1));
+        DisplayPage();
+    }
+
     public void ShowDiary()
     {
         if (diaryPanel != null)
             diaryPanel.SetActive(true);
 
-        currentContent = new Sprite[] { diaryPage1Sprite, diaryPage2Sprite, diaryPage3Sprite, diaryPage4Sprite };
-        currentPage = 0;
+        // If GlobalDiaryManager exists, get its pages
+        if (GlobalDiaryManager.Instance != null)
+            UpdatePages(GlobalDiaryManager.Instance.GetCollectedSprites());
 
         if (titleText != null)
-            titleText.text = "Emily's Diary";
+            titleText.text = "Diary";
 
-        DisplayPage();
         DisablePlayerControls();
-        InventoryManager.Instance.CloseInventoryUI();
+        InventoryManager.Instance?.CloseInventoryUI();
     }
 
-    // ------------------------------
-    // Close reader
-    // ------------------------------
     public void CloseReader()
     {
         if (diaryPanel != null)
             diaryPanel.SetActive(false);
 
         EnablePlayerControls();
-        currentContent = null;
-
-        InventoryManager.Instance?.NotifyActionEnded();
     }
 
-    public void CloseDiary() => CloseReader(); // alias
-
-    // ------------------------------
-    // Page handling
-    // ------------------------------
     void DisplayPage()
     {
+        // hide all page images
         foreach (var pageImage in diaryPageImages)
-        {
             if (pageImage != null)
                 pageImage.gameObject.SetActive(false);
-        }
 
-        if (currentContent != null && currentPage >= 0 && currentPage < currentContent.Length)
+        if (currentContent != null && currentContent.Count > 0)
         {
+            // we use the first diaryPageImages slot to display the active page sprite
             if (diaryPageImages.Length > 0 && diaryPageImages[0] != null)
             {
                 diaryPageImages[0].gameObject.SetActive(true);
                 diaryPageImages[0].sprite = currentContent[currentPage];
+                diaryPageImages[0].SetNativeSize();
             }
         }
 
         if (pageNumberText != null)
         {
-            int totalPages = currentContent != null ? currentContent.Length : 0;
+            int totalPages = currentContent != null ? currentContent.Count : 0;
             pageNumberText.text = totalPages > 0 ? $"Page {currentPage + 1} of {totalPages}" : "";
         }
 
         if (previousPageButton != null)
             previousPageButton.interactable = currentPage > 0;
 
-        if (nextPageButton != null && currentContent != null)
-            nextPageButton.interactable = currentPage < currentContent.Length - 1;
+        if (nextPageButton != null)
+            nextPageButton.interactable = currentContent != null && currentPage < currentContent.Count - 1;
     }
 
     void NextPage()
     {
-        if (currentContent != null && currentPage < currentContent.Length - 1)
+        if (currentContent != null && currentPage < currentContent.Count - 1)
         {
             currentPage++;
             DisplayPage();
@@ -133,9 +171,6 @@ public class DiaryReaderUI : MonoBehaviour
         }
     }
 
-    // ------------------------------
-    // Player control handling
-    // ------------------------------
     void DisablePlayerControls()
     {
         if (playerController != null)
@@ -143,8 +178,6 @@ public class DiaryReaderUI : MonoBehaviour
 
         if (joystickObject != null)
             joystickObject.SetActive(false);
-        else
-            Debug.LogWarning("[DiaryReaderUI] Joystick not assigned in inspector!");
     }
 
     void EnablePlayerControls()
@@ -154,8 +187,6 @@ public class DiaryReaderUI : MonoBehaviour
 
         if (joystickObject != null)
             joystickObject.SetActive(true);
-        else
-            Debug.LogWarning("[DiaryReaderUI] Joystick not assigned in inspector!");
     }
 
     public bool IsReaderOpen()
