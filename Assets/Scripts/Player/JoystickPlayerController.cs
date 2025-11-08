@@ -14,19 +14,26 @@ public class JoystickPlayerController : MonoBehaviour
     [Header("Joystick Reference")]
     public VirtualJoystick joystick;
 
-    private Vector2 lastDirection = Vector2.down;
+    // Variables to store input and state
+    private Vector2 moveDirection = Vector2.zero; // Stores input from Update()
+    private Vector2 lastDirection = Vector2.down; // Used for idle animation direction
 
     void Start()
     {
-        // Spawn at the correct point
-        SpawnAtSavedPoint();
-
+        // Get components
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
+        // Find joystick if not assigned
         if (joystick == null)
             joystick = FindFirstObjectByType<VirtualJoystick>();
+
+        // Run your custom spawn logic
+        SpawnAtSavedPoint();
+
+        // **IMPORTANT INSPECTOR CHECK:** // 1. Ensure Rigidbody2D Collision Detection is set to 'Continuous'.
+        // 2. Ensure Rigidbody2D Interpolate is set to 'Interpolate'.
     }
 
     void SpawnAtSavedPoint()
@@ -56,27 +63,36 @@ public class JoystickPlayerController : MonoBehaviour
         }
     }
 
+    // Runs once per frame (Variable framerate). Used for input and visual logic.
     void Update()
     {
-        HandleMovement();
+        // **1. Handle Input (Store the direction for FixedUpdate)**
+        moveDirection = joystick.Direction();
+
+        // **2. Handle Visuals**
         HandleAnimation();
+    }
+
+    // Runs at a fixed interval. Used for all physics logic.
+    void FixedUpdate()
+    {
+        // **3. Handle Physics Movement**
+        HandleMovement();
     }
 
     void HandleMovement()
     {
-        // D-pad already gives us pure cardinal directions (1,0), (0,1), (-1,0), (0,-1)
-        Vector2 moveDirection = joystick.Direction();
-        
-        Debug.Log($"[PlayerController] moveDirection: {moveDirection}, magnitude: {moveDirection.magnitude}");
-
+        // This is now in FixedUpdate, using the 'moveDirection' stored in Update().
         if (usePhysics && rb != null)
         {
+            // Set the linear velocity. This is the correct, non-obsolete way for a physics body.
             rb.linearVelocity = moveDirection * moveSpeed;
-            Debug.Log($"[PlayerController] Setting velocity: {rb.linearVelocity}");
+            Debug.Log($"[PlayerController] Setting linearVelocity: {rb.linearVelocity}");
         }
         else
         {
-            Vector3 movement = new Vector3(moveDirection.x, moveDirection.y, 0) * moveSpeed * Time.deltaTime;
+            // Non-physics movement, using Time.fixedDeltaTime for consistency in FixedUpdate
+            Vector3 movement = new Vector3(moveDirection.x, moveDirection.y, 0) * moveSpeed * Time.fixedDeltaTime;
             transform.Translate(movement);
             Debug.Log($"[PlayerController] Translating: {movement}");
         }
@@ -86,7 +102,6 @@ public class JoystickPlayerController : MonoBehaviour
     {
         if (animator == null) return;
 
-        Vector2 moveDirection = joystick.Direction();
         bool isMoving = moveDirection.magnitude > 0.1f;
 
         if (isMoving)
@@ -103,11 +118,11 @@ public class JoystickPlayerController : MonoBehaviour
 
     public bool IsMoving()
     {
-        return joystick.Direction().magnitude > 0.1f;
+        return moveDirection.magnitude > 0.1f;
     }
 
     public Vector2 GetMovementDirection()
     {
-        return joystick.Direction();
+        return moveDirection;
     }
 }

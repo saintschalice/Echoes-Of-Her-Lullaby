@@ -155,7 +155,7 @@ public class TutorialManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         ShowTutorialStep(
-            "Welcome to Echoes of Her Lullaby!\n\nUse the joystick to move around.\nTap objects to examine them.",
+            "Use the D-pad to move around.\nTap objects to examine them.",
             joystickHighlight
         );
 
