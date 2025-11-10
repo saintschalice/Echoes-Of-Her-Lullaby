@@ -6329,9 +6329,9 @@ MonoBehaviour:
   doorID: Door_Foyer_To_LivingRoom
   startsLocked: 1
   requiredItemId: house_key
-  consumeKeyOnUse: 0
+  consumeKeyOnUse: 1
   unlockPermanently: 1
-  targetSpawnPointID: Main
+  targetSpawnPointID: LivingRoom
   spawnOffset: {x: 0, y: 0, z: 0}
   interactionRadius: 2.2
   requiredTag: Player

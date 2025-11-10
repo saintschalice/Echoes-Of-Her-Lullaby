@@ -1,11 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// Dynamic Diary Reader UI that is persistent across scenes.
-/// Accepts any number of pages and displays them.
+/// Persistent diary UI. Displays pages from GlobalDiaryManager (not from inventory).
+/// After closing, if the knowledge flag isn't set, triggers a quiz. Wrong answers loop:
+/// "Ah. Let's try again." then automatically re-open the diary.
 /// </summary>
 public class DiaryReaderUI : MonoBehaviour
 {
@@ -13,7 +15,7 @@ public class DiaryReaderUI : MonoBehaviour
 
     [Header("UI Components")]
     public GameObject diaryPanel;
-    public Image[] diaryPageImages; // array of image slots (you can keep only the first used; we handle single-image paging)
+    public Image diaryPageImage;
     public Button closeButton;
     public Button nextPageButton;
     public Button previousPageButton;
@@ -21,23 +23,31 @@ public class DiaryReaderUI : MonoBehaviour
     public TextMeshProUGUI titleText;
 
     [Header("Player UI References")]
-    public GameObject joystickObject; // optional: will be disabled when diary is open
+    public GameObject joystickObject;
 
-    [Header("Optional Default Pages")]
-    // If you want to seed a few pages from the inspector, add them here
-    public Sprite[] defaultPages;
+    [Header("Empty State")]
+    public string emptyDiaryMessage = "No diary pages collected yet.";
+    public TextMeshProUGUI emptyStateText;
 
-    private List<Sprite> currentContent = new List<Sprite>();
-    private int currentPage = 0;
+    [Header("Display Settings")]
+    public string diaryTitle = "Diary Entries";
+
+    private List<Sprite> currentPages = new List<Sprite>();
+    private int currentPageIndex = 0;
     private JoystickPlayerController playerController;
+    private bool isInitialized = false;
+
+    // quiz flags
+    private const string FLAG_UNDERSTOOD = "understood_snuggles_clue";
+    private const string FLAG_QUIZ_DONE = "understood_snuggles_clue_quiz_done";
 
     void Awake()
     {
-        // Singleton & persistence
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            Debug.Log("[DiaryReaderUI] Instance created and set to persist");
         }
         else if (Instance != this)
         {
@@ -48,11 +58,22 @@ public class DiaryReaderUI : MonoBehaviour
 
     void Start()
     {
+        InitializeUI();
+    }
+
+    void OnEnable() { SubscribeToEvents(); }
+    void OnDisable() { UnsubscribeFromEvents(); }
+    void OnDestroy() { UnsubscribeFromEvents(); }
+
+    void InitializeUI()
+    {
+        if (isInitialized) return;
+
         if (diaryPanel != null)
             diaryPanel.SetActive(false);
 
         if (closeButton != null)
-            closeButton.onClick.AddListener(CloseReader);
+            closeButton.onClick.AddListener(CloseDiary);
 
         if (nextPageButton != null)
             nextPageButton.onClick.AddListener(NextPage);
@@ -60,137 +81,223 @@ public class DiaryReaderUI : MonoBehaviour
         if (previousPageButton != null)
             previousPageButton.onClick.AddListener(PreviousPage);
 
-        // Cache player controller if present in scene
-        playerController = FindFirstObjectByType<JoystickPlayerController>();
+        SubscribeToEvents();
+        RefreshPages();
 
-        // Subscribe to global manager (if present)
+        isInitialized = true;
+    }
+
+    void SubscribeToEvents()
+    {
         if (GlobalDiaryManager.Instance != null)
-            GlobalDiaryManager.Instance.OnPagesChanged += OnGlobalPagesChanged;
-
-        // Seed default pages if inspector provided (optional)
-        if (defaultPages != null && defaultPages.Length > 0)
         {
-            foreach (var s in defaultPages)
-                if (s != null) currentContent.Add(s);
+            GlobalDiaryManager.Instance.OnPagesChanged -= OnPagesChanged;
+            GlobalDiaryManager.Instance.OnPagesChanged += OnPagesChanged;
         }
     }
 
-    void OnDestroy()
+    void UnsubscribeFromEvents()
     {
         if (GlobalDiaryManager.Instance != null)
-            GlobalDiaryManager.Instance.OnPagesChanged -= OnGlobalPagesChanged;
+            GlobalDiaryManager.Instance.OnPagesChanged -= OnPagesChanged;
     }
 
-    void OnGlobalPagesChanged()
+    void OnPagesChanged()
     {
-        UpdatePages(GlobalDiaryManager.Instance.GetCollectedSprites());
+        RefreshPages();
     }
 
-    /// <summary>
-    /// Programmatically load a set of pages into the diary UI (replaces current list).
-    /// </summary>
-    public void UpdatePages(List<Sprite> pages)
+    void RefreshPages()
     {
-        currentContent = pages != null ? new List<Sprite>(pages) : new List<Sprite>();
-        currentPage = Mathf.Clamp(currentPage, 0, Mathf.Max(0, currentContent.Count - 1));
-        DisplayPage();
+        if (GlobalDiaryManager.Instance != null)
+        {
+            currentPages = GlobalDiaryManager.Instance.GetCollectedSprites();
+            currentPageIndex = Mathf.Clamp(currentPageIndex, 0, Mathf.Max(0, currentPages.Count - 1));
+        }
+        else
+        {
+            currentPages.Clear();
+        }
+
+        if (diaryPanel != null && diaryPanel.activeSelf)
+            DisplayCurrentPage();
     }
 
     public void ShowDiary()
     {
+        if (!isInitialized) InitializeUI();
+
+        RefreshPages();
+
         if (diaryPanel != null)
             diaryPanel.SetActive(true);
 
-        // If GlobalDiaryManager exists, get its pages
-        if (GlobalDiaryManager.Instance != null)
-            UpdatePages(GlobalDiaryManager.Instance.GetCollectedSprites());
-
         if (titleText != null)
-            titleText.text = "Diary";
+            titleText.text = diaryTitle;
 
+        DisplayCurrentPage();
         DisablePlayerControls();
-        InventoryManager.Instance?.CloseInventoryUI();
+
+        if (InventoryManager.Instance != null)
+            InventoryManager.Instance.CloseInventoryUI();
     }
 
-    public void CloseReader()
+    public void CloseDiary()
     {
         if (diaryPanel != null)
             diaryPanel.SetActive(false);
 
         EnablePlayerControls();
+        StartCoroutine(PostDiaryQuizIfNeeded());
     }
 
-    void DisplayPage()
+    void DisplayCurrentPage()
     {
-        // hide all page images
-        foreach (var pageImage in diaryPageImages)
-            if (pageImage != null)
-                pageImage.gameObject.SetActive(false);
+        bool hasPages = currentPages != null && currentPages.Count > 0;
 
-        if (currentContent != null && currentContent.Count > 0)
+        if (emptyStateText != null)
         {
-            // we use the first diaryPageImages slot to display the active page sprite
-            if (diaryPageImages.Length > 0 && diaryPageImages[0] != null)
+            emptyStateText.gameObject.SetActive(!hasPages);
+            if (!hasPages) emptyStateText.text = emptyDiaryMessage;
+        }
+
+        if (diaryPageImage != null)
+        {
+            diaryPageImage.gameObject.SetActive(hasPages);
+            if (hasPages)
             {
-                diaryPageImages[0].gameObject.SetActive(true);
-                diaryPageImages[0].sprite = currentContent[currentPage];
-                diaryPageImages[0].SetNativeSize();
+                diaryPageImage.sprite = currentPages[currentPageIndex];
+                diaryPageImage.SetNativeSize();
             }
         }
 
         if (pageNumberText != null)
         {
-            int totalPages = currentContent != null ? currentContent.Count : 0;
-            pageNumberText.text = totalPages > 0 ? $"Page {currentPage + 1} of {totalPages}" : "";
+            pageNumberText.text = hasPages ? $"Page {currentPageIndex + 1} of {currentPages.Count}" : "";
         }
 
         if (previousPageButton != null)
-            previousPageButton.interactable = currentPage > 0;
+            previousPageButton.interactable = hasPages && currentPageIndex > 0;
 
         if (nextPageButton != null)
-            nextPageButton.interactable = currentContent != null && currentPage < currentContent.Count - 1;
+            nextPageButton.interactable = hasPages && currentPageIndex < currentPages.Count - 1;
     }
 
     void NextPage()
     {
-        if (currentContent != null && currentPage < currentContent.Count - 1)
+        if (currentPages != null && currentPageIndex < currentPages.Count - 1)
         {
-            currentPage++;
-            DisplayPage();
-            AudioManager.Instance?.PlaySFX(null);
+            currentPageIndex++;
+            DisplayCurrentPage();
         }
     }
 
     void PreviousPage()
     {
-        if (currentPage > 0)
+        if (currentPageIndex > 0)
         {
-            currentPage--;
-            DisplayPage();
-            AudioManager.Instance?.PlaySFX(null);
+            currentPageIndex--;
+            DisplayCurrentPage();
         }
     }
 
     void DisablePlayerControls()
     {
-        if (playerController != null)
-            playerController.enabled = false;
+        if (playerController == null)
+            playerController = FindFirstObjectByType<JoystickPlayerController>();
 
-        if (joystickObject != null)
-            joystickObject.SetActive(false);
+        if (playerController != null) playerController.enabled = false;
+        if (joystickObject != null) joystickObject.SetActive(false);
     }
 
     void EnablePlayerControls()
     {
-        if (playerController != null)
-            playerController.enabled = true;
+        if (playerController == null)
+            playerController = FindFirstObjectByType<JoystickPlayerController>();
 
-        if (joystickObject != null)
-            joystickObject.SetActive(true);
+        if (playerController != null) playerController.enabled = true;
+        if (joystickObject != null) joystickObject.SetActive(true);
     }
 
     public bool IsReaderOpen()
     {
         return diaryPanel != null && diaryPanel.activeSelf;
     }
+
+    public void OpenDiaryFromMenu()
+    {
+        ShowDiary();
+    }
+
+    IEnumerator PostDiaryQuizIfNeeded()
+    {
+        // Only if player has the combined diary and hasn't passed the quiz yet
+        if (!SaveSystem.Instance.HasItem("diary_entries")) yield break;
+        if (SaveSystem.Instance.WasDialogueTriggered(FLAG_QUIZ_DONE)) yield break;
+
+        yield return null; // small delay for UI settle
+
+        DialogueSystemV2.Instance?.StartDialogue(
+            "I think I read something about this teddy bear in the diary entry... Which diary entry was it referring to?",
+            "Lisa"
+        );
+
+        // Wait for this line to display
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            yield return null;
+
+        ShowQuiz();
+    }
+
+    void ShowQuiz()
+    {
+        DialogueSystemV2.Instance?.ShowChoices(
+            new string[]
+            {
+                "The teddy bear.",
+                "The music box.",
+                "The photograph."
+            },
+            new System.Action[]
+            {
+                // Correct
+                () =>
+                {
+                    SaveSystem.Instance.TriggerDialogue(FLAG_UNDERSTOOD);
+                    SaveSystem.Instance.TriggerDialogue(FLAG_QUIZ_DONE);
+                    SaveSystem.Instance.OnStoryProgressMade();
+
+                    DialogueSystemV2.Instance?.StartDialogue(
+                        "Right... that entry was pointing me toward the teddy bear.",
+                        "Lisa"
+                    );
+                },
+                // Wrong
+                () => RetryAfterWrong(),
+                // Wrong
+                () => RetryAfterWrong()
+            }
+        );
+    }
+
+    void RetryAfterWrong()
+    {
+        DialogueSystemV2.Instance?.StartDialogue("Ah. Let's try again.", "Lisa");
+        StartCoroutine(ReopenAfterLine());
+    }
+
+    IEnumerator ReopenAfterLine()
+    {
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            yield return null;
+
+        ShowDiary(); // reopen the diary so player can read again
+    }
+
+    // Debug helpers
+    [ContextMenu("Test: Open Diary")]
+    void TestOpenDiary() => ShowDiary();
+
+    [ContextMenu("Test: Close Diary")]
+    void TestCloseDiary() => CloseDiary();
 }

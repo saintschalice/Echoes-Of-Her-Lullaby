@@ -125,4 +125,19 @@ public class JoystickPlayerController : MonoBehaviour
     {
         return moveDirection;
     }
+
+    public Vector2 GetFacingDirection()
+    {
+        if (moveDirection.magnitude > 0.1f)
+            return moveDirection.normalized;
+        return lastDirection.normalized;
+    }
+
+    public Vector2 GetFacingDirectionFromAnimator()
+    {
+        if (animator == null) return lastDirection;
+        float x = animator.GetFloat("InputX");
+        float y = animator.GetFloat("InputY");
+        return new Vector2(x, y).normalized;
+    }
 }

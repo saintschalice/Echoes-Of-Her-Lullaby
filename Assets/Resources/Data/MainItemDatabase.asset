@@ -99,7 +99,7 @@ MonoBehaviour:
     description: '"Mr. snuggles likes to steal things from me... He always steals
       my winding key and I can''t play my music"'
     itemIcon: {fileID: 21300000, guid: f5b72a6715f6a664199c896b781d1b48, type: 3}
-    isKeyItem: 1
+    isKeyItem: 0
     isUsable: 1
     isConsumable: 0
     triggersMemory: 0
@@ -110,7 +110,7 @@ MonoBehaviour:
     description: '"Sometimes the house gets really quiet and cold. That''s when my
       friend is thinking hard about something important."'
     itemIcon: {fileID: 21300000, guid: 15dcb37a4f3127041b961afec31cf29d, type: 3}
-    isKeyItem: 1
+    isKeyItem: 0
     isUsable: 1
     isConsumable: 0
     triggersMemory: 0
@@ -121,7 +121,7 @@ MonoBehaviour:
     description: '"I asked my friend why she looks so sad sometimes. She just hummed
       my favorite song instead of answering."'
     itemIcon: {fileID: 21300000, guid: 22ea88f59388b02479efafa52efaa444, type: 3}
-    isKeyItem: 1
+    isKeyItem: 0
     isUsable: 1
     isConsumable: 0
     triggersMemory: 0
@@ -132,18 +132,18 @@ MonoBehaviour:
     description: '"My friend doesn''t like it when people are loud. She gets upset
       and makes things move around the room."'
     itemIcon: {fileID: 21300000, guid: 55ae862f6e02086419be9423a077b346, type: 3}
-    isKeyItem: 1
+    isKeyItem: 0
     isUsable: 1
     isConsumable: 0
     triggersMemory: 0
     memoryFragmentId: 
     requiredForPuzzle: 
-  - itemId: diary_complete
-    itemName: Complete Diary Entry
-    description: All four diary pages combined.
+  - itemId: diary_entries
+    itemName: Diary Entries
+    description: All diary pages combined.
     itemIcon: {fileID: 21300000, guid: f5b72a6715f6a664199c896b781d1b48, type: 3}
-    isKeyItem: 1
-    isUsable: 1
+    isKeyItem: 0
+    isUsable: 0
     isConsumable: 0
     triggersMemory: 0
     memoryFragmentId: 

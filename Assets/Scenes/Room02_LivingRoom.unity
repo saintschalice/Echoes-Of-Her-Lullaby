@@ -318,7 +318,8 @@ GameObject:
   m_Component:
   - component: {fileID: 158220562}
   - component: {fileID: 158220561}
-  - component: {fileID: 158220559}
+  - component: {fileID: 158220563}
+  - component: {fileID: 158220564}
   m_Layer: 0
   m_Name: Rug
   m_TagString: Untagged
@@ -326,21 +327,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &158220559
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 158220558}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
-  type: 2
-  interactionRange: 2
-  interactPrompt: {fileID: 0}
 --- !u!212 &158220561
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -415,9 +401,87 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -11.52, y: -2.74}
+  m_AnchoredPosition: {x: -11.49, y: -2.01}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
+--- !u!61 &158220563
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 158220558}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: -0.3}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 2, y: 1}
+    newSize: {x: 2.5, y: 5}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 2, y: 0.5}
+  m_EdgeRadius: 0
+--- !u!114 &158220564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 158220558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
+  targetSceneName: Room03_Hallway
+  doorID: Door_LivingRoom_To_Hallway
+  startsLocked: 1
+  requiredItemId: hallway_door_key
+  consumeKeyOnUse: 1
+  unlockPermanently: 1
+  targetSpawnPointID: Hallway
+  spawnOffset: {x: 0, y: 0, z: 0}
+  interactionRadius: 1.5
+  requiredTag: Player
+  usePhysicalCollider: 1
+  lockedIndicator: {fileID: 0}
+  interactionPrompt: {fileID: 0}
+  lockedDoorSound: {fileID: 0}
+  unlockDoorSound: {fileID: 0}
+  doorOpenSound: {fileID: 0}
+  doorAnimator: {fileID: 0}
+  openTrigger: Open
+  transitionDelay: 1.5
+  useFadeTransition: 1
 --- !u!1 &178078046
 GameObject:
   m_ObjectHideFlags: 0
@@ -573,7 +637,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
   type: 8
-  interactionRange: 2
+  interactionRange: 3
   interactPrompt: {fileID: 0}
 --- !u!1 &230134234
 GameObject:
@@ -631,7 +695,6 @@ GameObject:
   m_Component:
   - component: {fileID: 281405298}
   - component: {fileID: 281405297}
-  - component: {fileID: 281405295}
   m_Layer: 0
   m_Name: Rug (1)
   m_TagString: Untagged
@@ -639,21 +702,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &281405295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 281405294}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
-  type: 2
-  interactionRange: 2
-  interactPrompt: {fileID: 0}
 --- !u!212 &281405297
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -798,6 +846,9 @@ MonoBehaviour:
   lullabyFragment: {fileID: 8300000, guid: 1e8420f3aadd3564dac91f5b9ea86955, type: 3}
   bookshelfShakeSound: {fileID: 8300000, guid: 987531a1e2fb18b49bc85921a3332b30, type: 3}
   keyRevealSound: {fileID: 8300000, guid: 2f4c65ea1c5e9da438ea6e66ee47638e, type: 3}
+  tvAudioSource: {fileID: 0}
+  ghostTVAudio: {fileID: 8300000, guid: 87cd1327d7ed3f94590209e2e8e8eae5, type: 3}
+  ghostAudioDelay: 10
   shakeIntensity: 0.1
   shakeDuration: 0.5
   jumpBackDistance: 1
@@ -1668,8 +1719,8 @@ Tilemap:
   - first: {x: -13, y: -3, z: 0}
     second:
       serializedVersion: 2
-      m_TileIndex: 12
-      m_TileSpriteIndex: 12
+      m_TileIndex: 14
+      m_TileSpriteIndex: 9
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -1768,8 +1819,8 @@ Tilemap:
   - first: {x: -13, y: -2, z: 0}
     second:
       serializedVersion: 2
-      m_TileIndex: 12
-      m_TileSpriteIndex: 12
+      m_TileIndex: 14
+      m_TileSpriteIndex: 9
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -2711,12 +2762,12 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: 990233a2e2e1a6649aa62625da95556b, type: 2}
   - m_RefCount: 1
     m_Data: {fileID: 11400000, guid: 8b5b0ca6bb396624c89c16d63f89881d, type: 2}
-  - m_RefCount: 13
+  - m_RefCount: 11
     m_Data: {fileID: 11400000, guid: ba5ae0bed6822d74f9ca1a3630d2a3cf, type: 2}
   - m_RefCount: 0
     m_Data: {fileID: 0}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
+  - m_RefCount: 2
+    m_Data: {fileID: 11400000, guid: 6fe4905be9e8e3d498a68364321ccce1, type: 2}
   m_TileSpriteArray:
   - m_RefCount: 23
     m_Data: {fileID: 1638398057, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
@@ -2736,13 +2787,13 @@ Tilemap:
     m_Data: {fileID: 1683856689, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
   - m_RefCount: 8
     m_Data: {fileID: -1416099756, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
-  - m_RefCount: 48
+  - m_RefCount: 50
     m_Data: {fileID: -2015622335, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
   - m_RefCount: 2
     m_Data: {fileID: 1104837409, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
   - m_RefCount: 0
     m_Data: {fileID: 0}
-  - m_RefCount: 13
+  - m_RefCount: 11
     m_Data: {fileID: 57527086, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
   - m_RefCount: 1
     m_Data: {fileID: 229171431, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
@@ -2828,7 +2879,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -5.5200195, y: 1.5}
+  m_AnchoredPosition: {x: -5.5200195, y: 1.3}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &633210658
@@ -3782,7 +3833,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -5.5200195, y: -1.6599731}
+  m_AnchoredPosition: {x: -5.5200195, y: -1.8}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!212 &939663428
@@ -6312,7 +6363,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoomSpawnPoint
   roomName: Room02_LivingRoom
   isDefaultSpawnPoint: 1
-  spawnPointID: Main
+  spawnPointID: LivingRoom
   matchRotation: 0
   gizmoColor: {r: 0, g: 1, b: 0, a: 1}
   gizmoRadius: 0.5
@@ -6362,13 +6413,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
-  targetSceneName: Room02_LivingRoom
+  targetSceneName: Room01_Foyer
   doorID: Door_LivingRoom_To_Foyer
   startsLocked: 0
-  requiredItemId: house_key
+  requiredItemId: 
   consumeKeyOnUse: 0
   unlockPermanently: 1
-  targetSpawnPointID: Main
+  targetSpawnPointID: FromLivingRoom
   spawnOffset: {x: 0, y: 0, z: 0}
   interactionRadius: 1.5
   requiredTag: Player
@@ -7097,7 +7148,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.8, y: 1.5}
+  m_Size: {x: 1.8, y: 1.8}
   m_EdgeRadius: 0
 --- !u!95 &1651509293
 Animator:
@@ -7134,7 +7185,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
   type: 0
-  interactionRange: 2.5
+  interactionRange: 3
   interactPrompt: {fileID: 0}
 --- !u!1 &1760041725
 GameObject:
@@ -7288,7 +7339,7 @@ GameObject:
   - component: {fileID: 1831027689}
   - component: {fileID: 1831027688}
   m_Layer: 0
-  m_Name: SpawnPoint_FromNextRoom
+  m_Name: SpawnPoint_FromHallway
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7308,7 +7359,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoomSpawnPoint
   roomName: Room02_LivingRoom
   isDefaultSpawnPoint: 0
-  spawnPointID: Main
+  spawnPointID: FromHallway
   matchRotation: 0
   gizmoColor: {r: 0, g: 1, b: 0, a: 1}
   gizmoRadius: 0.5
@@ -7321,7 +7372,7 @@ Transform:
   m_GameObject: {fileID: 1831027687}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.5, y: -2.7, z: 0}
+  m_LocalPosition: {x: -11.03, y: -1.88, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

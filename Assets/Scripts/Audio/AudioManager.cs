@@ -301,6 +301,23 @@ public class AudioManager : MonoBehaviour
     }
     #endregion
 
+    /// <summary>
+    /// Stops all currently playing sound effects (SFX) in the SFX pool.
+    /// </summary>
+    public void StopAllSFX()
+    {
+        if (sfxPool == null || sfxPool.Count == 0)
+            return;
+
+        foreach (var source in sfxPool)
+        {
+            if (source != null && source.isPlaying)
+                source.Stop();
+        }
+
+        Debug.Log("[AudioManager] Stopped all SFX.");
+    }
+
     #region Audio Fading
     // CHANGED: Made FadeAudioSource public so SceneAmbientPlayer can access it
     public System.Collections.IEnumerator FadeAudioSource(AudioSource src, float target, float time)

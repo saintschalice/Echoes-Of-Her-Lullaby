@@ -209,13 +209,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7a3911b3e21f0742a167cbca23d66bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLighting
-  baseRadius: 8
-  baseIntensity: 1.5
+  flashlightRange: 10
+  flashlightIntensity: 2
   lightColor: {r: 1, g: 0.8, b: 0.6, a: 1}
+  coneAngle: 60
+  coneOffset: 0.5
+  smoothRotation: 1
+  rotationSpeed: 10
+  snapToCardinalDirections: 0
+  enableFlicker: 1
   flickerSpeed: 3
-  radiusVariation: 0.5
-  intensityVariation: 0.3
-  playerLight: {fileID: 0}
+  flickerIntensity: 0.15
 --- !u!114 &4759680281368696899
 MonoBehaviour:
   m_ObjectHideFlags: 0
