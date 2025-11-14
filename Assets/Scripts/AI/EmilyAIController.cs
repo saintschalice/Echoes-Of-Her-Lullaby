@@ -20,6 +20,11 @@ public class EmilyAIController : MonoBehaviour
     public bool isActive = false;
     public bool debugMode = false;
 
+    [Header("Catch Settings")]
+    public float defaultCatchDelay = 0.5f;   // how long after activation before she can kill
+    [HideInInspector] public float catchEnabledTime = 0f;
+
+
     [Header("Player Reference")]
     public Transform player;
 
@@ -74,6 +79,9 @@ public class EmilyAIController : MonoBehaviour
     {
         isActive = true;
         gameObject.SetActive(true);
+        perception?.StopAllCoroutines();
+        //perception?.StartCoroutine("VisionCheckRoutine");
+        StartCoroutine(DelayedActivation());
         stateMachine?.ActivateState(EmilyState.PATROL);
         audioController?.PlayPresenceSound();
         Debug.Log("[EmilyAI] Activated");
@@ -110,4 +118,13 @@ public class EmilyAIController : MonoBehaviour
             Gizmos.DrawWireSphere(transform.position, perception.currentDetectionRadius);
         }
     }
+
+
+    IEnumerator DelayedActivation()
+    {
+        yield return new WaitForSeconds(0.2f);
+        perception?.StartCoroutine("VisionCheckRoutine");
+        stateMachine?.ActivateState(EmilyState.PATROL);
+    }
+
 }

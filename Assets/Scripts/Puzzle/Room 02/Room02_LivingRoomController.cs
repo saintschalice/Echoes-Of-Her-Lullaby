@@ -639,6 +639,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         }
     }
 
+
     IEnumerator RevealCoffeeTableKey()
     {
         if (keyRevealSound != null)

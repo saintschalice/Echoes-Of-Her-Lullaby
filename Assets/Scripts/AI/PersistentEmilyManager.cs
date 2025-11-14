@@ -14,10 +14,9 @@ public class PersistentEmilyManager : MonoBehaviour
     public GameObject emilyPrefab;
     public bool emilyIsActive = false;
 
-
     [Header("Scene Control")]
-    public string firstEmilyScene = "Room_03_Hallway";
-    public string lastEmilyScene = "Room_10_Final";
+    public string firstEmilyScene = "Room03_Hallway";
+    public string lastEmilyScene = "Room10_Final";
 
     [Header("Current Emily Reference")]
     public EmilyAIController currentEmily;
@@ -25,10 +24,15 @@ public class PersistentEmilyManager : MonoBehaviour
     [Header("Per-Scene Settings")]
     public EmilySceneConfig[] sceneConfigs;
 
-
     [Header("NavMesh Auto-Placement")]
     public bool autoPlaceOnNavMesh = true;
     public float navMeshSearchRadius = 10f;
+
+    [Header("Auto-Spawn Control")]
+    [Tooltip("When false, Emily will NOT be spawned automatically on scene load. Use PersistentEmilyManager.ActivateEmily() from triggers instead.")]
+    //public bool allowAutoSpawn = true;
+    public bool allowAutoSpawn = false;
+
 
 
 
@@ -61,34 +65,11 @@ public class PersistentEmilyManager : MonoBehaviour
     {
         Debug.Log($"[PersistentEmilyManager] Scene loaded: {scene.name}");
 
+        // Retrieve scene config, but do nothing unless player manually trigger Emily.
         var config = GetSceneConfig(scene.name);
-        if (config != null)
-        {
-            if (config.autoSpawnOnLoad)
-            {
-                ActivateEmily();   // 👈 auto-spawn on load
-            }
-        }
-
-        if (ShouldEmilyBeActive(scene.name))
-        {
-            if (!emilyIsActive)
-            {
-                SpawnEmily(scene.name);
-            }
-            else
-            {
-                ConfigureEmilyForScene(scene.name);
-            }
-        }
-        else
-        {
-            if (currentEmily != null)
-            {
-                currentEmily.gameObject.SetActive(false);
-            }
-        }
+        RemoveEmily();
     }
+
 
     bool ShouldEmilyBeActive(string sceneName)
     {
@@ -97,14 +78,14 @@ public class PersistentEmilyManager : MonoBehaviour
             return true;
         }
 
-        if (sceneName.Contains("Room_03") ||
-            sceneName.Contains("Room_04") ||
-            sceneName.Contains("Room_05") ||
-            sceneName.Contains("Room_06") ||
-            sceneName.Contains("Room_07") ||
-            sceneName.Contains("Room_08") ||
-            sceneName.Contains("Room_09") ||
-            sceneName.Contains("Room_10"))
+        if (sceneName.Contains("Room03") ||
+            sceneName.Contains("Room04") ||
+            sceneName.Contains("Room05") ||
+            sceneName.Contains("Room06") ||
+            sceneName.Contains("Room07") ||
+            sceneName.Contains("Room08") ||
+            sceneName.Contains("Room09") ||
+            sceneName.Contains("Room10"))
         {
             return true;
         }
@@ -148,9 +129,9 @@ public class PersistentEmilyManager : MonoBehaviour
         ConfigureEmilyForScene(sceneName);
 
         emilyIsActive = true;
-        currentEmily.ActivateEmily();
+        //currentEmily.ActivateEmily();
 
-        Debug.Log($"[PersistentEmilyManager] Emily spawned in {sceneName}");
+        Debug.Log($"[PersistentEmilyManager] Emily spawned in {sceneName}  (idle/inactive)");
     }
 
     void ConfigureEmilyForScene(string sceneName)
@@ -292,17 +273,34 @@ public class PersistentEmilyManager : MonoBehaviour
 
     public void ActivateEmily()
     {
-        string currentScene = SceneManager.GetActiveScene().name;
+        string sceneName = SceneManager.GetActiveScene().name;
 
+        // If Emily does not exist yet, spawn her normally
         if (!emilyIsActive)
         {
-            SpawnEmily(currentScene);
+            SpawnEmily(sceneName);
+            return;
         }
-        else if (currentEmily != null)
+
+        // Emily exists → use scene config spawn position
+        var config = GetSceneConfig(sceneName);
+        if (config != null)
         {
-            currentEmily.ActivateEmily();
+            currentEmily.transform.position = config.spawnPosition;
         }
+
+        // Make sure she is placed on NavMesh
+        Vector3 navPos;
+        if (NavMeshHelper.GetNearestNavMeshPosition(currentEmily.transform.position, out navPos))
+        {
+            currentEmily.transform.position = navPos;
+        }
+
+        // Reactivate Emily and restart her systems
+        currentEmily.ActivateEmily();
     }
+
+
 
     public void DeactivateEmily()
     {
@@ -318,7 +316,7 @@ public class PersistentEmilyManager : MonoBehaviour
         {
             Destroy(currentEmily.gameObject);
             currentEmily = null;
-        }
+        }   
         emilyIsActive = false;
         Debug.Log("[PersistentEmilyManager] Emily removed");
     }

@@ -29,12 +29,14 @@ public class ItemExaminationHandler : MonoBehaviour
     {
         if (item == null) return;
 
-        // Open diary only via the combined item
-        if (item.itemId == "diary_entries")
+        // Open diary when using either the combined item or any individual diary page.
+        if (!string.IsNullOrEmpty(item.itemId) &&
+            (item.itemId == "diary_entries" || item.itemId.StartsWith("diary_page_", System.StringComparison.OrdinalIgnoreCase)))
         {
             StartCoroutine(OpenDiarySafe());
             return;
         }
+
 
         // Allow these items to queue until dialogue ends
         if (item.itemId == "mr_snuggles" ||
@@ -85,12 +87,14 @@ public class ItemExaminationHandler : MonoBehaviour
         DiaryReaderUI diaryReader = FindFirstObjectByType<DiaryReaderUI>(FindObjectsInactive.Include);
         if (diaryReader != null)
         {
+            Debug.Log("[ItemExaminationHandler] Found DiaryReaderUI instance -> calling ShowDiary()");
             diaryReader.ShowDiary();
         }
         else
         {
-            DialogueSystemV2.Instance?.StartDialogue("The diary reader is not available.", "Lisa");
+            Debug.LogWarning("[ItemExaminationHandler] DiaryReaderUI not found (inactive or missing). Make sure DiaryReaderUI exists in scene and diaryPanel is assigned.");
         }
+
     }
 
     private System.Collections.IEnumerator HandleItemAfterDialogue(InventoryItem item)

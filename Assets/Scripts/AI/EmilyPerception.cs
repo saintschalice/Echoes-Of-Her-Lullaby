@@ -42,10 +42,17 @@ public class EmilyPerception : MonoBehaviour
         lastKnownPlayerPosition = Vector3.zero;
     }
 
-    private void Start()
+    private void OnEnable()
     {
+        if (controller == null)
+            controller = GetComponent<EmilyAIController>();
+
+        if(visionCheckCoroutine != null)
+        StopCoroutine(visionCheckCoroutine);
+
         visionCheckCoroutine = StartCoroutine(VisionCheckRoutine());
     }
+
 
     private void OnDisable()
     {

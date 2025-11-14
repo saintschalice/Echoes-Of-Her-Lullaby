@@ -4955,7 +4955,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57625105ba6ab734683c7ba94a0b3112, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GlobalDiaryManager
-  registeredPages: []
+  registeredPages:
+  - pageId: diary_page_1
+    sprite: {fileID: 21300000, guid: 22ea88f59388b02479efafa52efaa444, type: 3}
+  - pageId: diary_page_2
+    sprite: {fileID: 21300000, guid: 15dcb37a4f3127041b961afec31cf29d, type: 3}
+  - pageId: diary_page_3
+    sprite: {fileID: 21300000, guid: f5b72a6715f6a664199c896b781d1b48, type: 3}
+  - pageId: diary_page_4
+    sprite: {fileID: 21300000, guid: 55ae862f6e02086419be9423a077b346, type: 3}
 --- !u!114 &486797751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4975,6 +4983,11 @@ MonoBehaviour:
   previousPageButton: {fileID: 1094703087}
   pageNumberText: {fileID: 489798756}
   titleText: {fileID: 0}
+  pageObjects:
+  - {fileID: 1879475677}
+  - {fileID: 1337566351}
+  - {fileID: 1610335158}
+  - {fileID: 1088629585}
   joystickObject: {fileID: 848659430}
   emptyDiaryMessage: No diary pages collected yet.
   emptyStateText: {fileID: 0}
@@ -8702,7 +8715,7 @@ MonoBehaviour:
     patrolAreaMin: {x: -15, y: -5}
     patrolAreaMax: {x: 5, y: 5}
     autoSpawnOnLoad: 0
-    initialState: 3
+    initialState: 2
   - sceneName: Room03_Kitchen_Dining
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
@@ -8747,6 +8760,7 @@ MonoBehaviour:
     initialState: 0
   autoPlaceOnNavMesh: 1
   navMeshSearchRadius: 10
+  allowAutoSpawn: 0
 --- !u!1 &981889659
 GameObject:
   m_ObjectHideFlags: 0
@@ -13404,7 +13418,7 @@ MonoBehaviour:
   gameOverText: {fileID: 1696954466}
   restartButton: {fileID: 686798473}
   mainMenuButton: {fileID: 99465959}
-  deathSound: {fileID: 8300000, guid: c6e9faafd105ba7468536703ea755cf9, type: 3}
+  deathSound: {fileID: 8300000, guid: 9f2ad13913f40e04c9f0583fc5f283b7, type: 3}
 --- !u!1 &1603845191
 GameObject:
   m_ObjectHideFlags: 0

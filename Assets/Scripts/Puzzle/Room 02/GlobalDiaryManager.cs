@@ -133,7 +133,7 @@ public class GlobalDiaryManager : MonoBehaviour
         if (entry.sprite != null)
             collectedSprites.Add(entry.sprite);
 
-        // ✅ Persist via a flag so LoadFromSaveSystem can rebuild correctly
+        // Persist via a flag so LoadFromSaveSystem can rebuild correctly
         if (SaveSystem.Instance != null)
         {
             string flag = $"diary_collected_{id}";
@@ -145,7 +145,7 @@ public class GlobalDiaryManager : MonoBehaviour
         int totalPages = collectedIds.Count;
         Debug.Log($"[GlobalDiaryManager] Checking combination condition... (totalPages = {totalPages})");
 
-        // ✅ Auto-combine once you have 2+ pages
+        // Auto-combine once you have 2+ pages
         if (totalPages >= 2)
         {
             bool hasDiaryEntries =
@@ -184,10 +184,20 @@ public class GlobalDiaryManager : MonoBehaviour
             }
         }
 
+        // Mark story progress
         if (SaveSystem.Instance != null)
             SaveSystem.Instance.OnStoryProgressMade();
 
+        // Always clean up loose diary_page_* items so we only ever use diary_entries
+        CleanupIndividualDiaryPageItemsFromInventory();
+
+        // Notify UI to refresh pages
         OnPagesChanged?.Invoke();
+
+        Debug.Log("[GlobalDiaryManager] Finalized AddDiaryPage for " + id +
+                  $". Total pages tracked = {collectedIds.Count}. Has diary_entries = " +
+                  ((SaveSystem.Instance != null && SaveSystem.Instance.HasItem("diary_entries")) ||
+                   (InventoryManager.Instance != null && InventoryManager.Instance.HasItem("diary_entries"))));
     }
 
 
@@ -201,8 +211,6 @@ public class GlobalDiaryManager : MonoBehaviour
         if (InventoryManager.Instance == null) return;
 
         bool changed = false;
-
-        // Remove any diary_page_* items from live inventory
         var inv = InventoryManager.Instance;
         var toRemove = new List<string>();
 
@@ -216,18 +224,23 @@ public class GlobalDiaryManager : MonoBehaviour
         foreach (var id in toRemove)
         {
             inv.RemoveItem(id);
-            changed = true;
             Debug.Log($"[GlobalDiaryManager] Removed '{id}' from player inventory.");
+            changed = true;
+
+            // Also mirror into SaveSystem if possible
+            if (SaveSystem.Instance != null && SaveSystem.Instance.HasItem(id))
+            {
+                SaveSystem.Instance.RemoveInventoryItem(id);
+                Debug.Log($"[GlobalDiaryManager] Removed '{id}' from save data.");
+            }
         }
 
-        // Mirror to SaveSystem if needed
-        if (changed)
+        if (changed && SaveSystem.Instance != null)
         {
-            // If your SaveSystem exposes a direct removal API use it here; otherwise
-            // the InventoryManager side should already save on change.
             SaveSystem.Instance.OnStoryProgressMade();
         }
     }
+
 
     // Public accessors
     public List<Sprite> GetCollectedSprites() => new List<Sprite>(collectedSprites);
@@ -247,6 +260,17 @@ public class GlobalDiaryManager : MonoBehaviour
     void ContextMenuAddTestPage()
     {
         AddDiaryPage("diary_page_1");
+    }
+    public Sprite GetSpriteForPageId(string pageId)
+    {
+        if (string.IsNullOrEmpty(pageId)) return null;
+        foreach (var entry in registeredPages)
+        {
+            if (entry == null) continue;
+            if (string.Equals(entry.pageId, pageId, StringComparison.OrdinalIgnoreCase))
+                return entry.sprite;
+        }
+        return null;
     }
 }
 

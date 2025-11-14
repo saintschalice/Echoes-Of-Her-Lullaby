@@ -62,15 +62,31 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
         // Disable player controls during sequence
         DisablePlayerControls();
 
-        // Activate Emily through PersistentEmilyManager
-        if (PersistentEmilyManager.Instance != null)
+        // Get Emily instance from the PersistentEmilyManager
+        EmilyAIController emily = PersistentEmilyManager.Instance != null
+            ? PersistentEmilyManager.Instance.currentEmily
+            : null;
+
+        // --- SPAWN EMILY if she does not exist ---
+        if (emily == null)
         {
-            PersistentEmilyManager.Instance.ActivateEmily();
-            Debug.Log("[EmilyTrigger] Emily activated through manager");
+            PersistentEmilyManager.Instance.SpawnEmily("Room03_Hallway");
+            emily = PersistentEmilyManager.Instance.currentEmily;
+            Debug.Log("[EmilyTrigger] Emily spawned manually via trigger");
+        }
+
+        // --- APPEARANCE SETUP (ALWAYS DO THIS) ---
+        if (emily != null)
+        {
+            emily.gameObject.SetActive(false); // Disable first
+            yield return new WaitForSeconds(0.25f);
+            emily.gameObject.SetActive(true);  // Enable after knockback
+            emily.ActivateEmily();
+            emily.ForceState(EmilyState.INVESTIGATE);
         }
         else
         {
-            Debug.LogError("[EmilyTrigger] PersistentEmilyManager not found!");
+            Debug.LogError("[EmilyTrigger] Emily instance still NULL after spawn attempt!");
         }
 
         // Wait for dramatic pause
@@ -88,7 +104,7 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
             AudioManager.Instance.PlaySFX(windPushSound, player.position);
         }
 
-        // Screen shake effect (if you have a camera shake system)
+        // Screen shake effect
         StartCoroutine(ScreenShake());
 
         // Knockback player
@@ -96,13 +112,11 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
         {
             if (useRelativeKnockback)
             {
-                // Knock back relative to current position
                 Vector3 knockbackDir = (player.position - transform.position).normalized;
                 player.position = player.position + (knockbackDir * knockbackDistance);
             }
             else
             {
-                // Knock back to specific position
                 player.position = playerKnockbackPosition;
             }
 
@@ -122,11 +136,22 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
             Debug.LogWarning("[EmilyTrigger] DialogueSystemV2 not found");
         }
 
+        // Switch Emily into full HUNT mode
+        if (emily != null)
+        {
+            emily.ForceState(EmilyState.HUNT);
+            Debug.Log("[EmilyTrigger] Emily switched to HUNT after dialogue");
+        }
+
         // Save that this event happened
-        if (SaveSystem.Instance != null)
+        if (SaveSystem.Instance != null && !string.IsNullOrEmpty(triggerId))
         {
             SaveSystem.Instance.TriggerDialogue(triggerId);
             Debug.Log("[EmilyTrigger] Event saved to SaveSystem");
+        }
+        else
+        {
+            Debug.LogWarning("[EmilyTrigger] SaveSystem or triggerId missing, event not saved");
         }
 
         // Re-enable player controls
@@ -135,6 +160,7 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
 
         Debug.Log("[EmilyTrigger] First appearance sequence complete!");
     }
+
 
     IEnumerator ScreenShake()
     {

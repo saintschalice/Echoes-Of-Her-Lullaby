@@ -312,15 +312,23 @@ public class HuntState
     {
         updateTimer += Time.deltaTime;
 
-        // Direct pursuit in HUNT mode
-        if (updateTimer >= updateInterval)
+        // Distance used for dynamic speed curve
+        float distance = Vector2.Distance(controller.transform.position, controller.player.position);
+
+        /*Dynamic speed scaling (closer = faster)
+        float minSpeed = controller.movement.huntSpeed;            // e.g. 4
+        float maxSpeed = controller.movement.huntSpeed * 1.8f;     // e.g. 7.2
+        float t = Mathf.InverseLerp(6f, 1f, distance);             // faster when closer
+        controller.movement.SetSpeed(Mathf.Lerp(minSpeed, maxSpeed, t));
+        */
+        // Faster chase precision
+        if (updateTimer >= 0.05f)
         {
             controller.movement.PursueDirect(controller.player.position);
             updateTimer = 0f;
         }
 
-        // Check for catch
-        float distance = Vector2.Distance(controller.transform.position, controller.player.position);
+        // Catch player
         if (distance <= controller.movement.catchRadius)
         {
             controller.audioController?.PlayCatchSound();
@@ -329,7 +337,7 @@ public class HuntState
     }
 }
 
-public class SearchState
+    public class SearchState
 {
     private EmilyStateMachine machine;
     private EmilyAIController controller;

@@ -19,7 +19,7 @@ public class EmilyMovement : MonoBehaviour
     [Header("Navigation")]
     public float pathUpdateInterval = 0.3f;
     public float reachedThreshold = 0.5f;
-    public float catchRadius = 0.8f;
+    public float catchRadius = 1.3f;
     public float cornerReachThreshold = 0.3f;
 
     [Header("Patrol Bounds")]
@@ -34,6 +34,8 @@ public class EmilyMovement : MonoBehaviour
     private float pathUpdateTimer;
     private Vector3 currentDestination;
     private bool useDirectPursuit;
+    private Vector2 lastKnownDirection = Vector2.down;
+
 
     // 2D NavMesh path following
     private NavMeshPath navPath;
@@ -181,13 +183,17 @@ public class EmilyMovement : MonoBehaviour
     {
         if (rb2D == null) return;
 
-        // Direct steering for HUNT state
         useDirectPursuit = true;
         currentDestination = targetPosition;
 
         Vector2 direction = ((Vector2)targetPosition - (Vector2)transform.position).normalized;
+
+        // NEW: update forward direction so animation + perception stay synced
+        lastKnownDirection = direction;  // ADD THIS LINE
+
         rb2D.linearVelocity = direction * currentSpeed;
     }
+
 
     public bool HasReachedDestination()
     {
@@ -207,15 +213,16 @@ public class EmilyMovement : MonoBehaviour
 
     public Vector2 GetForwardDirection()
     {
-        if (rb2D == null) return Vector2.up;
+        if (rb2D == null) return lastKnownDirection;
 
         if (rb2D.linearVelocity.magnitude > 0.1f)
         {
-            return rb2D.linearVelocity.normalized;
+            lastKnownDirection = rb2D.linearVelocity.normalized;
         }
 
-        return Vector2.down; // Default facing direction
+        return lastKnownDirection;
     }
+
 
     public void ResetNavigation()
     {
