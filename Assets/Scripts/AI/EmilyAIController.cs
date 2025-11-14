@@ -24,17 +24,34 @@ public class EmilyAIController : MonoBehaviour
     public float defaultCatchDelay = 0.5f;   // how long after activation before she can kill
     [HideInInspector] public float catchEnabledTime = 0f;
 
-
     [Header("Player Reference")]
     public Transform player;
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[EmilyAI] Duplicate instance detected, destroying new instance");
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
+
         // Allow multiple instances across scenes (managed by PersistentEmilyManager)
         InitializeComponents();
 
         Debug.Log("[EmilyAI] Instance created");
     }
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
 
     private void Start()
     {

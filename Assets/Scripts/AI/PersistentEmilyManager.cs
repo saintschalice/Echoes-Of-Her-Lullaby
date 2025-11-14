@@ -95,43 +95,49 @@ public class PersistentEmilyManager : MonoBehaviour
 
     public void SpawnEmily(string sceneName)
     {
-        if (currentEmily != null)
+        if (currentEmily == null || currentEmily.Equals(null))
         {
-            Debug.LogWarning("[PersistentEmilyManager] Emily already exists!");
-            return;
+            currentEmily = null;
         }
-
-        if (emilyPrefab == null)
-        {
-            Debug.LogError("[PersistentEmilyManager] Emily prefab not assigned!");
-            return;
-        }
-
-        GameObject emilyObj = Instantiate(emilyPrefab);
-        emilyObj.name = "Emily (Persistent)";
-
-        UnityEngine.SceneManagement.Scene targetScene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(sceneName);
-        if (targetScene.isLoaded)
-        {
-            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(emilyObj, targetScene);
-            Debug.Log($"[PersistentEmilyManager] ✓ Moved Emily to {sceneName} scene");
-        }
-
-        currentEmily = emilyObj.GetComponent<EmilyAIController>();
 
         if (currentEmily == null)
         {
-            Debug.LogError("[PersistentEmilyManager] Emily prefab missing EmilyAIController!");
-            Destroy(emilyObj);
-            return;
+            // Try to adopt an existing Emily instance already placed in the scene
+            EmilyAIController existingEmily = EmilyAIController.Instance;
+
+            if (existingEmily == null)
+            {
+                // Include inactive instances just in case Emily is disabled when we arrive
+                var foundEmilies = FindObjectsOfType<EmilyAIController>(true);
+                if (foundEmilies.Length > 0)
+                {
+                    existingEmily = foundEmilies[0];
+
+                    for (int i = 1; i < foundEmilies.Length; i++)
+                    {
+                        Debug.LogWarning("[PersistentEmilyManager] Destroying stray Emily instance");
+                        Destroy(foundEmilies[i].gameObject);
+                    }
+                }
+            }
+
+            if (existingEmily != null)
+            {
+                currentEmily = existingEmily;
+                emilyIsActive = true;
+                if (!currentEmily.gameObject.activeSelf)
+                {
+                    currentEmily.gameObject.SetActive(true);
+                }
+
+                ConfigureEmilyForScene(sceneName);
+                currentEmily.ActivateEmily();
+                Debug.Log("[PersistentEmilyManager] Adopted existing Emily instance");
+                return;
+            }
         }
-
-        ConfigureEmilyForScene(sceneName);
-
-        emilyIsActive = true;
-        //currentEmily.ActivateEmily();
-
-        Debug.Log($"[PersistentEmilyManager] Emily spawned in {sceneName}  (idle/inactive)");
+        else
+            Debug.Log($"[PersistentEmilyManager] Emily spawned in {sceneName}  (idle/inactive)");
     }
 
     void ConfigureEmilyForScene(string sceneName)
