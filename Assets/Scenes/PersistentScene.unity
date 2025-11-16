@@ -8716,48 +8716,56 @@ MonoBehaviour:
     patrolAreaMax: {x: 5, y: 5}
     autoSpawnOnLoad: 0
     initialState: 2
+    snapToNavMesh: 0
   - sceneName: Room03_Kitchen_Dining
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
     patrolAreaMax: {x: 0, y: 0}
     autoSpawnOnLoad: 0
     initialState: 0
+    snapToNavMesh: 0
   - sceneName: 
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
     patrolAreaMax: {x: 0, y: 0}
     autoSpawnOnLoad: 0
     initialState: 0
+    snapToNavMesh: 0
   - sceneName: 
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
     patrolAreaMax: {x: 0, y: 0}
     autoSpawnOnLoad: 0
     initialState: 0
+    snapToNavMesh: 0
   - sceneName: 
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
     patrolAreaMax: {x: 0, y: 0}
     autoSpawnOnLoad: 0
     initialState: 0
+    snapToNavMesh: 0
   - sceneName: 
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
     patrolAreaMax: {x: 0, y: 0}
     autoSpawnOnLoad: 0
     initialState: 0
+    snapToNavMesh: 0
   - sceneName: 
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
     patrolAreaMax: {x: 0, y: 0}
     autoSpawnOnLoad: 0
     initialState: 0
+    snapToNavMesh: 0
   - sceneName: 
     spawnPosition: {x: 0, y: 0, z: 0}
     patrolAreaMin: {x: 0, y: 0}
     patrolAreaMax: {x: 0, y: 0}
     autoSpawnOnLoad: 0
     initialState: 0
+    snapToNavMesh: 0
   autoPlaceOnNavMesh: 1
   navMeshSearchRadius: 10
   allowAutoSpawn: 0

@@ -19,12 +19,18 @@ public class ShadowController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private bool isVisible;
 
+    private JoystickPlayerController playerController;
+    private Animator playerAnimator;
+
     private void Start()
     {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
             player = playerObj.transform;
+
+            playerController = player.GetComponent<JoystickPlayerController>();
+            playerAnimator = player.GetComponent<Animator>();
         }
         else
         {
@@ -69,8 +75,7 @@ public class ShadowController : MonoBehaviour
         }
         else
         {
-            // Fallback: try to get from Animator
-            Animator playerAnimator = player.GetComponent<Animator>();
+            // Fallback: USE THE CACHED VARIABLE (playerAnimator)
             if (playerAnimator != null)
             {
                 float x = playerAnimator.GetFloat("InputX");

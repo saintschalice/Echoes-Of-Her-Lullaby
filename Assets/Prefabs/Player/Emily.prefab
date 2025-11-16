@@ -82,13 +82,13 @@ GameObject:
   - component: {fileID: 2787239151802299161}
   - component: {fileID: 2400558607302177180}
   - component: {fileID: 7646581129349316914}
-  - component: {fileID: 166933821805173994}
   - component: {fileID: 5670120057771200348}
   - component: {fileID: 4073694823184577075}
   - component: {fileID: 6809697436914822366}
   - component: {fileID: 5864474930158307948}
   - component: {fileID: 8584332677794442224}
   - component: {fileID: -7406820815947583797}
+  - component: {fileID: 166933821805173994}
   - component: {fileID: -7026982975870001251}
   m_Layer: 12
   m_Name: Emily
@@ -106,7 +106,7 @@ Transform:
   m_GameObject: {fileID: 8856690199097498054}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -8, y: 3, z: 0}
   m_LocalScale: {x: 2.2, y: 2.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -257,6 +257,162 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5670120057771200348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856690199097498054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89a2062c528e82d4ca05d85319f7a6c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyAIController
+  stateMachine: {fileID: 4073694823184577075}
+  perception: {fileID: 6809697436914822366}
+  movement: {fileID: 5864474930158307948}
+  emilyAnimator: {fileID: 8584332677794442224}
+  audioController: {fileID: -7406820815947583797}
+  isActive: 0
+  debugMode: 0
+  defaultCatchDelay: 0.5
+  catchEnabledTime: 0
+  player: {fileID: 0}
+--- !u!114 &4073694823184577075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856690199097498054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 072f3830e35fc224f880787345654bf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyStateMachine
+  currentState: 2
+  searchDuration: 15
+  cooldownDuration: 20
+  lostLOSGracePeriod: 2
+  aiUpdateRate: 0.15
+--- !u!114 &6809697436914822366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856690199097498054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d4c6b26a73b0eb46928d89ecde4477d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyPerception
+  patrolDetectionRadius: 3
+  investigateDetectionRadius: 5
+  huntDetectionRadius: 8
+  searchDetectionRadius: 6
+  cooldownDetectionRadius: 2.5
+  visionAngle: 60
+  visionRange: 6
+  visionRayCount: 3
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 1
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 512
+  hearingRadius: 10
+  noiseDecayTime: 5
+  visionCheckInterval: 0.1
+  currentDetectionRadius: 0
+  lastKnownPlayerPosition: {x: 0, y: 0, z: 0}
+--- !u!114 &5864474930158307948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856690199097498054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a1c89a17b361f64289c583cd6b0e012, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyMovement
+  patrolSpeed: 1.5
+  investigateSpeed: 2.5
+  huntSpeed: 4
+  searchSpeed: 2
+  cooldownSpeed: 1
+  pathUpdateInterval: 0.3
+  reachedThreshold: 0.5
+  catchRadius: 0.8
+  cornerReachThreshold: 0.3
+  patrolAreaMin: {x: -15, y: -5}
+  patrolAreaMax: {x: 5, y: 5}
+  use2DMovement: 1
+--- !u!114 &8584332677794442224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856690199097498054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca4d6a8aea62ac04480d809a74c9cd91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyAnimator
+  animator: {fileID: 7646581129349316914}
+  spriteRenderer: {fileID: 3229778227213089690}
+--- !u!114 &-7406820815947583797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8856690199097498054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dec04eb8aa75c3c4ebbcfc0b59b7f50e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyAudio
+  presenceAmbient: {fileID: 8300000, guid: ed635f4066c92ee4cb754fea36517fd7, type: 3}
+  huntChaseMusic: {fileID: 8300000, guid: 828a336dcab0caa4095e072417bbd09f, type: 3}
+  catchSound: {fileID: 0}
+  windPushSound: {fileID: 0}
+  voiceLine: {fileID: 0}
+  minDistance: 3
+  maxDistance: 15
+  falloffCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: -1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  useOcclusion: 1
+  occlusionMask:
+    serializedVersion: 2
+    m_Bits: 0
+  occludedVolume: 0.3
 --- !u!82 &166933821805173994
 AudioSource:
   m_ObjectHideFlags: 0
@@ -354,161 +510,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &5670120057771200348
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8856690199097498054}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89a2062c528e82d4ca05d85319f7a6c7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmilyAIController
-  stateMachine: {fileID: 4073694823184577075}
-  perception: {fileID: 6809697436914822366}
-  movement: {fileID: 5864474930158307948}
-  emilyAnimator: {fileID: 8584332677794442224}
-  audioController: {fileID: 0}
-  isActive: 1
-  debugMode: 0
-  defaultCatchDelay: 0.5
-  catchEnabledTime: 0
-  player: {fileID: 0}
---- !u!114 &4073694823184577075
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8856690199097498054}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 072f3830e35fc224f880787345654bf9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmilyStateMachine
-  currentState: 0
-  searchDuration: 15
-  cooldownDuration: 20
-  lostLOSGracePeriod: 2
---- !u!114 &6809697436914822366
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8856690199097498054}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d4c6b26a73b0eb46928d89ecde4477d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmilyPerception
-  patrolDetectionRadius: 3
-  investigateDetectionRadius: 5
-  huntDetectionRadius: 8
-  searchDetectionRadius: 6
-  cooldownDetectionRadius: 2.5
-  visionAngle: 60
-  visionRange: 6
-  visionRayCount: 3
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 1
-  playerMask:
-    serializedVersion: 2
-    m_Bits: 512
-  hearingRadius: 10
-  noiseDecayTime: 5
-  visionCheckInterval: 0.1
-  currentDetectionRadius: 0
-  lastKnownPlayerPosition: {x: 0, y: 0, z: 0}
---- !u!114 &5864474930158307948
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8856690199097498054}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1c89a17b361f64289c583cd6b0e012, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmilyMovement
-  patrolSpeed: 1.5
-  investigateSpeed: 2.5
-  huntSpeed: 4
-  searchSpeed: 2
-  cooldownSpeed: 1
-  pathUpdateInterval: 0.3
-  reachedThreshold: 0.5
-  catchRadius: 0.8
-  cornerReachThreshold: 0.3
-  patrolAreaMin: {x: -12, y: -2}
-  patrolAreaMax: {x: 23, y: 4}
-  use2DMovement: 1
---- !u!114 &8584332677794442224
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8856690199097498054}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca4d6a8aea62ac04480d809a74c9cd91, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmilyAnimator
-  animator: {fileID: 7646581129349316914}
-  spriteRenderer: {fileID: 3229778227213089690}
---- !u!114 &-7406820815947583797
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8856690199097498054}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dec04eb8aa75c3c4ebbcfc0b59b7f50e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EmilyAudio
-  presenceAmbient: {fileID: 8300000, guid: ed635f4066c92ee4cb754fea36517fd7, type: 3}
-  huntChaseMusic: {fileID: 8300000, guid: 828a336dcab0caa4095e072417bbd09f, type: 3}
-  catchSound: {fileID: 0}
-  windPushSound: {fileID: 0}
-  voiceLine: {fileID: 0}
-  minDistance: 3
-  maxDistance: 15
-  falloffCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: -1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: -1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  useOcclusion: 1
-  occlusionMask:
-    serializedVersion: 2
-    m_Bits: 0
-  occludedVolume: 0.3
 --- !u!114 &-7026982975870001251
 MonoBehaviour:
   m_ObjectHideFlags: 0

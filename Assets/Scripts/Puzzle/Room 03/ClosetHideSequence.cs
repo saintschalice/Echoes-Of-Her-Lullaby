@@ -39,10 +39,17 @@ public class ClosetHideSequence : MonoBehaviour
         }
     }
 
-    void Update()
+    IEnumerator CheckEmilyStatusRoutine()
     {
-        var emily = FindFirstObjectByType<EmilyAIController>();
-        canHide = (emily != null && emily.isActiveAndEnabled);
+        float checkInterval = 0.5f; // Only check 2 times per second
+
+        while (true)
+        {
+            var emily = FindFirstObjectByType<EmilyAIController>();
+            canHide = (emily != null && emily.isActiveAndEnabled);
+
+            yield return new WaitForSeconds(checkInterval);
+        }
     }
 
     public void HideInCloset()

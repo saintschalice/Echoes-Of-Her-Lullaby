@@ -97,9 +97,14 @@ public class EmilyAIController : MonoBehaviour
         isActive = true;
         gameObject.SetActive(true);
         perception?.StopAllCoroutines();
-        //perception?.StartCoroutine("VisionCheckRoutine");
-        StartCoroutine(DelayedActivation());
-        stateMachine?.ActivateState(EmilyState.PATROL);
+
+        // Start perception immediately. It was being delayed, which also
+        // contributed to not detecting the player.
+        perception?.StartCoroutine("VisionCheckRoutine");
+
+        // DO NOT set a default state here.
+        // Let the PersistentEmilyManager or the Trigger set the state.
+
         audioController?.PlayPresenceSound();
         Debug.Log("[EmilyAI] Activated");
     }

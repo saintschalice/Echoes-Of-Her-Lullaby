@@ -28,6 +28,16 @@ public class NoiseEventSystem : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        // Pre-warm the dialogue system
+        if (DialogueSystemV2.Instance != null)
+        {
+            DialogueSystemV2.Instance.StartDialogue("", "");
+            Debug.Log("[NoiseEventSystem] Pre-warmed Dialogue System.");
+        }
+    }
+
     /// <summary>
     /// Broadcast a noise event to Emily AI
     /// </summary>

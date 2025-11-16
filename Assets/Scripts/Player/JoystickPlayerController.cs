@@ -87,14 +87,14 @@ public class JoystickPlayerController : MonoBehaviour
         {
             // Set the linear velocity. This is the correct, non-obsolete way for a physics body.
             rb.linearVelocity = moveDirection * moveSpeed;
-            Debug.Log($"[PlayerController] Setting linearVelocity: {rb.linearVelocity}");
+           // Debug.Log($"[PlayerController] Setting linearVelocity: {rb.linearVelocity}");
         }
         else
         {
             // Non-physics movement, using Time.fixedDeltaTime for consistency in FixedUpdate
             Vector3 movement = new Vector3(moveDirection.x, moveDirection.y, 0) * moveSpeed * Time.fixedDeltaTime;
             transform.Translate(movement);
-            Debug.Log($"[PlayerController] Translating: {movement}");
+           // Debug.Log($"[PlayerController] Translating: {movement}");
         }
     }
 

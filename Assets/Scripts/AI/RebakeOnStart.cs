@@ -32,9 +32,10 @@ public class RebakeOnStart : MonoBehaviour
 
         Debug.Log("[RebakeOnStart] NavMesh rebake complete!");
 
-        // Trigger Emily activation AFTER bake is safely registered
+        /* Trigger Emily activation AFTER bake is safely registered
         if (PersistentEmilyManager.Instance != null)
             PersistentEmilyManager.Instance.ActivateEmily();
+        */
     }
 
 }

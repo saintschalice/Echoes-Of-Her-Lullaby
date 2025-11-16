@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.AI;
+using System.Collections;
 
 /// <summary>
-/// Manages Emily's persistence across multiple scenes
-/// UPDATED: Automatically places Emily on valid NavMesh positions
+/// ZERO LAG VERSION - Uses object pooling instead of Instantiate/Destroy
+/// Emily is created once and reused, never destroyed
 /// </summary>
 public class PersistentEmilyManager : MonoBehaviour
 {
@@ -26,21 +27,25 @@ public class PersistentEmilyManager : MonoBehaviour
 
     [Header("NavMesh Auto-Placement")]
     public bool autoPlaceOnNavMesh = true;
-    public float navMeshSearchRadius = 10f;
+    public float navMeshSearchRadius = 5f;
 
     [Header("Auto-Spawn Control")]
-    [Tooltip("When false, Emily will NOT be spawned automatically on scene load. Use PersistentEmilyManager.ActivateEmily() from triggers instead.")]
-    //public bool allowAutoSpawn = true;
     public bool allowAutoSpawn = false;
 
+    // Cached components for performance
+    private NavMeshAgent emilyAgent;
+    private bool emilyPreInstantiated = false;
 
-
-
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            if (transform.parent != null)
+                transform.SetParent(null, true);
             DontDestroyOnLoad(gameObject);
             Debug.Log("[PersistentEmilyManager] Created and set to persist");
         }
@@ -48,6 +53,15 @@ public class PersistentEmilyManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
+        }
+    }
+
+    private void Start()
+    {
+        // PRE-INSTANTIATE Emily once at startup to avoid lag later
+        if (emilyPrefab != null && !emilyPreInstantiated)
+        {
+            StartCoroutine(PreInstantiateEmily());
         }
     }
 
@@ -64,82 +78,112 @@ public class PersistentEmilyManager : MonoBehaviour
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"[PersistentEmilyManager] Scene loaded: {scene.name}");
-
-        // Retrieve scene config, but do nothing unless player manually trigger Emily.
-        var config = GetSceneConfig(scene.name);
-        RemoveEmily();
+        // Don't destroy Emily, just deactivate her
+        if (currentEmily != null)
+        {
+            currentEmily.DeactivateEmily();
+        }
     }
 
-
-    bool ShouldEmilyBeActive(string sceneName)
+    // ============================================================
+    // PRE-INSTANTIATION (Runs once at game start)
+    // ============================================================
+    IEnumerator PreInstantiateEmily()
     {
-        if (sceneName == firstEmilyScene)
+        yield return new WaitForSeconds(0.5f); // Wait for game to fully load
+
+        if (currentEmily != null) yield break; // Already exists
+
+        Debug.Log("[PersistentEmilyManager] Pre-instantiating Emily...");
+
+        if (!TryInstantiateEmily(out EmilyAIController emily))
         {
-            return true;
+            Debug.LogError("[PersistentEmilyManager] Failed to pre-instantiate Emily!");
+            yield break;
         }
 
-        if (sceneName.Contains("Room03") ||
-            sceneName.Contains("Room04") ||
-            sceneName.Contains("Room05") ||
-            sceneName.Contains("Room06") ||
-            sceneName.Contains("Room07") ||
-            sceneName.Contains("Room08") ||
-            sceneName.Contains("Room09") ||
-            sceneName.Contains("Room10"))
-        {
-            return true;
-        }
+        PromoteEmilyToPersistentRoot(emily);
+        currentEmily = emily;
+        emilyAgent = emily.GetComponent<NavMeshAgent>();
+        emilyPreInstantiated = true;
 
-        return false;
+        // Keep her deactivated until needed
+        currentEmily.gameObject.SetActive(false);
+
+        Debug.Log("[PersistentEmilyManager] ✓ Emily pre-instantiated and pooled");
     }
 
+    // ============================================================
+    // SPAWN (Now just activates pre-existing Emily)
+    // ============================================================
     public void SpawnEmily(string sceneName)
     {
+        // If Emily doesn't exist yet, create her immediately
         if (currentEmily == null || currentEmily.Equals(null))
         {
-            currentEmily = null;
-        }
+            Debug.Log("[PersistentEmilyManager] Emily not pre-instantiated, creating now...");
 
-        if (currentEmily == null)
-        {
-            // Try to adopt an existing Emily instance already placed in the scene
-            EmilyAIController existingEmily = EmilyAIController.Instance;
-
-            if (existingEmily == null)
-            {
-                // Include inactive instances just in case Emily is disabled when we arrive
-                var foundEmilies = FindObjectsOfType<EmilyAIController>(true);
-                if (foundEmilies.Length > 0)
-                {
-                    existingEmily = foundEmilies[0];
-
-                    for (int i = 1; i < foundEmilies.Length; i++)
-                    {
-                        Debug.LogWarning("[PersistentEmilyManager] Destroying stray Emily instance");
-                        Destroy(foundEmilies[i].gameObject);
-                    }
-                }
-            }
-
-            if (existingEmily != null)
-            {
-                currentEmily = existingEmily;
-                emilyIsActive = true;
-                if (!currentEmily.gameObject.activeSelf)
-                {
-                    currentEmily.gameObject.SetActive(true);
-                }
-
-                ConfigureEmilyForScene(sceneName);
-                currentEmily.ActivateEmily();
-                Debug.Log("[PersistentEmilyManager] Adopted existing Emily instance");
+            if (!TryInstantiateEmily(out EmilyAIController emily))
                 return;
-            }
+
+            PromoteEmilyToPersistentRoot(emily);
+            currentEmily = emily;
+            emilyAgent = emily.GetComponent<NavMeshAgent>();
         }
-        else
-            Debug.Log($"[PersistentEmilyManager] Emily spawned in {sceneName}  (idle/inactive)");
+
+        // Activate and configure (no instantiation = no lag!)
+        emilyIsActive = true;
+
+        if (!currentEmily.gameObject.activeSelf)
+            currentEmily.gameObject.SetActive(true);
+
+        ConfigureEmilyForScene(sceneName);
+        currentEmily.ActivateEmily();
+
+        Debug.Log($"[PersistentEmilyManager] Emily activated in {sceneName}");
     }
 
+    // ============================================================
+    // INSTANTIATION (Only runs once)
+    // ============================================================
+    private bool TryInstantiateEmily(out EmilyAIController emily)
+    {
+        emily = null;
+
+        if (emilyPrefab == null)
+        {
+            Debug.LogError("[PersistentEmilyManager] Emily prefab missing!");
+            return false;
+        }
+
+        GameObject obj = Instantiate(emilyPrefab);
+        emily = obj.GetComponent<EmilyAIController>();
+
+        if (emily == null)
+        {
+            Debug.LogError("[PersistentEmilyManager] Prefab missing EmilyAIController!");
+            Destroy(obj);
+            return false;
+        }
+
+        Debug.Log("[PersistentEmilyManager] Instantiated Emily");
+        return true;
+    }
+
+    private void PromoteEmilyToPersistentRoot(EmilyAIController emily)
+    {
+        if (emily == null) return;
+
+        if (emily.transform.parent != null)
+            emily.transform.SetParent(null, true);
+
+        if (emily.gameObject.scene.name != "DontDestroyOnLoad")
+            DontDestroyOnLoad(emily.gameObject);
+    }
+
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
     void ConfigureEmilyForScene(string sceneName)
     {
         if (currentEmily == null) return;
@@ -148,108 +192,82 @@ public class PersistentEmilyManager : MonoBehaviour
 
         if (config != null)
         {
-            // Set spawn position
-            currentEmily.transform.position = config.spawnPosition;
+            currentEmily.TeleportTo(config.spawnPosition);
 
-            // AUTO-PLACE ON NAVMESH
-            if (autoPlaceOnNavMesh)
-            {
-                StartCoroutine(PlaceEmilyOnNavMeshAfterDelay());
-            }
-
-            // Set patrol area
             if (currentEmily.movement != null)
             {
                 currentEmily.movement.patrolAreaMin = config.patrolAreaMin;
                 currentEmily.movement.patrolAreaMax = config.patrolAreaMax;
             }
 
-            // Set initial state
             currentEmily.ForceState(config.initialState);
 
-            Debug.Log($"[PersistentEmilyManager] Configured Emily for {sceneName}");
+            Debug.Log($"[PersistentEmilyManager] Configured for {sceneName} at {config.spawnPosition}");
+
+            // Only snap to NavMesh if config allows it
+            if (autoPlaceOnNavMesh && config.snapToNavMesh)
+            {
+                StartCoroutine(PlaceEmilyOnNavMeshAsync());
+            }
         }
         else
         {
-            // Default configuration - find center of NavMesh
             if (autoPlaceOnNavMesh)
-            {
-                StartCoroutine(PlaceEmilyOnNavMeshAfterDelay());
-            }
+                StartCoroutine(PlaceEmilyOnNavMeshAsync());
 
-            Debug.LogWarning($"[PersistentEmilyManager] No config for {sceneName}, using defaults");
-        }
-
-        if (!currentEmily.gameObject.activeSelf)
-        {
-            currentEmily.gameObject.SetActive(true);
+            Debug.LogWarning($"[PersistentEmilyManager] No config for {sceneName}");
         }
     }
 
-    /// <summary>
-    /// Wait a frame for NavMesh to be ready, then place Emily on it
-    /// </summary>
-    System.Collections.IEnumerator PlaceEmilyOnNavMeshAfterDelay()
+    // ============================================================
+    // NAVMESH (OPTIMIZED)
+    // ============================================================
+    IEnumerator PlaceEmilyOnNavMeshAsync()
     {
-        // Wait for NavMesh to be fully loaded
-        yield return new WaitForEndOfFrame();
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
 
         if (currentEmily == null) yield break;
 
-        Vector3 emilyPos = currentEmily.transform.position;
-        NavMeshHit hit;
+        Vector3 pos = currentEmily.transform.position;
+        bool placed = false;
 
-        // Try to find nearest valid NavMesh position
-        if (NavMesh.SamplePosition(emilyPos, out hit, navMeshSearchRadius, NavMesh.AllAreas))
+        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, navMeshSearchRadius, NavMesh.AllAreas))
         {
             currentEmily.transform.position = hit.position;
-            Debug.Log($"[PersistentEmilyManager] ✓ Placed Emily on NavMesh at {hit.position}");
+            placed = true;
+            Debug.Log($"[PersistentEmilyManager] ✓ Placed on NavMesh at {hit.position}");
         }
         else
         {
-            Debug.LogError($"[PersistentEmilyManager] ✗ Could not find valid NavMesh position near {emilyPos}!");
-            Debug.LogError($"[PersistentEmilyManager] Emily will not be able to move!");
+            // Fallback positions
+            Vector3[] testPositions = {
+                Vector3.zero,
+                new Vector3(5, 0, 0),
+                new Vector3(-5, 0, 0)
+            };
 
-            // Try to find ANY NavMesh position in the scene
-            if (TryFindAnyNavMeshPosition(out Vector3 anyPosition))
+            foreach (var testPos in testPositions)
             {
-                currentEmily.transform.position = anyPosition;
-                Debug.Log($"[PersistentEmilyManager] ✓ Placed Emily at fallback position: {anyPosition}");
-            }
-        }
-    }
-
-    /// <summary>
-    /// Try to find ANY valid NavMesh position in the scene (fallback)
-    /// </summary>
-    bool TryFindAnyNavMeshPosition(out Vector3 position)
-    {
-        // Try common positions
-        Vector3[] testPositions = new Vector3[]
-        {
-            Vector3.zero,
-            new Vector3(0, 0, 0),
-            new Vector3(5, 0, 0),
-            new Vector3(-5, 0, 0),
-            new Vector3(0, 5, 0),
-            new Vector3(0, -5, 0)
-        };
-
-        foreach (Vector3 testPos in testPositions)
-        {
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(testPos, out hit, 50f, NavMesh.AllAreas))
-            {
-                position = hit.position;
-                return true;
+                if (NavMesh.SamplePosition(testPos, out hit, 20f, NavMesh.AllAreas))
+                {
+                    currentEmily.transform.position = hit.position;
+                    placed = true;
+                    Debug.Log($"[PersistentEmilyManager] ✓ Fallback placement at {hit.position}");
+                    break;
+                }
+                yield return null;
             }
         }
 
-        position = Vector3.zero;
-        return false;
+        if (!placed)
+        {
+            Debug.LogError($"[PersistentEmilyManager] ✗ No NavMesh found near {pos}");
+        }
     }
 
+    // ============================================================
+    // LOOKUP
+    // ============================================================
     EmilySceneConfig GetSceneConfig(string sceneName)
     {
         if (sceneConfigs == null) return null;
@@ -257,77 +275,60 @@ public class PersistentEmilyManager : MonoBehaviour
         foreach (var config in sceneConfigs)
         {
             if (config.sceneName == sceneName)
-            {
                 return config;
-            }
         }
-
         return null;
     }
 
+    // ============================================================
+    // GAMEPLAY EVENTS
+    // ============================================================
     public void OnEmilyCatchPlayer()
     {
-        Debug.Log("[PersistentEmilyManager] Emily caught player - triggering game over");
-
-        if (currentEmily != null)
-        {
-            currentEmily.audioController?.PlayCatchSound();
-        }
-
+        Debug.Log("[PersistentEmilyManager] Emily caught player");
+        currentEmily?.audioController?.PlayCatchSound();
         GameOverManager.Instance?.TriggerGameOver("Emily caught you...");
     }
 
+    // ============================================================
+    // EXTERNAL CONTROL
+    // ============================================================
     public void ActivateEmily()
     {
         string sceneName = SceneManager.GetActiveScene().name;
-
-        // If Emily does not exist yet, spawn her normally
-        if (!emilyIsActive)
-        {
-            SpawnEmily(sceneName);
-            return;
-        }
-
-        // Emily exists → use scene config spawn position
-        var config = GetSceneConfig(sceneName);
-        if (config != null)
-        {
-            currentEmily.transform.position = config.spawnPosition;
-        }
-
-        // Make sure she is placed on NavMesh
-        Vector3 navPos;
-        if (NavMeshHelper.GetNearestNavMeshPosition(currentEmily.transform.position, out navPos))
-        {
-            currentEmily.transform.position = navPos;
-        }
-
-        // Reactivate Emily and restart her systems
-        currentEmily.ActivateEmily();
+        SpawnEmily(sceneName);
     }
-
-
 
     public void DeactivateEmily()
     {
         if (currentEmily != null)
         {
             currentEmily.DeactivateEmily();
+            // Don't destroy, just deactivate
+            currentEmily.gameObject.SetActive(false);
         }
+        emilyIsActive = false;
     }
 
     public void RemoveEmily()
     {
+        // Only use this if you need to completely remove Emily
+        // (e.g., game over, returning to menu)
         if (currentEmily != null)
-        {
             Destroy(currentEmily.gameObject);
-            currentEmily = null;
-        }   
+
+        currentEmily = null;
+        emilyAgent = null;
         emilyIsActive = false;
-        Debug.Log("[PersistentEmilyManager] Emily removed");
+        emilyPreInstantiated = false;
+
+        Debug.Log("[PersistentEmilyManager] Emily removed from memory");
     }
 }
 
+// ============================================================
+// SCENE CONFIG
+// ============================================================
 [System.Serializable]
 public class EmilySceneConfig
 {
@@ -336,6 +337,8 @@ public class EmilySceneConfig
     public Vector2 patrolAreaMin;
     public Vector2 patrolAreaMax;
     public bool autoSpawnOnLoad;
-
     public EmilyState initialState = EmilyState.PATROL;
+
+    [Tooltip("If false, Emily will spawn at EXACT position without NavMesh snapping")]
+    public bool snapToNavMesh = false; // Default to false for precise positioning
 }

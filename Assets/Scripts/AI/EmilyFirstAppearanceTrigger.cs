@@ -2,8 +2,11 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// Triggers Emily's first appearance in the hallway scene (Room 3)
-/// Handles the dramatic staircase confrontation sequence
+/// OPTIMIZED - Triggers Emily's first appearance with ZERO lag
+/// Key fixes:
+/// - Cached player controller reference (no FindObjectOfType)
+/// - Uses ActivateEmily() instead of SpawnEmily()
+/// - Removed redundant disable/enable cycle
 /// </summary>
 public class EmilyFirstAppearanceTrigger : MonoBehaviour
 {
@@ -17,7 +20,7 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
 
     [Header("Player Knockback")]
     public Vector3 playerKnockbackPosition = new Vector3(-6, 0, 0);
-    public bool useRelativeKnockback = false; // If true, knock back relative to current position
+    public bool useRelativeKnockback = false;
     public float knockbackDistance = 3f;
 
     [Header("Audio")]
@@ -28,19 +31,35 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
     public string speakerName = "Lisa";
 
     [Header("Effects (Optional)")]
-    public GameObject visualEffect; // Particle effect, flash, etc.
+    public GameObject visualEffect;
     public float screenShakeDuration = 0.3f;
     public float screenShakeIntensity = 0.2f;
 
+    // OPTIMIZATION: Cache player controller reference
+    private JoystickPlayerController cachedPlayerController;
+    private Camera mainCamera;
+
+    private void Awake()
+    {
+        // Cache references at startup (fast)
+        cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
+        mainCamera = Camera.main;
+
+        if (cachedPlayerController == null)
+        {
+            Debug.LogWarning("[EmilyTrigger] JoystickPlayerController not found at startup");
+        }
+    }
+
     private void Start()
     {
-        // Check if this event has already happened (save system integration)
+        // Check if this event has already happened
         if (SaveSystem.Instance != null)
         {
             if (SaveSystem.Instance.WasDialogueTriggered(triggerId))
             {
                 hasTriggered = true;
-                gameObject.SetActive(false); // Disable trigger if already done
+                gameObject.SetActive(false);
                 Debug.Log("[EmilyTrigger] Event already triggered, disabling");
             }
         }
@@ -59,53 +78,57 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
     {
         Debug.Log("[EmilyTrigger] First appearance sequence started!");
 
-        // Disable player controls during sequence
+        // Disable player controls (using cached reference)
         DisablePlayerControls();
 
-        // Get Emily instance from the PersistentEmilyManager
-        EmilyAIController emily = PersistentEmilyManager.Instance != null
-            ? PersistentEmilyManager.Instance.currentEmily
-            : null;
-
-        // --- SPAWN EMILY if she does not exist ---
-        if (emily == null)
+        // CRITICAL FIX: Use ActivateEmily() instead of SpawnEmily()
+        // This uses the pre-instantiated pooled Emily (no lag!)
+        if (PersistentEmilyManager.Instance != null)
         {
-            PersistentEmilyManager.Instance.SpawnEmily("Room03_Hallway");
-            emily = PersistentEmilyManager.Instance.currentEmily;
-            Debug.Log("[EmilyTrigger] Emily spawned manually via trigger");
-        }
-
-        // --- APPEARANCE SETUP (ALWAYS DO THIS) ---
-        if (emily != null)
-        {
-            emily.gameObject.SetActive(false); // Disable first
-            yield return new WaitForSeconds(0.25f);
-            emily.gameObject.SetActive(true);  // Enable after knockback
-            emily.ActivateEmily();
-            emily.ForceState(EmilyState.INVESTIGATE);
+            PersistentEmilyManager.Instance.ActivateEmily();
         }
         else
         {
-            Debug.LogError("[EmilyTrigger] Emily instance still NULL after spawn attempt!");
+            Debug.LogError("[EmilyTrigger] PersistentEmilyManager not found!");
+            yield break;
         }
+
+        // Wait a frame for Emily to activate
+        yield return null;
+
+        // Get Emily reference
+        EmilyAIController emily = PersistentEmilyManager.Instance.currentEmily;
+
+        if (emily == null)
+        {
+            Debug.LogError("[EmilyTrigger] Emily instance is NULL after activation!");
+            EnablePlayerControls();
+            yield break;
+        }
+
+        // Set initial state
+        emily.ForceState(EmilyState.INVESTIGATE);
 
         // Wait for dramatic pause
         yield return new WaitForSeconds(windPushDelay);
 
-        // Play visual effect if assigned
+        // Play visual effect
         if (visualEffect != null)
         {
             Instantiate(visualEffect, player.position, Quaternion.identity);
         }
 
-        // Wind push sound effect
+        // Wind push sound
         if (windPushSound != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(windPushSound, player.position);
         }
 
-        // Screen shake effect
-        StartCoroutine(ScreenShake());
+        // Screen shake
+        if (screenShakeDuration > 0f)
+        {
+            StartCoroutine(ScreenShake());
+        }
 
         // Knockback player
         if (player != null)
@@ -136,22 +159,15 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
             Debug.LogWarning("[EmilyTrigger] DialogueSystemV2 not found");
         }
 
-        // Switch Emily into full HUNT mode
-        if (emily != null)
-        {
-            emily.ForceState(EmilyState.HUNT);
-            Debug.Log("[EmilyTrigger] Emily switched to HUNT after dialogue");
-        }
+        // Switch Emily to HUNT mode
+        emily.ForceState(EmilyState.HUNT);
+        Debug.Log("[EmilyTrigger] Emily switched to HUNT after dialogue");
 
-        // Save that this event happened
+        // Save event
         if (SaveSystem.Instance != null && !string.IsNullOrEmpty(triggerId))
         {
             SaveSystem.Instance.TriggerDialogue(triggerId);
             Debug.Log("[EmilyTrigger] Event saved to SaveSystem");
-        }
-        else
-        {
-            Debug.LogWarning("[EmilyTrigger] SaveSystem or triggerId missing, event not saved");
         }
 
         // Re-enable player controls
@@ -161,16 +177,11 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
         Debug.Log("[EmilyTrigger] First appearance sequence complete!");
     }
 
-
     IEnumerator ScreenShake()
     {
-        // Simple screen shake implementation
-        // You can replace this with your own camera shake system
+        if (mainCamera == null) yield break;
 
-        Camera mainCam = Camera.main;
-        if (mainCam == null) yield break;
-
-        Vector3 originalPos = mainCam.transform.position;
+        Vector3 originalPos = mainCamera.transform.position;
         float elapsed = 0f;
 
         while (elapsed < screenShakeDuration)
@@ -178,30 +189,44 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
             float x = Random.Range(-1f, 1f) * screenShakeIntensity;
             float y = Random.Range(-1f, 1f) * screenShakeIntensity;
 
-            mainCam.transform.position = originalPos + new Vector3(x, y, 0);
+            mainCamera.transform.position = originalPos + new Vector3(x, y, 0);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        mainCam.transform.position = originalPos;
+        mainCamera.transform.position = originalPos;
     }
 
+    // OPTIMIZED: Uses cached reference instead of FindObjectOfType
     void DisablePlayerControls()
     {
-        JoystickPlayerController player = FindFirstObjectByType<JoystickPlayerController>();
-        if (player != null)
+        if (cachedPlayerController == null)
         {
-            player.enabled = false;
+            // Try to find it again
+            cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
+        }
+
+        if (cachedPlayerController != null)
+        {
+            cachedPlayerController.enabled = false;
+        }
+        else
+        {
+            Debug.LogError("[EmilyTrigger] CRITICAL: Could not find player controller to disable!");
         }
     }
 
     void EnablePlayerControls()
     {
-        JoystickPlayerController player = FindFirstObjectByType<JoystickPlayerController>();
-        if (player != null)
+        if (cachedPlayerController == null)
         {
-            player.enabled = true;
+            cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
+        }
+
+        if (cachedPlayerController != null)
+        {
+            cachedPlayerController.enabled = true;
         }
     }
 

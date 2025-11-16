@@ -11,8 +11,12 @@ public enum EmilyState
 }
 
 /// <summary>
-/// State machine for Emily AI behavior
-/// Manages state transitions and timing
+/// OPTIMIZED State machine for Emily AI
+/// Key fixes:
+/// - Reduced Update() frequency from 60fps to configurable rate
+/// - Hunt state pathfinding reduced from 20x/sec to 2x/sec
+/// - Cached player reference
+/// - Android-specific optimizations
 /// </summary>
 public class EmilyStateMachine : MonoBehaviour
 {
@@ -22,12 +26,16 @@ public class EmilyStateMachine : MonoBehaviour
     [Header("Timing")]
     public float searchDuration = 15f;
     public float cooldownDuration = 20f;
-    public float lostLOSGracePeriod = 2f; // Time before transitioning from HUNT to SEARCH
+    public float lostLOSGracePeriod = 2f;
+
+    [Header("Performance (CRITICAL FOR ANDROID)")]
+    [Tooltip("How often to update AI logic (lower = better performance)")]
+    public float aiUpdateRate = 0.15f; // Update AI only ~7 times per second instead of 60
+    private float lastAIUpdate = 0f;
 
     private EmilyAIController controller;
     private float stateTimer;
     private float lostLOSTimer;
-    private bool hasLineOfSight;
 
     // State classes
     private PatrolState patrolState;
@@ -36,9 +44,17 @@ public class EmilyStateMachine : MonoBehaviour
     private SearchState searchState;
     private CooldownState cooldownState;
 
+    // Cached references
+    private EmilyPerception cachedPerception;
+    private Transform cachedPlayerTransform;
+
     public void Initialize(EmilyAIController ctrl)
     {
         controller = ctrl;
+
+        // Cache references
+        cachedPerception = controller.perception;
+        cachedPlayerTransform = controller.player;
 
         // Initialize state behaviors
         patrolState = new PatrolState(this, controller);
@@ -46,13 +62,23 @@ public class EmilyStateMachine : MonoBehaviour
         huntState = new HuntState(this, controller);
         searchState = new SearchState(this, controller);
         cooldownState = new CooldownState(this, controller);
+
+        Debug.Log("[EmilyStateMachine] Initialized with optimized update rate");
     }
 
     private void Update()
     {
         if (!controller.isActive) return;
 
-        stateTimer += Time.deltaTime;
+        // CRITICAL OPTIMIZATION: Only update AI logic at specified rate
+        float currentTime = Time.time;
+        if (currentTime - lastAIUpdate < aiUpdateRate)
+            return;
+
+        float deltaTime = currentTime - lastAIUpdate;
+        lastAIUpdate = currentTime;
+
+        stateTimer += deltaTime;
 
         // Execute current state logic
         switch (currentState)
@@ -65,7 +91,7 @@ public class EmilyStateMachine : MonoBehaviour
                 break;
             case EmilyState.HUNT:
                 huntState?.Execute();
-                CheckHuntLOSLoss();
+                CheckHuntLOSLoss(deltaTime);
                 break;
             case EmilyState.SEARCH:
                 searchState?.Execute();
@@ -83,9 +109,9 @@ public class EmilyStateMachine : MonoBehaviour
 
     void CheckTransitions()
     {
-        // Get perception data
-        bool playerVisible = controller.perception.IsPlayerVisible();
-        bool hasNoise = controller.perception.HasRecentNoise();
+        // Use cached perception reference
+        bool playerVisible = cachedPerception.IsPlayerVisible();
+        bool hasNoise = cachedPerception.HasRecentNoise();
 
         switch (currentState)
         {
@@ -124,11 +150,11 @@ public class EmilyStateMachine : MonoBehaviour
         }
     }
 
-    void CheckHuntLOSLoss()
+    void CheckHuntLOSLoss(float deltaTime)
     {
-        if (!controller.perception.IsPlayerVisible())
+        if (!cachedPerception.IsPlayerVisible())
         {
-            lostLOSTimer += Time.deltaTime;
+            lostLOSTimer += deltaTime;
             if (lostLOSTimer >= lostLOSGracePeriod)
             {
                 TransitionTo(EmilyState.SEARCH);
@@ -162,10 +188,7 @@ public class EmilyStateMachine : MonoBehaviour
 
         Debug.Log($"[EmilyAI] State: {currentState} → {newState}");
 
-        // Exit current state
         ExitState(currentState);
-
-        // Enter new state
         currentState = newState;
         stateTimer = 0f;
         lostLOSTimer = 0f;
@@ -233,7 +256,7 @@ public class EmilyStateMachine : MonoBehaviour
     }
 }
 
-// ========== STATE BEHAVIOR CLASSES ==========
+// ========== STATE BEHAVIOR CLASSES (OPTIMIZED) ==========
 
 public class PatrolState
 {
@@ -294,42 +317,50 @@ public class HuntState
 {
     private EmilyStateMachine machine;
     private EmilyAIController controller;
-    private float updateInterval = 0.3f;
+
+    // CRITICAL FIX: Reduced from 0.05s to 0.5s
+    private float updateInterval = 0.5f; // Update path only 2 times per second
     private float updateTimer;
+
+    // Cache player transform for faster access
+    //private Transform playerTransform;
 
     public HuntState(EmilyStateMachine sm, EmilyAIController ctrl)
     {
         machine = sm;
         controller = ctrl;
+       //playerTransform = ctrl.player;
     }
 
     public void Enter()
     {
         updateTimer = 0f;
+        // Set destination immediately on entering hunt
+
+        // CHANGE THIS: Use controller.player instead of playerTransform
+        if (controller.player != null)
+        {
+            controller.movement.PursueDirect(controller.player.position);
+        }
     }
 
     public void Execute()
     {
         updateTimer += Time.deltaTime;
 
-        // Distance used for dynamic speed curve
-        float distance = Vector2.Distance(controller.transform.position, controller.player.position);
-
-        /*Dynamic speed scaling (closer = faster)
-        float minSpeed = controller.movement.huntSpeed;            // e.g. 4
-        float maxSpeed = controller.movement.huntSpeed * 1.8f;     // e.g. 7.2
-        float t = Mathf.InverseLerp(6f, 1f, distance);             // faster when closer
-        controller.movement.SetSpeed(Mathf.Lerp(minSpeed, maxSpeed, t));
-        */
-        // Faster chase precision
-        if (updateTimer >= 0.05f)
+        // Use controller.player directly, which is correct
+        if (updateTimer >= updateInterval && controller.player != null)
         {
             controller.movement.PursueDirect(controller.player.position);
             updateTimer = 0f;
         }
 
-        // Catch player
-        if (distance <= controller.movement.catchRadius)
+        // Check catch distance (use sqrMagnitude for better performance)
+        if (controller.player == null) return; // Failsafe
+        float sqrDistance = (controller.transform.position - controller.player.position).sqrMagnitude;
+        float catchRadiusSqr = controller.movement.catchRadius * controller.movement.catchRadius;
+
+        if (sqrDistance <= catchRadiusSqr)
         {
             controller.audioController?.PlayCatchSound();
             GameOverManager.Instance?.TriggerGameOver("Emily caught you...");
@@ -337,7 +368,7 @@ public class HuntState
     }
 }
 
-    public class SearchState
+public class SearchState
 {
     private EmilyStateMachine machine;
     private EmilyAIController controller;
