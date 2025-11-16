@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -45,7 +46,7 @@ public class ClosetHideSequence : MonoBehaviour
 
         while (true)
         {
-            var emily = FindFirstObjectByType<EmilyAIController>();
+            var emily = FindFirstObjectByType<EmilyGhost>();
             canHide = (emily != null && emily.isActiveAndEnabled);
 
             yield return new WaitForSeconds(checkInterval);
@@ -102,7 +103,7 @@ public class ClosetHideSequence : MonoBehaviour
         // Wait until Emily is far enough
         while (true)
         {
-            var emily = FindFirstObjectByType<EmilyAIController>();
+            var emily = FindFirstObjectByType<EmilyGhost>();
             if (emily == null) break;
 
             float dist = Vector2.Distance(emily.transform.position, player.position);

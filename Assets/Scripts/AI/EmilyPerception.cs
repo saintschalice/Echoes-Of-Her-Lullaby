@@ -1,180 +1,169 @@
 using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// Handles Emily's perception: vision cone, hearing, proximity detection
-/// Optimized for mobile with coroutine-based checks
-/// </summary>
-public class EmilyPerception : MonoBehaviour
+public sealed class EmilyPerception : MonoBehaviour
 {
-    [Header("Detection Radii by State")]
-    public float patrolDetectionRadius = 3f;
-    public float investigateDetectionRadius = 5f;
-    public float huntDetectionRadius = 8f;
-    public float searchDetectionRadius = 6f;
-    public float cooldownDetectionRadius = 2.5f;
-
-    [Header("Vision Cone")]
-    public float visionAngle = 60f;
+    [Header("Vision")]
     public float visionRange = 6f;
-    public int visionRayCount = 3;
-    public LayerMask obstacleMask;
-    public LayerMask playerMask;
+    public float visionAngle = 60f;
+
+    [Header("References")]
+    [Tooltip("Assign the AI_Forward child here. This determines where Emily is 'looking'.")]
+    public Transform aiForward;
+
+    LayerMask playerMask;
+    LayerMask obstacleMask;
 
     [Header("Hearing")]
-    public float hearingRadius = 10f;
-    public float noiseDecayTime = 5f;
+    public float hearingRadius = 8f;
 
-    [Header("Check Intervals")]
-    public float visionCheckInterval = 0.1f;
+    public bool PlayerVisible { get; private set; }
+    public bool HeardNoise => Time.time < _lastNoise + 2f;
 
-    private EmilyAIController controller;
-    public float currentDetectionRadius;
-    public Vector3 lastKnownPlayerPosition;
-    private bool isPlayerVisible;
-    private float lastNoiseTime;
-    private Coroutine visionCheckCoroutine;
+    public Vector3 LastSeenPos { get; private set; }
+    public Vector3 LastNoisePos { get; private set; }
 
-    public void Initialize(EmilyAIController ctrl)
+    Transform _player;
+    float _lastNoise;
+
+    void Awake()
     {
-        controller = ctrl;
-        UpdateDetectionRadius();
-        lastKnownPlayerPosition = Vector3.zero;
-    }
-
-    private void OnEnable()
-    {
-        if (controller == null)
-            controller = GetComponent<EmilyAIController>();
-
-        if(visionCheckCoroutine != null)
-        StopCoroutine(visionCheckCoroutine);
-
-        visionCheckCoroutine = StartCoroutine(VisionCheckRoutine());
-    }
-
-
-    private void OnDisable()
-    {
-        if (visionCheckCoroutine != null)
+        // Auto-find aiForward — even if Start() runs too early
+        if (aiForward == null)
         {
-            StopCoroutine(visionCheckCoroutine);
+            aiForward = transform.Find("AI_Forward");
+            if (aiForward == null)
+                Debug.LogError("[EMILY PERCEPTION] Could not find AI_Forward child!!");
+            else
+                Debug.Log("[EMILY PERCEPTION] Auto-assigned aiForward.");
         }
     }
 
-    public void UpdateDetectionRadius()
+
+    void Start()
     {
-        switch (controller.stateMachine.currentState)
-        {
-            case EmilyState.PATROL:
-                currentDetectionRadius = patrolDetectionRadius;
-                break;
-            case EmilyState.INVESTIGATE:
-                currentDetectionRadius = investigateDetectionRadius;
-                break;
-            case EmilyState.HUNT:
-                currentDetectionRadius = huntDetectionRadius;
-                break;
-            case EmilyState.SEARCH:
-                currentDetectionRadius = searchDetectionRadius;
-                break;
-            case EmilyState.COOLDOWN:
-                currentDetectionRadius = cooldownDetectionRadius;
-                break;
-        }
+        _player = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+        playerMask = LayerMask.GetMask("Player");
+        obstacleMask = LayerMask.GetMask("Walls");
+
+        StartCoroutine(VisionRoutine());
     }
 
-    IEnumerator VisionCheckRoutine()
+
+    IEnumerator VisionRoutine()
     {
+        WaitForSeconds wait = new WaitForSeconds(0.1f);
+
         while (true)
         {
-            CheckVision();
-            yield return new WaitForSeconds(visionCheckInterval);
+            if (_player != null)
+                CheckVision();
+
+            yield return wait;
         }
     }
 
     void CheckVision()
     {
-        if (controller.player == null)
+        if (_player == null)
         {
-            isPlayerVisible = false;
+            Debug.Log("[EMILY DEBUG] Player transform is NULL.");
+            PlayerVisible = false;
             return;
         }
 
-        Vector2 toPlayer = controller.player.position - transform.position;
-        float distance = toPlayer.magnitude;
-
-        // Proximity check first
-        if (distance > currentDetectionRadius)
+        if (aiForward == null)
         {
-            isPlayerVisible = false;
+            Debug.Log("[EMILY DEBUG] aiForward is NULL. Cannot compute vision.");
+            PlayerVisible = false;
             return;
         }
 
-        // Vision cone angle check
-        Vector2 forward = controller.movement.GetForwardDirection();
-        float angle = Vector2.Angle(forward, toPlayer);
+        Vector2 toP = _player.position - transform.position;
+        float dist = toP.magnitude;
 
-        if (angle > visionAngle / 2f)
+        // ---------------------------
+        // Distance Check
+        // ---------------------------
+        if (dist > visionRange)
         {
-            isPlayerVisible = false;
+            Debug.Log($"[EMILY DEBUG] Player too far. Dist={dist:F2}, Limit={visionRange}");
+            PlayerVisible = false;
             return;
         }
 
-        // Raycast for line of sight
+        // ---------------------------
+        // Angle Check
+        // ---------------------------
+        Vector2 forward = aiForward.up; // <-- correct facing direction
+        float ang = Vector2.Angle(forward, toP);
+
+        if (ang > visionAngle * 0.5f)
+        {
+            Debug.Log($"[EMILY DEBUG] Angle too wide. ang={ang:F2}, Limit={visionAngle * 0.5f}");
+            PlayerVisible = false;
+            return;
+        }
+
+        // ---------------------------
+        // Raycast LOS Check
+        // ---------------------------
         RaycastHit2D hit = Physics2D.Raycast(
             transform.position,
-            toPlayer.normalized,
-            distance,
-            obstacleMask | playerMask
+            toP.normalized,
+            dist,
+            playerMask | obstacleMask
         );
 
-        if (hit.collider != null && hit.collider.CompareTag("Player"))
+        if (!hit)
         {
-            isPlayerVisible = true;
-            lastKnownPlayerPosition = controller.player.position;
+            Debug.Log("[EMILY DEBUG] Raycast hit NOTHING.");
+            PlayerVisible = false;
+            return;
+        }
+
+        Debug.Log($"[EMILY DEBUG] Raycast hit: {hit.collider.name}, Layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}");
+
+        if (hit.collider.CompareTag("Player"))
+        {
+            Debug.Log("[EMILY DEBUG] >>> PLAYER VISIBLE <<<");
+            PlayerVisible = true;
+            LastSeenPos = _player.position;
         }
         else
         {
-            isPlayerVisible = false;
+            Debug.Log("[EMILY DEBUG] Blocked by: " + hit.collider.name);
+            PlayerVisible = false;
         }
     }
 
-    public bool IsPlayerVisible()
+    // Call from noises
+    public void HearNoise(Vector3 pos, float strength = 1f)
     {
-        return isPlayerVisible;
+        if ((pos - transform.position).sqrMagnitude >
+            hearingRadius * hearingRadius * strength) return;
+
+        _lastNoise = Time.time;
+        LastNoisePos = pos;
     }
 
-    public bool HasRecentNoise()
+#if UNITY_EDITOR
+    void OnDrawGizmosSelected()
     {
-        return (Time.time - lastNoiseTime) < noiseDecayTime;
+        if (aiForward == null)
+            return;
+
+        Gizmos.color = PlayerVisible ? Color.red : Color.yellow;
+
+        Vector3 fwd = aiForward.up;
+        Vector3 left = Quaternion.Euler(0, 0, -visionAngle / 2) * fwd;
+        Vector3 right = Quaternion.Euler(0, 0, visionAngle / 2) * fwd;
+
+        Gizmos.DrawRay(transform.position, left * visionRange);
+        Gizmos.DrawRay(transform.position, right * visionRange);
+
+        Gizmos.DrawWireSphere(transform.position, visionRange);
     }
-
-    public void OnNoiseHeard(Vector3 position, float strength)
-    {
-        float distance = Vector3.Distance(transform.position, position);
-
-        if (distance <= hearingRadius * strength)
-        {
-            lastKnownPlayerPosition = position;
-            lastNoiseTime = Time.time;
-            controller.stateMachine.OnNoiseHeard(position);
-            Debug.Log($"[EmilyAI] Noise heard at {position}");
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        // Vision cone visualization
-        Gizmos.color = Color.yellow;
-        Vector2 forward = transform.up;
-        float halfAngle = visionAngle / 2f;
-
-        Vector2 leftBound = Quaternion.Euler(0, 0, -halfAngle) * forward;
-        Vector2 rightBound = Quaternion.Euler(0, 0, halfAngle) * forward;
-
-        Gizmos.DrawRay(transform.position, leftBound * visionRange);
-        Gizmos.DrawRay(transform.position, rightBound * visionRange);
-        Gizmos.DrawWireSphere(transform.position, currentDetectionRadius);
-    }
+#endif
 }

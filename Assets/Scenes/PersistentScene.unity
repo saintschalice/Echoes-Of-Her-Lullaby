@@ -3640,7 +3640,6 @@ Transform:
   - {fileID: 451134859}
   - {fileID: 20289323}
   - {fileID: 486797749}
-  - {fileID: 974753608}
   - {fileID: 1596594626}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -8660,115 +8659,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersistentObject
   persist: 1
---- !u!1 &974753607
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 974753608}
-  - component: {fileID: 974753609}
-  m_Layer: 0
-  m_Name: PersistentEmilyManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &974753608
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 974753607}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 340155276}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &974753609
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 974753607}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a26aee25ae0bde44b981c3ce84d23d83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PersistentEmilyManager
-  emilyPrefab: {fileID: 8856690199097498054, guid: 8c4ef9c858ec64a42bb9abbe8240d48b, type: 3}
-  emilyIsActive: 0
-  firstEmilyScene: Room03_Hallway
-  lastEmilyScene: Room10_MasterBedroom
-  currentEmily: {fileID: 0}
-  sceneConfigs:
-  - sceneName: Room03_Hallway
-    spawnPosition: {x: -8, y: 3, z: 0}
-    patrolAreaMin: {x: -15, y: -5}
-    patrolAreaMax: {x: 5, y: 5}
-    autoSpawnOnLoad: 0
-    initialState: 2
-    snapToNavMesh: 0
-  - sceneName: Room03_Kitchen_Dining
-    spawnPosition: {x: 0, y: 0, z: 0}
-    patrolAreaMin: {x: 0, y: 0}
-    patrolAreaMax: {x: 0, y: 0}
-    autoSpawnOnLoad: 0
-    initialState: 0
-    snapToNavMesh: 0
-  - sceneName: 
-    spawnPosition: {x: 0, y: 0, z: 0}
-    patrolAreaMin: {x: 0, y: 0}
-    patrolAreaMax: {x: 0, y: 0}
-    autoSpawnOnLoad: 0
-    initialState: 0
-    snapToNavMesh: 0
-  - sceneName: 
-    spawnPosition: {x: 0, y: 0, z: 0}
-    patrolAreaMin: {x: 0, y: 0}
-    patrolAreaMax: {x: 0, y: 0}
-    autoSpawnOnLoad: 0
-    initialState: 0
-    snapToNavMesh: 0
-  - sceneName: 
-    spawnPosition: {x: 0, y: 0, z: 0}
-    patrolAreaMin: {x: 0, y: 0}
-    patrolAreaMax: {x: 0, y: 0}
-    autoSpawnOnLoad: 0
-    initialState: 0
-    snapToNavMesh: 0
-  - sceneName: 
-    spawnPosition: {x: 0, y: 0, z: 0}
-    patrolAreaMin: {x: 0, y: 0}
-    patrolAreaMax: {x: 0, y: 0}
-    autoSpawnOnLoad: 0
-    initialState: 0
-    snapToNavMesh: 0
-  - sceneName: 
-    spawnPosition: {x: 0, y: 0, z: 0}
-    patrolAreaMin: {x: 0, y: 0}
-    patrolAreaMax: {x: 0, y: 0}
-    autoSpawnOnLoad: 0
-    initialState: 0
-    snapToNavMesh: 0
-  - sceneName: 
-    spawnPosition: {x: 0, y: 0, z: 0}
-    patrolAreaMin: {x: 0, y: 0}
-    patrolAreaMax: {x: 0, y: 0}
-    autoSpawnOnLoad: 0
-    initialState: 0
-    snapToNavMesh: 0
-  autoPlaceOnNavMesh: 1
-  navMeshSearchRadius: 10
-  allowAutoSpawn: 0
 --- !u!1 &981889659
 GameObject:
   m_ObjectHideFlags: 0
@@ -14278,7 +14168,7 @@ Transform:
   m_GameObject: {fileID: 1677415684}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.014906138, z: -0, w: 0.9998889}
-  m_LocalPosition: {x: -3.01, y: -11.11, z: 0.09}
+  m_LocalPosition: {x: -3.01, y: -11.11, z: 0}
   m_LocalScale: {x: 2.2, y: 2.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

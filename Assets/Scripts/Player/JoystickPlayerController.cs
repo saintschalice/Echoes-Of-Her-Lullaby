@@ -75,6 +75,13 @@ public class JoystickPlayerController : MonoBehaviour
         // 2. Ensure Rigidbody2D Interpolate is set to 'Interpolate'.
     }
 
+    void LateUpdate()
+    {
+        Vector3 p = transform.position;
+        p.z = 0f;
+        transform.position = p;
+    }
+
     void SpawnAtSavedPoint()
     {
         string spawnName = "DefaultSpawn";

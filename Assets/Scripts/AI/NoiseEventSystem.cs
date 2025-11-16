@@ -43,9 +43,10 @@ public class NoiseEventSystem : MonoBehaviour
     /// </summary>
     public static void BroadcastNoise(Vector3 position, float strength = 1f)
     {
-        if (EmilyAIController.Instance != null && EmilyAIController.Instance.perception != null)
-        {
-            EmilyAIController.Instance.perception.OnNoiseHeard(position, strength);
+        var emilyEar = FindFirstObjectByType<EmilyPerception>(); // new AI
+        if (emilyEar != null)
+             {
+            emilyEar.HearNoise(position, strength);
             Debug.Log($"[NoiseEvent] Broadcast at {position} with strength {strength}");
         }
     }
