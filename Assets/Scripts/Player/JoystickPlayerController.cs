@@ -1,7 +1,12 @@
+using System;
 using UnityEngine;
 
 public class JoystickPlayerController : MonoBehaviour
 {
+    public static JoystickPlayerController Instance { get; private set; }
+    public static event Action<JoystickPlayerController> OnInstanceChanged;
+
+
     [Header("Movement")]
     public float moveSpeed = 5f;
     public bool usePhysics = true;
@@ -17,6 +22,27 @@ public class JoystickPlayerController : MonoBehaviour
     // Variables to store input and state
     private Vector2 moveDirection = Vector2.zero; // Stores input from Update()
     private Vector2 lastDirection = Vector2.down; // Used for idle animation direction
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        OnInstanceChanged?.Invoke(this);
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+            OnInstanceChanged?.Invoke(null);
+        }
+    }
 
     void Start()
     {

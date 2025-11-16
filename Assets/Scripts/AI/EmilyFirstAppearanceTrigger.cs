@@ -42,7 +42,7 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
     private void Awake()
     {
         // Cache references at startup (fast)
-        cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
+        TryCachePlayerController();
         mainCamera = Camera.main;
 
         if (cachedPlayerController == null)
@@ -201,33 +201,49 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
     // OPTIMIZED: Uses cached reference instead of FindObjectOfType
     void DisablePlayerControls()
     {
-        if (cachedPlayerController == null)
-        {
-            // Try to find it again
-            cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
-        }
-
-        if (cachedPlayerController != null)
-        {
-            cachedPlayerController.enabled = false;
-        }
-        else
+        if (!TryCachePlayerController())
         {
             Debug.LogError("[EmilyTrigger] CRITICAL: Could not find player controller to disable!");
+            return;
         }
+
+        cachedPlayerController.enabled = false;
     }
 
     void EnablePlayerControls()
     {
-        if (cachedPlayerController == null)
+        if (!TryCachePlayerController())
+            return;
+
+        cachedPlayerController.enabled = true;
+    }
+
+    bool TryCachePlayerController()
+    {
+        if (cachedPlayerController != null)
+            return true;
+
+        if (JoystickPlayerController.Instance != null)
         {
-            cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
+            cachedPlayerController = JoystickPlayerController.Instance;
+            return true;
         }
 
-        if (cachedPlayerController != null)
+        if (PersistentSpawnManager.Instance != null && PersistentSpawnManager.Instance.player != null)
         {
-            cachedPlayerController.enabled = true;
+            cachedPlayerController = PersistentSpawnManager.Instance.player.GetComponent<JoystickPlayerController>();
+            if (cachedPlayerController != null)
+                return true;
         }
+
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null && playerObj.TryGetComponent(out JoystickPlayerController controller))
+        {
+            cachedPlayerController = controller;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>

@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 public class InventoryUI : MonoBehaviour
 {
+    public static InventoryUI Instance { get; private set; }
+
     [Header("Essential References")]
     public GameObject inventoryPanel;
     public Transform slotParent;
@@ -26,6 +28,25 @@ public class InventoryUI : MonoBehaviour
     private InventoryManager inventoryManager;
     private bool isOpen = false;
     private bool hasNotifiedTutorial = false;
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
 
     void Start()
     {

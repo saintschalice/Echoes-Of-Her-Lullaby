@@ -1,0 +1,311 @@
+diff --git a/Assets/Scripts/AI/EmilyFirstAppearanceTrigger.cs b/Assets/Scripts/AI/EmilyFirstAppearanceTrigger.cs
+index db75f53..f982bec 100644
+--- a/Assets/Scripts/AI/EmilyFirstAppearanceTrigger.cs
++++ b/Assets/Scripts/AI/EmilyFirstAppearanceTrigger.cs
+@@ -41,16 +41,30 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
+ 
+     private void Awake()
+     {
+-        // Cache references at startup (fast)
+-        cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
++        TryCachePlayerController();
+         mainCamera = Camera.main;
++    }
++
++    private void OnEnable()
++    {
++        JoystickPlayerController.OnInstanceChanged += HandlePlayerControllerChanged;
+ 
+         if (cachedPlayerController == null)
+         {
+-            Debug.LogWarning("[EmilyTrigger] JoystickPlayerController not found at startup");
++            TryCachePlayerController();
+         }
+     }
+ 
++    private void OnDisable()
++    {
++        JoystickPlayerController.OnInstanceChanged -= HandlePlayerControllerChanged;
++    }
++
++    void HandlePlayerControllerChanged(JoystickPlayerController controller)
++    {
++        cachedPlayerController = controller;
++    }
++
+     private void Start()
+     {
+         // Check if this event has already happened
+@@ -201,33 +215,49 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
+     // OPTIMIZED: Uses cached reference instead of FindObjectOfType
+     void DisablePlayerControls()
+     {
+-        if (cachedPlayerController == null)
+-        {
+-            // Try to find it again
+-            cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
+-        }
+-
+-        if (cachedPlayerController != null)
+-        {
+-            cachedPlayerController.enabled = false;
+-        }
+-        else
++        if (!TryCachePlayerController())
+         {
+             Debug.LogError("[EmilyTrigger] CRITICAL: Could not find player controller to disable!");
++            return;
+         }
++
++        cachedPlayerController.enabled = false;
+     }
+ 
+     void EnablePlayerControls()
+     {
+-        if (cachedPlayerController == null)
++        if (!TryCachePlayerController())
++            return;
++
++        cachedPlayerController.enabled = true;
++    }
++
++    bool TryCachePlayerController()
++    {
++        if (cachedPlayerController != null)
++            return true;
++
++        if (JoystickPlayerController.Instance != null)
+         {
+-            cachedPlayerController = FindFirstObjectByType<JoystickPlayerController>();
++            cachedPlayerController = JoystickPlayerController.Instance;
++            return true;
+         }
+ 
+-        if (cachedPlayerController != null)
++        if (PersistentSpawnManager.Instance != null && PersistentSpawnManager.Instance.player != null)
+         {
+-            cachedPlayerController.enabled = true;
++            cachedPlayerController = PersistentSpawnManager.Instance.player.GetComponent<JoystickPlayerController>();
++            if (cachedPlayerController != null)
++                return true;
+         }
++
++        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
++        if (playerObj != null && playerObj.TryGetComponent(out JoystickPlayerController controller))
++        {
++            cachedPlayerController = controller;
++            return true;
++        }
++
++        return false;
+     }
+ 
+     /// <summary>
+diff --git a/Assets/Scripts/Player/JoystickPlayerController.cs b/Assets/Scripts/Player/JoystickPlayerController.cs
+index 637eede..96ee87a 100644
+--- a/Assets/Scripts/Player/JoystickPlayerController.cs
++++ b/Assets/Scripts/Player/JoystickPlayerController.cs
+@@ -1,7 +1,11 @@
++using System;
+ using UnityEngine;
+ 
+ public class JoystickPlayerController : MonoBehaviour
+ {
++    public static JoystickPlayerController Instance { get; private set; }
++    public static event Action<JoystickPlayerController> OnInstanceChanged;
++
+     [Header("Movement")]
+     public float moveSpeed = 5f;
+     public bool usePhysics = true;
+@@ -18,6 +22,27 @@ public class JoystickPlayerController : MonoBehaviour
+     private Vector2 moveDirection = Vector2.zero; // Stores input from Update()
+     private Vector2 lastDirection = Vector2.down; // Used for idle animation direction
+ 
++    void Awake()
++    {
++        if (Instance != null && Instance != this)
++        {
++            Destroy(gameObject);
++            return;
++        }
++
++        Instance = this;
++        OnInstanceChanged?.Invoke(this);
++    }
++
++    void OnDestroy()
++    {
++        if (Instance == this)
++        {
++            Instance = null;
++            OnInstanceChanged?.Invoke(null);
++        }
++    }
++
+     void Start()
+     {
+         // Get components
+diff --git a/Assets/Scripts/UI/Dialogs/DialogueSystemV2.cs b/Assets/Scripts/UI/Dialogs/DialogueSystemV2.cs
+index 1c9cff5..8edfccd 100644
+--- a/Assets/Scripts/UI/Dialogs/DialogueSystemV2.cs
++++ b/Assets/Scripts/UI/Dialogs/DialogueSystemV2.cs
+@@ -60,12 +60,17 @@ public class DialogueSystemV2 : MonoBehaviour
+     public System.Action OnDialogueEnded;
+ 
+     public static DialogueSystemV2 Instance { get; private set; }
++    private InventoryUI cachedInventoryUI;
+ 
+     void Awake()
+     {
+         if (Instance == null)
+         {
+             Instance = this;
++            if (transform.parent != null)
++            {
++                transform.SetParent(null, true);
++            }
+             DontDestroyOnLoad(gameObject);
+         }
+         else
+@@ -75,6 +80,16 @@ public class DialogueSystemV2 : MonoBehaviour
+         }
+     }
+ 
++    void OnEnable()
++    {
++        JoystickPlayerController.OnInstanceChanged += HandlePlayerControllerChanged;
++    }
++
++    void OnDisable()
++    {
++        JoystickPlayerController.OnInstanceChanged -= HandlePlayerControllerChanged;
++    }
++
+     void Start()
+     {
+         FindReferences();
+@@ -99,15 +114,7 @@ public class DialogueSystemV2 : MonoBehaviour
+ 
+     void FindReferences()
+     {
+-        if (playerController == null)
+-        {
+-            playerController = FindFirstObjectByType<JoystickPlayerController>();
+-
+-            if (playerController == null)
+-            {
+-                Debug.LogWarning("[Dialogue] JoystickPlayerController not found!");
+-            }
+-        }
++        EnsurePlayerControllerReference();
+ 
+         if (joystickUI == null)
+         {
+@@ -126,6 +133,8 @@ public class DialogueSystemV2 : MonoBehaviour
+                 }
+             }
+         }
++
++        EnsureInventoryReference();
+     }
+ 
+     void Update()
+@@ -231,6 +240,8 @@ public class DialogueSystemV2 : MonoBehaviour
+ 
+         InventoryManager.Instance?.NotifyActionStarted();
+ 
++        EnsurePlayerControllerReference();
++
+         // Notify UIStateManager
+         if (UIStateManager.Instance != null)
+         {
+@@ -259,10 +270,10 @@ public class DialogueSystemV2 : MonoBehaviour
+             dialoguePanel.SetActive(true);
+         }
+ 
+-        InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
+-        if (inventoryUI != null)
++        EnsureInventoryReference();
++        if (cachedInventoryUI != null)
+         {
+-            inventoryUI.ForceCloseInventory();
++            cachedInventoryUI.ForceCloseInventory();
+         }
+ 
+         Cursor.visible = true;
+@@ -553,4 +564,35 @@ public class DialogueSystemV2 : MonoBehaviour
+ 
+         StartDialogue(testLines);
+     }
++
++    void HandlePlayerControllerChanged(JoystickPlayerController controller)
++    {
++        playerController = controller;
++    }
++
++    void EnsurePlayerControllerReference(bool logIfMissing = true)
++    {
++        if (playerController != null)
++            return;
++
++        playerController = JoystickPlayerController.Instance ?? FindFirstObjectByType<JoystickPlayerController>();
++
++        if (playerController == null && logIfMissing)
++        {
++            Debug.LogWarning("[Dialogue] JoystickPlayerController not found!");
++        }
++    }
++
++    void EnsureInventoryReference()
++    {
++        if (cachedInventoryUI != null)
++            return;
++
++        cachedInventoryUI = InventoryUI.Instance ?? FindFirstObjectByType<InventoryUI>();
++
++        if (cachedInventoryUI == null)
++        {
++            Debug.LogWarning("[Dialogue] InventoryUI not found!");
++        }
++    }
+ }
+\ No newline at end of file
+diff --git a/Assets/Scripts/UI/Inventory/InventoryUI.cs b/Assets/Scripts/UI/Inventory/InventoryUI.cs
+index 7643af0..304e84e 100644
+--- a/Assets/Scripts/UI/Inventory/InventoryUI.cs
++++ b/Assets/Scripts/UI/Inventory/InventoryUI.cs
+@@ -6,6 +6,8 @@ using System.Collections.Generic;
+ 
+ public class InventoryUI : MonoBehaviour
+ {
++    public static InventoryUI Instance { get; private set; }
++
+     [Header("Essential References")]
+     public GameObject inventoryPanel;
+     public Transform slotParent;
+@@ -27,6 +29,25 @@ public class InventoryUI : MonoBehaviour
+     private bool isOpen = false;
+     private bool hasNotifiedTutorial = false;
+ 
++    void Awake()
++    {
++        if (Instance != null && Instance != this)
++        {
++            Destroy(gameObject);
++            return;
++        }
++
++        Instance = this;
++    }
++
++    void OnDestroy()
++    {
++        if (Instance == this)
++        {
++            Instance = null;
++        }
++    }
++
+     void Start()
+     {
+         inventoryManager = InventoryManager.Instance;

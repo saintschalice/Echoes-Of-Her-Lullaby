@@ -60,12 +60,17 @@ public class DialogueSystemV2 : MonoBehaviour
     public System.Action OnDialogueEnded;
 
     public static DialogueSystemV2 Instance { get; private set; }
+    private InventoryUI cachedInventoryUI;
 
     void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            if (transform.parent != null)
+            {
+                transform.SetParent(null, true);
+            }
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -73,6 +78,16 @@ public class DialogueSystemV2 : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+    }
+
+    void OnEnable()
+    {
+        JoystickPlayerController.OnInstanceChanged += HandlePlayerControllerChanged;
+    }
+
+    void OnDisable()
+    {
+        JoystickPlayerController.OnInstanceChanged -= HandlePlayerControllerChanged;
     }
 
     void Start()
@@ -99,15 +114,19 @@ public class DialogueSystemV2 : MonoBehaviour
 
     void FindReferences()
     {
+
         if (playerController == null)
         {
-            playerController = FindFirstObjectByType<JoystickPlayerController>();
+            playerController = JoystickPlayerController.Instance ?? FindFirstObjectByType<JoystickPlayerController>();
 
             if (playerController == null)
             {
                 Debug.LogWarning("[Dialogue] JoystickPlayerController not found!");
             }
         }
+
+        EnsurePlayerControllerReference();
+
 
         if (joystickUI == null)
         {
@@ -126,6 +145,8 @@ public class DialogueSystemV2 : MonoBehaviour
                 }
             }
         }
+
+        EnsureInventoryReference();
     }
 
     void Update()
@@ -231,6 +252,8 @@ public class DialogueSystemV2 : MonoBehaviour
 
         InventoryManager.Instance?.NotifyActionStarted();
 
+        EnsurePlayerControllerReference();
+
         // Notify UIStateManager
         if (UIStateManager.Instance != null)
         {
@@ -259,10 +282,10 @@ public class DialogueSystemV2 : MonoBehaviour
             dialoguePanel.SetActive(true);
         }
 
-        InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
-        if (inventoryUI != null)
+        EnsureInventoryReference();
+        if (cachedInventoryUI != null)
         {
-            inventoryUI.ForceCloseInventory();
+            cachedInventoryUI.ForceCloseInventory();
         }
 
         Cursor.visible = true;
@@ -552,5 +575,36 @@ public class DialogueSystemV2 : MonoBehaviour
         };
 
         StartDialogue(testLines);
+    }
+
+    void HandlePlayerControllerChanged(JoystickPlayerController controller)
+    {
+        playerController = controller;
+    }
+
+    void EnsurePlayerControllerReference(bool logIfMissing = true)
+    {
+        if (playerController != null)
+            return;
+
+        playerController = JoystickPlayerController.Instance ?? FindFirstObjectByType<JoystickPlayerController>();
+
+        if (playerController == null && logIfMissing)
+        {
+            Debug.LogWarning("[Dialogue] JoystickPlayerController not found!");
+        }
+    }
+
+    void EnsureInventoryReference()
+    {
+        if (cachedInventoryUI != null)
+            return;
+
+        cachedInventoryUI = InventoryUI.Instance ?? FindFirstObjectByType<InventoryUI>();
+
+        if (cachedInventoryUI == null)
+        {
+            Debug.LogWarning("[Dialogue] InventoryUI not found!");
+        }
     }
 }
