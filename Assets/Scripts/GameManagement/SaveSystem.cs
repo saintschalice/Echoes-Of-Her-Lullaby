@@ -44,9 +44,12 @@ public class GameSaveData
 
     public GameSaveData()
     {
-        saveDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        saveDate = DateTime.Now.ToString("yyyy-MM-dd");
         currentScene = "Room01_Foyer";
-        playerPosition = Vector3.zero;
+
+        // NEW: Set default spawn position for Room01_Foyer Main spawn
+        playerPosition = new Vector3(-2.98f, -11.87f, 0f); // Your SpawnPoint_Main position
+
         currentChapter = 1;
         playtimeSeconds = 0f;
         lullabySongProgress = 0;
@@ -110,10 +113,9 @@ public class SaveSystem : MonoBehaviour
 
         if (currentSaveData == null)
         {
-            if (HasSaveFile(1))
-                LoadGame(1);
-            else
-                CreateNewGame();
+            // Don't auto-load or create game data yet
+            // MainMenu will handle this
+            Debug.Log("[SaveSystem] Initialized, waiting for MainMenu input");
         }
     }
 
@@ -136,13 +138,38 @@ public class SaveSystem : MonoBehaviour
             }
         }
 
-        if (HasSaveFile(1))
+        // NEW: Check if we should load a specific save slot (from MainMenu)
+        if (PlayerPrefs.HasKey("LoadSlotOnStart"))
         {
-            LoadGame(1);
+            int slotToLoad = PlayerPrefs.GetInt("LoadSlotOnStart");
+            PlayerPrefs.DeleteKey("LoadSlotOnStart"); // Clear the flag
+
+            if (slotToLoad == -1)
+            {
+                // New game requested from MainMenu
+                CreateNewGame();
+                Debug.Log("[SaveSystem] New game started from MainMenu");
+            }
+            else if (HasSaveFile(slotToLoad))
+            {
+                // Load specific save slot
+                LoadGame(slotToLoad);
+                Debug.Log($"[SaveSystem] Loaded save slot {slotToLoad} from MainMenu");
+            }
+            else
+            {
+                // Fallback to new game if save doesn't exist
+                CreateNewGame();
+                Debug.Log("[SaveSystem] Save not found, starting new game");
+            }
         }
         else
         {
-            CreateNewGame();
+            // Normal start - just create empty save data, don't load anything
+            if (currentSaveData == null)
+            {
+                CreateNewGame();
+            }
         }
 
         Debug.Log($"SaveSystem initialized - currentSaveData: {(currentSaveData != null ? "CHECK" : "NULL")}");
@@ -207,6 +234,27 @@ public class SaveSystem : MonoBehaviour
     {
         currentSaveData = new GameSaveData();
         currentSaveData.saveName = "New Game";
+        currentSaveData.currentScene = "Room01_Foyer";
+
+        // NEW: Find the default spawn point in Room01_Foyer
+        RoomSpawnPoint[] spawnPoints = FindObjectsByType<RoomSpawnPoint>(FindObjectsSortMode.None);
+        foreach (RoomSpawnPoint sp in spawnPoints)
+        {
+            if (sp.roomName == "Room01_Foyer" && sp.isDefaultSpawnPoint)
+            {
+                currentSaveData.playerPosition = sp.transform.position;
+                Debug.Log($"[SaveSystem] New game spawn set to: {sp.spawnPointID} at {sp.transform.position}");
+                break;
+            }
+        }
+
+        // Fallback if no spawn point found
+        if (currentSaveData.playerPosition == Vector3.zero)
+        {
+            currentSaveData.playerPosition = new Vector3(-2.98f, -11.87f, 0f); // Your spawn point position
+            Debug.LogWarning("[SaveSystem] Using hardcoded spawn position");
+        }
+
         Debug.Log("Created new game save data");
     }
 
@@ -222,7 +270,7 @@ public class SaveSystem : MonoBehaviour
         string autoSaveName = roomDisplayName;
 
         currentSaveData.saveSlot = slot;
-        currentSaveData.saveDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        currentSaveData.saveDate = DateTime.Now.ToString("yyyy-MM-dd");
         currentSaveData.saveName = autoSaveName;
 
         UpdatePlayerData();
@@ -339,6 +387,8 @@ public class SaveSystem : MonoBehaviour
         {
             return null;
         }
+
+
     }
 
     void UpdatePlayerData()
@@ -596,5 +646,44 @@ public class SaveSystem : MonoBehaviour
         int seconds = Mathf.FloorToInt(currentSaveData.playtimeSeconds % 60f);
 
         return $"{hours:00}:{minutes:00}:{seconds:00}";
+    }
+
+    public int GetMostRecentSaveSlot()
+    {
+        int mostRecentSlot = -1;
+        System.DateTime mostRecentTime = System.DateTime.MinValue;
+
+        for (int i = 0; i <= maxSaveSlots; i++)
+        {
+            if (HasSaveFile(i))
+            {
+                GameSaveData saveData = GetSaveInfo(i);
+
+                if (saveData != null)
+                {
+                    System.DateTime saveTime;
+                    if (System.DateTime.TryParse(saveData.saveDate, out saveTime))
+                    {
+                        if (saveTime > mostRecentTime)
+                        {
+                            mostRecentTime = saveTime;
+                            mostRecentSlot = i;
+                        }
+                    }
+                }
+            }
+        }
+
+        return mostRecentSlot;
+    }
+
+    public bool HasAnySaveFile()
+    {
+        for (int i = 0; i <= maxSaveSlots; i++)
+        {
+            if (HasSaveFile(i))
+                return true;
+        }
+        return false;
     }
 }

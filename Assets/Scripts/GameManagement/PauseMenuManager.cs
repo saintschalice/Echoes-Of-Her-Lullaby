@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class PauseMenuManager : MonoBehaviour
@@ -8,12 +9,17 @@ public class PauseMenuManager : MonoBehaviour
     [Header("Pause Menu Panels")]
     public GameObject pauseMenuPanel;
     public GameObject settingsPanel;
+    public GameObject mainMenuConfirmationPanel;
 
     [Header("Main Pause Menu Buttons")]
     public Button resumeButton;
     public Button settingsButton;
     public Button saveGameButton;
     public Button mainMenuButton;
+
+    [Header("Confirmation Dialog Buttons")]
+    public Button confirmMainMenuButton;
+    public Button cancelMainMenuButton;
 
     [Header("Settings Buttons")]
     public Button backFromSettingsButton;
@@ -50,6 +56,9 @@ public class PauseMenuManager : MonoBehaviour
     public Button pauseButton;
     public GameObject pauseButtonObject;
 
+    [Header("Main Menu Scene")]
+    public string mainMenuSceneName = "MainMenu";
+
     private bool isPaused = false;
     private bool isInSettings = false;
     private CanvasGroup canvasGroup;
@@ -81,6 +90,37 @@ public class PauseMenuManager : MonoBehaviour
         {
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
+
+        // Subscribe to scene loaded event to ensure UI is hidden when returning to main menu
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        // Unsubscribe from scene loaded event
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // If we loaded the main menu, hide all pause menu UI
+        if (scene.name == mainMenuSceneName)
+        {
+            if (pauseMenuPanel != null)
+                pauseMenuPanel.SetActive(false);
+
+            if (settingsPanel != null)
+                settingsPanel.SetActive(false);
+
+            if (mainMenuConfirmationPanel != null)
+                mainMenuConfirmationPanel.SetActive(false);
+
+            isPaused = false;
+            isInSettings = false;
+            Time.timeScale = 1f;
+
+            Debug.Log("[PauseMenu] Main menu loaded - UI hidden");
+        }
     }
 
     void Start()
@@ -95,14 +135,20 @@ public class PauseMenuManager : MonoBehaviour
         audioSettingsPanel.SetActive(true);
         videoSettingsPanel.SetActive(false);
 
+        // Hide confirmation panel at start
+        if (mainMenuConfirmationPanel != null)
+        {
+            mainMenuConfirmationPanel.SetActive(false);
+        }
+
+        // Enable the main menu button (remove color override to respect Unity's inspector color)
         if (mainMenuButton != null)
         {
-            mainMenuButton.interactable = false;
+            mainMenuButton.interactable = true;
             var mainMenuText = mainMenuButton.GetComponentInChildren<TextMeshProUGUI>();
             if (mainMenuText != null)
             {
-                mainMenuText.color = Color.gray;
-                mainMenuText.text = "Main Menu (Coming Soon)";
+                mainMenuText.text = "Main Menu";
             }
         }
 
@@ -232,7 +278,14 @@ public class PauseMenuManager : MonoBehaviour
             saveGameButton.onClick.AddListener(OpenSaveMenu);
 
         if (mainMenuButton != null)
-            mainMenuButton.onClick.AddListener(GoToMainMenu);
+            mainMenuButton.onClick.AddListener(ShowMainMenuConfirmation);
+
+        // Setup confirmation dialog buttons
+        if (confirmMainMenuButton != null)
+            confirmMainMenuButton.onClick.AddListener(ConfirmGoToMainMenu);
+
+        if (cancelMainMenuButton != null)
+            cancelMainMenuButton.onClick.AddListener(CancelMainMenuConfirmation);
 
         if (backFromSettingsButton != null)
             backFromSettingsButton.onClick.AddListener(BackFromSettings);
@@ -315,6 +368,13 @@ public class PauseMenuManager : MonoBehaviour
         isInSettings = false;
         pauseMenuPanel.SetActive(false);
         settingsPanel.SetActive(false);
+
+        // Hide confirmation panel if visible
+        if (mainMenuConfirmationPanel != null)
+        {
+            mainMenuConfirmationPanel.SetActive(false);
+        }
+
         Time.timeScale = 1f;
         Cursor.visible = true;
 
@@ -367,9 +427,149 @@ public class PauseMenuManager : MonoBehaviour
         }
     }
 
+    public void ShowMainMenuConfirmation()
+    {
+        if (mainMenuConfirmationPanel != null)
+        {
+            pauseMenuPanel.SetActive(false);
+            mainMenuConfirmationPanel.SetActive(true);
+
+            Debug.Log("[PauseMenu] Showing main menu confirmation");
+        }
+        else
+        {
+            Debug.LogWarning("[PauseMenu] Main menu confirmation panel not assigned! Going directly to main menu.");
+            GoToMainMenu();
+        }
+    }
+
+    public void CancelMainMenuConfirmation()
+    {
+        if (mainMenuConfirmationPanel != null)
+        {
+            mainMenuConfirmationPanel.SetActive(false);
+            pauseMenuPanel.SetActive(true);
+
+            Debug.Log("[PauseMenu] Cancelled main menu confirmation");
+        }
+    }
+
+    public void ConfirmGoToMainMenu()
+    {
+        Debug.Log("[PauseMenu] Confirmed - Going to main menu");
+        GoToMainMenu();
+    }
+
     public void GoToMainMenu()
     {
-        Debug.Log("[PauseMenu] Main Menu not implemented yet");
+        // Start the fade and load coroutine
+        StartCoroutine(FadeToMainMenu());
+    }
+
+    System.Collections.IEnumerator FadeToMainMenu()
+    {
+        // Hide all UI panels
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
+
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
+        if (mainMenuConfirmationPanel != null)
+            mainMenuConfirmationPanel.SetActive(false);
+
+        // Reset pause state
+        isPaused = false;
+        isInSettings = false;
+
+        // Reset time scale
+        Time.timeScale = 1f;
+
+        // CRITICAL: Destroy persistent objects before returning to main menu
+        DestroyPersistentObjects();
+
+        // Use ScreenFader if available
+        if (ScreenFader.Instance != null)
+        {
+            bool fadeComplete = false;
+
+            // Fade out to black
+            ScreenFader.Instance.FadeOut(-1, () => {
+                fadeComplete = true;
+            });
+
+            // Wait for fade to complete
+            while (!fadeComplete)
+            {
+                yield return null;
+            }
+
+            Debug.Log($"[PauseMenu] Loading main menu scene: {mainMenuSceneName}");
+            SceneManager.LoadScene(mainMenuSceneName);
+        }
+        else
+        {
+            // No ScreenFader available, load directly
+            Debug.LogWarning("[PauseMenu] ScreenFader not found, loading without fade effect");
+            Debug.Log($"[PauseMenu] Loading main menu scene: {mainMenuSceneName}");
+            SceneManager.LoadScene(mainMenuSceneName);
+        }
+    }
+
+    void DestroyPersistentObjects()
+    {
+        Debug.Log("[PauseMenu] Cleaning up persistent objects before returning to main menu");
+
+        // Try to use GameSessionManager if available (cleaner approach)
+        if (GameSessionManager.Instance != null)
+        {
+            Debug.Log("[PauseMenu] Using GameSessionManager for cleanup");
+            GameSessionManager.CleanupNow();
+            return;
+        }
+
+        // Fallback: Manual cleanup if GameSessionManager doesn't exist
+        Debug.Log("[PauseMenu] Using manual cleanup (GameSessionManager not found)");
+
+        // Find all GameObjects in the DontDestroyOnLoad scene
+        GameObject tempObj = new GameObject("TempFinder");
+        DontDestroyOnLoad(tempObj);
+        UnityEngine.SceneManagement.Scene dontDestroyScene = tempObj.scene;
+        Destroy(tempObj);
+
+        GameObject[] dontDestroyObjects = dontDestroyScene.GetRootGameObjects();
+
+        // List of objects to keep (don't destroy ScreenFader)
+        string[] objectsToKeep = { "ScreenFader" };
+
+        foreach (GameObject obj in dontDestroyObjects)
+        {
+            bool shouldKeep = false;
+
+            // Check if this object should be kept
+            foreach (string keepName in objectsToKeep)
+            {
+                if (obj.name.Contains(keepName))
+                {
+                    shouldKeep = true;
+                    Debug.Log($"[PauseMenu] Keeping persistent object: {obj.name}");
+                    break;
+                }
+            }
+
+            // Destroy if not in keep list
+            if (!shouldKeep)
+            {
+                Debug.Log($"[PauseMenu] Destroying persistent object: {obj.name}");
+                Destroy(obj);
+            }
+        }
+
+        // Clear this singleton instance
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     public void ShowAudioSettings()

@@ -23,9 +23,14 @@ public class TutorialManager : MonoBehaviour
     [Header("Audio")]
     public AudioClip tutorialSound;
 
+    [Header("Cutscene Settings")]
+    [Tooltip("Wait for opening cutscene to complete before starting tutorial")]
+    public bool waitForCutscene = true;
+
     private AudioSource audioSource;
     private bool tutorialActive = false;
     private bool tutorialCompleted = false;
+    private bool cutsceneFinished = false; // NEW: Track if cutscene is done
 
     private bool hasMovedJoystick = false;
     private bool hasExaminedMailbox = false;
@@ -45,6 +50,18 @@ public class TutorialManager : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
+        }
+
+        // NEW: Subscribe to cutscene completion event
+        if (waitForCutscene)
+        {
+            CutsceneManager.OnAnyCutsceneComplete += OnCutsceneFinished;
+            Debug.Log("[Tutorial] Waiting for cutscene to complete before starting tutorial");
+        }
+        else
+        {
+            cutsceneFinished = true; // No need to wait
         }
     }
 
@@ -71,6 +88,28 @@ public class TutorialManager : MonoBehaviour
         }
 
         CheckTutorialStatus();
+    }
+
+    void OnDestroy()
+    {
+        // NEW: Unsubscribe from event
+        if (waitForCutscene)
+        {
+            CutsceneManager.OnAnyCutsceneComplete -= OnCutsceneFinished;
+        }
+    }
+
+    // NEW: Called when cutscene completes
+    void OnCutsceneFinished()
+    {
+        cutsceneFinished = true;
+        Debug.Log("[Tutorial] Cutscene finished, starting tutorial now");
+
+        // Start tutorial if we were waiting
+        if (!tutorialCompleted)
+        {
+            StartCoroutine(StartTutorialSequence());
+        }
     }
 
     // NEW: Find all required references at runtime
@@ -144,7 +183,8 @@ public class TutorialManager : MonoBehaviour
             tutorialCompleted = SaveSystem.Instance.WasObjectExamined(TUTORIAL_COMPLETED_ID);
         }
 
-        if (!tutorialCompleted)
+        // NEW: Only start tutorial if cutscene is finished (or not waiting for one)
+        if (!tutorialCompleted && cutsceneFinished)
         {
             StartCoroutine(StartTutorialSequence());
         }
@@ -152,10 +192,17 @@ public class TutorialManager : MonoBehaviour
 
     IEnumerator StartTutorialSequence()
     {
+        // NEW: Double-check cutscene is done
+        if (waitForCutscene && !cutsceneFinished)
+        {
+            Debug.Log("[Tutorial] Waiting for cutscene...");
+            yield return new WaitUntil(() => cutsceneFinished);
+        }
+
         yield return new WaitForSeconds(1f);
 
         ShowTutorialStep(
-            "Welcome to Echoes of Her Lullaby!\n\nUse the joystick to move around.\nTap objects to examine them.",
+            "Use the D-pad to move around.\nTap objects to examine them.",
             joystickHighlight
         );
 

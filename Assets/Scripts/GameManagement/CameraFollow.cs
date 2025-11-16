@@ -66,8 +66,55 @@ public class CameraFollow : MonoBehaviour
 
     System.Collections.IEnumerator RefreshBoundariesDelayed()
     {
+        // Wait a frame for tilemaps/player to be ready
         yield return new WaitForEndOfFrame();
-        RefreshTilemapBoundaries();
+
+        // 1. Calculate and set boundaries
+        if (useTilemapBoundaries)
+        {
+            UpdateTilemapBoundaries();
+        }
+        else if (useManualBoundaries)
+        {
+            SetManualBoundaries();
+        }
+
+        // 2. Ensure target is found again, in case it loaded late
+        if (target == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+                target = player.transform;
+        }
+
+        // 3. 🎯 NEW: Snap camera to the target's initial position + offset
+        if (target != null)
+        {
+            Vector3 desiredPosition = target.position + offset;
+
+            // Apply boundary constraints for the initial snap,
+            // crucial if the player spawns near an edge.
+            if (useTilemapBoundaries || useManualBoundaries)
+            {
+                if (roomSmallerThanCamera)
+                {
+                    // Use the locked center position
+                    desiredPosition = lockedCameraPosition;
+                }
+                else
+                {
+                    // Clamp to the calculated boundaries
+                    desiredPosition.x = Mathf.Clamp(desiredPosition.x, minX, maxX);
+                    desiredPosition.y = Mathf.Clamp(desiredPosition.y, minY, maxY);
+                }
+            }
+
+            // Snap the position immediately
+            transform.position = desiredPosition;
+            velocity = Vector3.zero; // Reset velocity to prevent immediate "snap back" due to smoothing
+
+            Debug.Log($"[CameraFollow] Initial snap position: {transform.position}");
+        }
     }
 
     void Start()
@@ -81,14 +128,13 @@ public class CameraFollow : MonoBehaviour
 
         CalculateCameraSize();
 
-        if (useTilemapBoundaries)
-        {
-            UpdateTilemapBoundaries();
-        }
-        else if (useManualBoundaries)
-        {
-            SetManualBoundaries();
-        }
+        // NEW: Call the delayed refresh here to handle initial positioning
+        // and boundaries after the first frame.
+        StartCoroutine(RefreshBoundariesDelayed());
+        // ---------------------------------------------------------------------
+
+        // Removed the old boundary/manual boundary checks here, 
+        // as they are now handled inside RefreshBoundariesDelayed
 
         lastSceneName = SceneManager.GetActiveScene().name;
     }

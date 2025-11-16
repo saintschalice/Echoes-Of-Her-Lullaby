@@ -22,8 +22,13 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private int audioSourcePoolSize = 10;
     private List<AudioSource> sfxPool = new List<AudioSource>();
     private List<AudioSource> dialoguePool = new List<AudioSource>();
-    private AudioSource musicSource;
+
+    // CHANGED: Made musicSource public so SceneAmbientPlayer can access it directly
+    public AudioSource musicSource;
+
     private AudioSource ambientSource;
+    private AudioSource ambientSource2;
+    private AudioSource currentAmbientSource;
 
     [Header("Settings")]
     [Range(0f, 1f)] public float masterVolume = 1f;
@@ -85,6 +90,12 @@ public class AudioManager : MonoBehaviour
         ambientSource.outputAudioMixerGroup = ambientGroup;
         ambientSource.loop = true;
         ambientSource.playOnAwake = false;
+
+        // Ambient 2
+        ambientSource2 = gameObject.AddComponent<AudioSource>();
+        ambientSource2.outputAudioMixerGroup = ambientGroup;
+        ambientSource2.loop = true;
+        ambientSource2.playOnAwake = false;
 
         Debug.Log($"[AudioManager] Initialized with {sfxPool.Count} SFX sources and {dialoguePool.Count} dialogue sources");
     }
@@ -206,11 +217,48 @@ public class AudioManager : MonoBehaviour
 
     System.Collections.IEnumerator CrossfadeAmbient(AudioClip newClip, float fadeTime)
     {
-        float half = fadeTime / 2f;
-        yield return StartCoroutine(FadeAudioSource(ambientSource, 0f, half));
-        ambientSource.clip = newClip;
-        ambientSource.Play();
-        yield return StartCoroutine(FadeAudioSource(ambientSource, ambientVolume, half));
+        // 1. Determine the new source and the old source
+        AudioSource newSource = (currentAmbientSource == ambientSource) ? ambientSource2 : ambientSource;
+        AudioSource oldSource = currentAmbientSource;
+
+        // 2. Setup the new source for seamless transition
+        newSource.clip = newClip;
+        newSource.loop = true;
+        newSource.volume = 0f; // Start silent
+
+        // Ensure the new source starts playing right away
+        if (!newSource.isPlaying)
+        {
+            newSource.Play();
+        }
+
+        // Set the new source as the current source
+        currentAmbientSource = newSource;
+
+        // 3. Perform the concurrent fade
+        float startTime = Time.unscaledTime;
+        while (Time.unscaledTime < startTime + fadeTime)
+        {
+            float t = (Time.unscaledTime - startTime) / fadeTime;
+
+            // Fade in the new source
+            newSource.volume = Mathf.Lerp(0f, ambientVolume, t);
+
+            // Fade out the old source (if one exists)
+            if (oldSource != null)
+            {
+                oldSource.volume = Mathf.Lerp(ambientVolume, 0f, t);
+            }
+            yield return null;
+        }
+
+        // 4. Cleanup and final volume setting
+        newSource.volume = ambientVolume;
+        if (oldSource != null)
+        {
+            oldSource.Stop();
+            oldSource.volume = ambientVolume; // Reset volume for next use
+        }
     }
     #endregion
 
@@ -253,8 +301,26 @@ public class AudioManager : MonoBehaviour
     }
     #endregion
 
+    /// <summary>
+    /// Stops all currently playing sound effects (SFX) in the SFX pool.
+    /// </summary>
+    public void StopAllSFX()
+    {
+        if (sfxPool == null || sfxPool.Count == 0)
+            return;
+
+        foreach (var source in sfxPool)
+        {
+            if (source != null && source.isPlaying)
+                source.Stop();
+        }
+
+        Debug.Log("[AudioManager] Stopped all SFX.");
+    }
+
     #region Audio Fading
-    System.Collections.IEnumerator FadeAudioSource(AudioSource src, float target, float time)
+    // CHANGED: Made FadeAudioSource public so SceneAmbientPlayer can access it
+    public System.Collections.IEnumerator FadeAudioSource(AudioSource src, float target, float time)
     {
         float start = src.volume; float elapsed = 0f;
         while (elapsed < time)

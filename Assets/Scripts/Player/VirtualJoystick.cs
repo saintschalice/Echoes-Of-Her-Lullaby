@@ -4,85 +4,122 @@ using UnityEngine.EventSystems;
 
 public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
-    [Header("Joystick Components")]
-    public RectTransform handle;
-    public RectTransform background;
-
-    [Header("Settings")]
-    public float handleRange = 50f;
-    public bool force4Directional = true; // NEW: Force 4-directional movement
+    [Header("D-Pad Button Areas - Assign These!")]
+    [Tooltip("Drag the 4 button GameObjects here - they define the detection zones")]
+    public RectTransform upButton;
+    public RectTransform downButton;
+    public RectTransform leftButton;
+    public RectTransform rightButton;
 
     [Header("Output")]
     public Vector2 inputVector = Vector2.zero;
 
-    private Vector2 backgroundCenter;
     private Canvas canvas;
     private Camera cam;
+    private bool isPressed = false;
 
     void Start()
     {
         canvas = GetComponentInParent<Canvas>();
 
-        if (background == null)
-            background = GetComponent<RectTransform>();
-
-        if (handle == null)
-            handle = transform.GetChild(0).GetComponent<RectTransform>();
-
-        if (handleRange == 50f)
-            handleRange = background.sizeDelta.x / 2f - handle.sizeDelta.x / 2f;
+        if (canvas == null)
+        {
+            Debug.LogError("VirtualJoystick: No Canvas found in parent!");
+            return;
+        }
 
         if (canvas.renderMode == RenderMode.ScreenSpaceCamera)
             cam = canvas.worldCamera;
+
+        // Make sure this GameObject can receive touch events
+        Image img = GetComponent<Image>();
+        if (img == null)
+        {
+            Debug.LogError("VirtualJoystick: Add an Image component to this GameObject!");
+        }
+        else
+        {
+            img.raycastTarget = true;
+        }
+
+        // Disable raycasting on button areas (we'll detect them manually)
+        DisableButtonRaycast(upButton);
+        DisableButtonRaycast(downButton);
+        DisableButtonRaycast(leftButton);
+        DisableButtonRaycast(rightButton);
+
+        Debug.Log("VirtualJoystick: Single-touch D-pad initialized!");
+    }
+
+    void DisableButtonRaycast(RectTransform button)
+    {
+        if (button != null)
+        {
+            Image img = button.GetComponent<Image>();
+            if (img != null)
+                img.raycastTarget = false;
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        OnDrag(eventData);
+        isPressed = true;
+        UpdateDirection(eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        Vector2 position = RectTransformUtility.WorldToScreenPoint(cam, background.position);
-        Vector2 radius = background.sizeDelta / 2;
-
-        inputVector = (eventData.position - position) / (radius * canvas.scaleFactor);
-
-        // Clamp input to unit circle
-        if (inputVector.magnitude > 1f)
-        {
-            inputVector = inputVector.normalized;
-        }
-
-        // NEW: Force 4-directional movement (no diagonals)
-        if (force4Directional)
-        {
-            // Determine which direction is dominant
-            if (Mathf.Abs(inputVector.x) > Mathf.Abs(inputVector.y))
-            {
-                // Horizontal movement is dominant
-                inputVector.y = 0;
-                inputVector.x = inputVector.x > 0 ? 1 : -1;
-            }
-            else
-            {
-                // Vertical movement is dominant
-                inputVector.x = 0;
-                inputVector.y = inputVector.y > 0 ? 1 : -1;
-            }
-        }
-
-        // Move handle
-        handle.anchoredPosition = new Vector2(
-            inputVector.x * handleRange,
-            inputVector.y * handleRange
-        );
+        if (isPressed)
+            UpdateDirection(eventData);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
+        isPressed = false;
         inputVector = Vector2.zero;
-        handle.anchoredPosition = Vector2.zero;
+        Debug.Log("Released - stopped moving");
+    }
+
+    void UpdateDirection(PointerEventData eventData)
+    {
+        // Check which button area the touch is over
+        Vector2 direction = Vector2.zero;
+        string buttonName = "none";
+
+        if (upButton != null && RectTransformUtility.RectangleContainsScreenPoint(upButton, eventData.position, cam))
+        {
+            direction = Vector2.up;
+            buttonName = "UP";
+        }
+        else if (downButton != null && RectTransformUtility.RectangleContainsScreenPoint(downButton, eventData.position, cam))
+        {
+            direction = Vector2.down;
+            buttonName = "DOWN";
+        }
+        else if (leftButton != null && RectTransformUtility.RectangleContainsScreenPoint(leftButton, eventData.position, cam))
+        {
+            direction = Vector2.left;
+            buttonName = "LEFT";
+        }
+        else if (rightButton != null && RectTransformUtility.RectangleContainsScreenPoint(rightButton, eventData.position, cam))
+        {
+            direction = Vector2.right;
+            buttonName = "RIGHT";
+        }
+
+        // Only update if direction changed
+        if (inputVector != direction)
+        {
+            inputVector = direction;
+            if (direction != Vector2.zero)
+            {
+                Debug.Log($"Moving {buttonName}: {direction}");
+            }
+            else
+            {
+                Debug.Log("Moved to center/gap - stopped");
+            }
+        }
     }
 
     // Public methods to get input

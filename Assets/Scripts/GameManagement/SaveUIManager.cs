@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System.IO;
 
 public class SaveUIManager : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class SaveUIManager : MonoBehaviour
     [Header("Buttons")]
     public Button closePanelButton;
     public Button newGameButton;
+    public Button backToMainMenuButton;
 
     private List<SaveSlotUI> saveSlots = new List<SaveSlotUI>();
     private bool wasOpenedFromPauseMenu = false;
@@ -36,9 +38,7 @@ public class SaveUIManager : MonoBehaviour
 
     void Start()
     {
-        // FIND REFERENCES AT RUNTIME (if not set in inspector)
         FindReferences();
-
         SetupUI();
         CreateSaveSlots();
 
@@ -46,17 +46,14 @@ public class SaveUIManager : MonoBehaviour
             saveLoadPanel.SetActive(false);
     }
 
-    // NEW: Find references if they're missing
     void FindReferences()
     {
-        // Find Save/Load Panel if not set
         if (saveLoadPanel == null)
         {
             saveLoadPanel = GameObject.Find("SaveLoadPanel");
 
             if (saveLoadPanel == null)
             {
-                // Try finding in ButtonCanvas
                 GameObject buttonCanvas = GameObject.Find("ButtonCanvas");
                 if (buttonCanvas != null)
                 {
@@ -68,17 +65,22 @@ public class SaveUIManager : MonoBehaviour
                 }
             }
 
+            // NEW: Also try finding SaveSlotSelectionPanel in MainMenu
+            if (saveLoadPanel == null)
+            {
+                saveLoadPanel = GameObject.Find("SaveSlotSelectionPanel");
+            }
+
             if (saveLoadPanel == null)
             {
                 Debug.LogError("[SaveUI] SaveLoadPanel not found!");
             }
             else
             {
-                Debug.Log("[SaveUI] SaveLoadPanel found successfully!");
+                Debug.Log("[SaveUI] SaveLoadPanel found: " + saveLoadPanel.name);
             }
         }
 
-        // Find SlotParent if not set
         if (slotParent == null && saveLoadPanel != null)
         {
             Transform slotParentTransform = saveLoadPanel.transform.Find("SlotParent");
@@ -102,10 +104,9 @@ public class SaveUIManager : MonoBehaviour
             }
         }
 
-        // Find buttons if not set
         if (closePanelButton == null && saveLoadPanel != null)
         {
-            Button[] buttons = saveLoadPanel.GetComponentsInChildren<Button>();
+            Button[] buttons = saveLoadPanel.GetComponentsInChildren<Button>(true);
             foreach (Button btn in buttons)
             {
                 if (btn.name.Contains("Close") || btn.name.Contains("Back"))
@@ -117,9 +118,15 @@ public class SaveUIManager : MonoBehaviour
             }
         }
 
+        if (backToMainMenuButton == null && closePanelButton != null)
+        {
+            backToMainMenuButton = closePanelButton;
+            Debug.Log("[SaveUI] Using closePanelButton as backToMainMenuButton");
+        }
+
         if (newGameButton == null && saveLoadPanel != null)
         {
-            Button[] buttons = saveLoadPanel.GetComponentsInChildren<Button>();
+            Button[] buttons = saveLoadPanel.GetComponentsInChildren<Button>(true);
             foreach (Button btn in buttons)
             {
                 if (btn.name.Contains("NewGame") || btn.name.Contains("New"))
@@ -134,33 +141,81 @@ public class SaveUIManager : MonoBehaviour
 
     void SetupUI()
     {
+        bool isInMainMenu = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenu";
+
         if (closePanelButton != null)
-            closePanelButton.onClick.AddListener(CloseSaveLoadPanel);
+        {
+            // In MainMenu, don't use closePanelButton (use backToMainMenuButton instead)
+            if (!isInMainMenu)
+            {
+                closePanelButton.onClick.AddListener(CloseSaveLoadPanel);
+            }
+        }
 
         if (newGameButton != null)
             newGameButton.onClick.AddListener(StartNewGame);
+
+        if (backToMainMenuButton != null)
+        {
+            // In MainMenu, back button should call OnBackToMainMenu
+            if (isInMainMenu)
+            {
+                backToMainMenuButton.onClick.AddListener(OnBackToMainMenu);
+                Debug.Log("[SaveUI] Back button setup for MainMenu");
+            }
+            else if (backToMainMenuButton != closePanelButton)
+            {
+                // In game, if it's a separate button
+                backToMainMenuButton.onClick.AddListener(OnBackToMainMenu);
+            }
+        }
     }
 
     void CreateSaveSlots()
     {
-        if (SaveSystem.Instance == null)
+        // Clear existing slots first
+        foreach (SaveSlotUI slot in saveSlots)
         {
-            Debug.LogWarning("[SaveUI] SaveSystem.Instance is null!");
+            if (slot != null && slot.gameObject != null)
+            {
+                Destroy(slot.gameObject);
+            }
+        }
+        saveSlots.Clear();
+
+        // Check current scene name
+        string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        bool isInMainMenu = (currentSceneName == "MainMenu");
+
+        Debug.Log($"[SaveUI] Current Scene: {currentSceneName}, IsInMainMenu: {isInMainMenu}");
+
+        if (!isInMainMenu && SaveSystem.Instance == null)
+        {
+            Debug.LogWarning("[SaveUI] SaveSystem.Instance is null and not in MainMenu!");
             return;
         }
+
+        // Determine max slots
+        int maxSlots = 3; // Default
+        if (!isInMainMenu && SaveSystem.Instance != null)
+        {
+            maxSlots = SaveSystem.Instance.maxSaveSlots;
+        }
+
+        Debug.Log($"[SaveUI] Creating save slots - MaxSlots: {maxSlots}, IsInMainMenu: {isInMainMenu}");
 
         // Create AutoSave slot (slot 0)
         CreateSaveSlot(0, false);
 
-        // Create regular save slots (1-3)
-        int maxSlots = SaveSystem.Instance.maxSaveSlots;
+        // Create regular save slots (1 to maxSlots)
         for (int i = 1; i <= maxSlots; i++)
         {
             CreateSaveSlot(i, true);
+            Debug.Log($"[SaveUI] Created slot {i}");
         }
 
         RefreshSlots();
-        Debug.Log($"[SaveUI] Created {saveSlots.Count} save slots");
+        Debug.Log($"[SaveUI] Total slots created: {saveSlots.Count}");
     }
 
     void CreateSaveSlot(int slotIndex, bool canSave)
@@ -183,15 +238,58 @@ public class SaveUIManager : MonoBehaviour
         saveSlots.Add(slotUI);
     }
 
+    void OnBackToMainMenu()
+    {
+        if (saveLoadPanel != null)
+            saveLoadPanel.SetActive(false);
+
+        MainMenuManager mainMenu = FindFirstObjectByType<MainMenuManager>();
+        if (mainMenu != null)
+        {
+            mainMenu.OnSaveSlotClosed();
+        }
+    }
+
     public void RefreshSlots()
     {
+        bool isInMainMenu = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenu";
+
         foreach (SaveSlotUI slot in saveSlots)
         {
-            if (SaveSystem.Instance != null)
+            GameSaveData saveData = null;
+
+            // NEW: Load save data directly from file if in MainMenu
+            if (isInMainMenu)
             {
-                GameSaveData saveData = SaveSystem.Instance.GetSaveInfo(slot.SlotIndex);
-                slot.UpdateSlotInfo(saveData);
+                saveData = LoadSaveDataFromFile(slot.SlotIndex);
             }
+            else if (SaveSystem.Instance != null)
+            {
+                saveData = SaveSystem.Instance.GetSaveInfo(slot.SlotIndex);
+            }
+
+            slot.UpdateSlotInfo(saveData);
+        }
+    }
+
+    // NEW: Load save data directly from file (for MainMenu)
+    GameSaveData LoadSaveDataFromFile(int slot)
+    {
+        string savePath = Path.Combine(Application.persistentDataPath, "Saves");
+        string filePath = Path.Combine(savePath, $"save_slot_{slot}.json");
+
+        if (!File.Exists(filePath))
+            return null;
+
+        try
+        {
+            string json = File.ReadAllText(filePath);
+            return JsonUtility.FromJson<GameSaveData>(json);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[SaveUI] Failed to load save data: {e.Message}");
+            return null;
         }
     }
 
@@ -202,16 +300,13 @@ public class SaveUIManager : MonoBehaviour
             saveLoadPanel.SetActive(true);
         }
 
-        // Check if opened from pause menu
         wasOpenedFromPauseMenu = PauseMenuManager.Instance != null && PauseMenuManager.Instance.IsPaused();
 
-        // Only pause game if not already paused by pause menu
         if (!wasOpenedFromPauseMenu)
         {
             Time.timeScale = 0f;
         }
 
-        // NEW: Force close inventory when save/load panel opens
         InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
         if (inventoryUI != null)
         {
@@ -221,19 +316,18 @@ public class SaveUIManager : MonoBehaviour
         RefreshSlots();
         Debug.Log("[SaveUI] Save/Load panel opened");
     }
+
     public void CloseSaveLoadPanel()
     {
         if (saveLoadPanel != null)
             saveLoadPanel.SetActive(false);
 
-        // Only resume game if we paused it (not if pause menu is handling it)
         if (!wasOpenedFromPauseMenu)
         {
             Time.timeScale = 1f;
         }
         else
         {
-            // Notify pause menu that save menu was closed
             if (PauseMenuManager.Instance != null)
             {
                 PauseMenuManager.Instance.OnSaveMenuClosed();
@@ -246,64 +340,112 @@ public class SaveUIManager : MonoBehaviour
 
     public void OnSlotClicked(int slotIndex)
     {
-        if (SaveSystem.Instance == null) return;
+        bool isInMainMenu = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenu";
 
-        // AutoSave slot (0) is load-only
+        // Check if save file exists
+        bool hasSaveFile = false;
+        if (isInMainMenu)
+        {
+            hasSaveFile = CheckSaveFileExists(slotIndex);
+        }
+        else if (SaveSystem.Instance != null)
+        {
+            hasSaveFile = SaveSystem.Instance.HasSaveFile(slotIndex);
+        }
+
         if (slotIndex == 0)
         {
-            if (SaveSystem.Instance.HasSaveFile(slotIndex))
+            if (hasSaveFile)
             {
-                SaveSystem.Instance.LoadGame(slotIndex);
-                CloseSaveLoadPanel();
-
-                if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
+                if (isInMainMenu)
                 {
-                    PauseMenuManager.Instance.ResumeGame();
+                    // Load save data, then load PersistentScene
+                    PlayerPrefs.SetInt("LoadSlotOnStart", slotIndex);
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("PersistentScene");
                 }
-
-                Debug.Log("[SaveUI] AutoSave loaded");
+                else if (SaveSystem.Instance != null)
+                {
+                    SaveSystem.Instance.LoadGame(slotIndex);
+                    CloseSaveLoadPanel();
+                    if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
+                    {
+                        PauseMenuManager.Instance.ResumeGame();
+                    }
+                }
             }
             return;
         }
 
-        // Regular slots: Save if empty, Load if filled
-        if (SaveSystem.Instance.HasSaveFile(slotIndex))
+        if (hasSaveFile)
         {
-            SaveSystem.Instance.LoadGame(slotIndex);
-            CloseSaveLoadPanel();
-
-            if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
+            if (isInMainMenu)
             {
-                PauseMenuManager.Instance.ResumeGame();
+                // Load save data, then load PersistentScene
+                PlayerPrefs.SetInt("LoadSlotOnStart", slotIndex);
+                UnityEngine.SceneManagement.SceneManager.LoadScene("PersistentScene");
             }
-
-            Debug.Log($"[SaveUI] Game loaded from slot {slotIndex}");
+            else if (SaveSystem.Instance != null)
+            {
+                SaveSystem.Instance.LoadGame(slotIndex);
+                CloseSaveLoadPanel();
+                if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
+                {
+                    PauseMenuManager.Instance.ResumeGame();
+                }
+            }
         }
-        else
+        else if (!isInMainMenu && SaveSystem.Instance != null)
         {
             SaveSystem.Instance.SaveGame(slotIndex);
             RefreshSlots();
-            Debug.Log($"[SaveUI] Game saved to slot {slotIndex}");
-
-            if (wasOpenedFromPauseMenu)
-            {
-                CloseSaveLoadPanel();
-            }
         }
+    }
+
+    // NEW: Check if save file exists (for MainMenu)
+    bool CheckSaveFileExists(int slot)
+    {
+        string savePath = Path.Combine(Application.persistentDataPath, "Saves");
+        string filePath = Path.Combine(savePath, $"save_slot_{slot}.json");
+        return File.Exists(filePath);
     }
 
     public void OnDeleteSlotClicked(int slotIndex)
     {
-        if (SaveSystem.Instance == null || slotIndex == 0) return;
+        if (slotIndex == 0) return;
 
-        SaveSystem.Instance.DeleteSave(slotIndex);
+        bool isInMainMenu = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenu";
+
+        if (isInMainMenu)
+        {
+            // Delete file directly in MainMenu
+            string savePath = Path.Combine(Application.persistentDataPath, "Saves");
+            string filePath = Path.Combine(savePath, $"save_slot_{slotIndex}.json");
+
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+                Debug.Log($"[SaveUI] Deleted save slot {slotIndex}");
+            }
+        }
+        else if (SaveSystem.Instance != null)
+        {
+            SaveSystem.Instance.DeleteSave(slotIndex);
+        }
+
         RefreshSlots();
-        Debug.Log($"[SaveUI] Deleted save slot {slotIndex}");
     }
 
     public void StartNewGame()
     {
-        if (SaveSystem.Instance != null)
+        bool isInMainMenu = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainMenu";
+
+        if (isInMainMenu)
+        {
+            // Signal that we want a new game
+            PlayerPrefs.SetInt("LoadSlotOnStart", -1); // -1 = new game
+            UnityEngine.SceneManagement.SceneManager.LoadScene("PersistentScene");
+        }
+        else if (SaveSystem.Instance != null)
         {
             SaveSystem.Instance.CreateNewGame();
             CloseSaveLoadPanel();
@@ -314,8 +456,9 @@ public class SaveUIManager : MonoBehaviour
             }
 
             UnityEngine.SceneManagement.SceneManager.LoadScene("Room01_Foyer");
-            Debug.Log("[SaveUI] Starting new game");
         }
+
+        Debug.Log("[SaveUI] Starting new game");
     }
 
     public static string GetRoomDisplayName(string sceneName)
@@ -327,6 +470,7 @@ public class SaveUIManager : MonoBehaviour
             case "Room01_Foyer": return "Foyer";
             case "Room02_LivingRoom": return "Living Room";
             case "Room03_Hallway": return "Hallway";
+            case "Room04_Kitchen_Dining": return "Kitchen & Dining";
             case "Room04_Kitchen": return "Kitchen";
             case "Room05_DiningRoom": return "Dining Room";
             case "Room06_ReturnHallway": return "Return Hallway";
