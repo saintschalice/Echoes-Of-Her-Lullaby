@@ -15,6 +15,8 @@ public class PersistentEmilyManager : MonoBehaviour
     public GameObject emilyPrefab;
     public bool emilyIsActive = false;
 
+    private bool isSpawningEmily = false;
+
     [Header("Scene Control")]
     public string firstEmilyScene = "Room03_Hallway";
     public string lastEmilyScene = "Room10_Final";
@@ -45,7 +47,9 @@ public class PersistentEmilyManager : MonoBehaviour
         {
             Instance = this;
             if (transform.parent != null)
+            {
                 transform.SetParent(null, true);
+            }
             DontDestroyOnLoad(gameObject);
             Debug.Log("[PersistentEmilyManager] Created and set to persist");
         }
@@ -118,67 +122,119 @@ public class PersistentEmilyManager : MonoBehaviour
     // ============================================================
     public void SpawnEmily(string sceneName)
     {
-        // If Emily doesn't exist yet, create her immediately
-        if (currentEmily == null || currentEmily.Equals(null))
+        if (isSpawningEmily)
         {
-            Debug.Log("[PersistentEmilyManager] Emily not pre-instantiated, creating now...");
-
-            if (!TryInstantiateEmily(out EmilyAIController emily))
-                return;
-
-            PromoteEmilyToPersistentRoot(emily);
-            currentEmily = emily;
-            emilyAgent = emily.GetComponent<NavMeshAgent>();
+            Debug.LogWarning("[PersistentEmilyManager] SpawnEmily called while a spawn is already in progress. Ignoring duplicate request.");
+            return;
         }
 
-        // Activate and configure (no instantiation = no lag!)
-        emilyIsActive = true;
+        isSpawningEmily = true;
 
-        if (!currentEmily.gameObject.activeSelf)
-            currentEmily.gameObject.SetActive(true);
+        try
+        {
+            // Unity can keep a destroyed reference around, so sanitize it first
+            if (currentEmily == null || currentEmily.Equals(null))
+            {
+                currentEmily = null;
+            }
 
-        ConfigureEmilyForScene(sceneName);
-        currentEmily.ActivateEmily();
+            EmilyAIController emilyToUse = ResolveExistingEmilySingleton();
 
-        Debug.Log($"[PersistentEmilyManager] Emily activated in {sceneName}");
+            if (emilyToUse == null)
+            {
+                if (!TryInstantiateEmily(out emilyToUse))
+                {
+                    return;
+                }
+            }
+
+            PromoteEmilyToPersistentRoot(emilyToUse);
+
+            currentEmily = emilyToUse;
+            emilyIsActive = true;
+
+            if (!currentEmily.gameObject.activeSelf)
+            {
+                currentEmily.gameObject.SetActive(true);
+            }
+
+            ConfigureEmilyForScene(sceneName);
+            currentEmily.ActivateEmily();
+
+            Debug.Log($"[PersistentEmilyManager] Emily ready in {sceneName}");
+        }
+        finally
+        {
+            isSpawningEmily = false;
+        }
     }
 
-    // ============================================================
-    // INSTANTIATION (Only runs once)
-    // ============================================================
+    private EmilyAIController ResolveExistingEmilySingleton()
+    {
+        EmilyAIController emilyToUse = currentEmily;
+        var allEmilies = FindObjectsOfType<EmilyAIController>(true);
+
+        foreach (var emily in allEmilies)
+        {
+            if (emily == null || emily.Equals(null))
+            {
+                continue;
+            }
+
+            if (emilyToUse == null)
+            {
+                emilyToUse = emily;
+            }
+            else if (emily != emilyToUse)
+            {
+                Debug.LogWarning("[PersistentEmilyManager] Destroying stray Emily instance");
+                Destroy(emily.gameObject);
+            }
+        }
+
+        return emilyToUse;
+    }
+
     private bool TryInstantiateEmily(out EmilyAIController emily)
     {
         emily = null;
 
         if (emilyPrefab == null)
         {
-            Debug.LogError("[PersistentEmilyManager] Emily prefab missing!");
+            Debug.LogError("[PersistentEmilyManager] Emily prefab missing! Cannot spawn Emily.");
             return false;
         }
 
-        GameObject obj = Instantiate(emilyPrefab);
-        emily = obj.GetComponent<EmilyAIController>();
+        GameObject emilyObj = Instantiate(emilyPrefab);
+        emily = emilyObj.GetComponent<EmilyAIController>();
 
         if (emily == null)
         {
-            Debug.LogError("[PersistentEmilyManager] Prefab missing EmilyAIController!");
-            Destroy(obj);
+            Debug.LogError("[PersistentEmilyManager] Emily prefab does not contain EmilyAIController!");
+            Destroy(emilyObj);
             return false;
         }
 
-        Debug.Log("[PersistentEmilyManager] Instantiated Emily");
+        Debug.Log("[PersistentEmilyManager] Instantiated new Emily from prefab");
         return true;
     }
 
     private void PromoteEmilyToPersistentRoot(EmilyAIController emily)
     {
-        if (emily == null) return;
+        if (emily == null)
+        {
+            return;
+        }
 
         if (emily.transform.parent != null)
+        {
             emily.transform.SetParent(null, true);
+        }
 
         if (emily.gameObject.scene.name != "DontDestroyOnLoad")
+        {
             DontDestroyOnLoad(emily.gameObject);
+        }
     }
 
     // ============================================================

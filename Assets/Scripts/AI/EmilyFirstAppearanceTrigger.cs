@@ -51,6 +51,16 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        JoystickPlayerController.OnInstanceChanged += HandlePlayerControllerChanged;
+    }
+
+    private void OnDisable()
+    {
+        JoystickPlayerController.OnInstanceChanged -= HandlePlayerControllerChanged;
+    }
+
     private void Start()
     {
         // Check if this event has already happened
@@ -77,6 +87,8 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
     IEnumerator TriggerEmilyAppearance(Transform player)
     {
         Debug.Log("[EmilyTrigger] First appearance sequence started!");
+
+        yield return EnsurePlayerControllerReady();
 
         // Disable player controls (using cached reference)
         DisablePlayerControls();
@@ -244,6 +256,21 @@ public class EmilyFirstAppearanceTrigger : MonoBehaviour
         }
 
         return false;
+    }
+
+    IEnumerator EnsurePlayerControllerReady(float timeout = 1f)
+    {
+        float elapsed = 0f;
+        while (!TryCachePlayerController() && elapsed < timeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    void HandlePlayerControllerChanged(JoystickPlayerController controller)
+    {
+        cachedPlayerController = controller;
     }
 
     /// <summary>

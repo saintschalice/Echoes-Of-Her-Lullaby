@@ -4,8 +4,21 @@ using UnityEngine;
 public class JoystickPlayerController : MonoBehaviour
 {
     public static JoystickPlayerController Instance { get; private set; }
-    public static event Action<JoystickPlayerController> OnInstanceChanged;
 
+    private static event Action<JoystickPlayerController> instanceChanged;
+    public static event Action<JoystickPlayerController> OnInstanceChanged
+    {
+        add
+        {
+            instanceChanged -= value;
+            instanceChanged += value;
+            value?.Invoke(Instance);
+        }
+        remove
+        {
+            instanceChanged -= value;
+        }
+    }
 
     [Header("Movement")]
     public float moveSpeed = 5f;
@@ -32,7 +45,7 @@ public class JoystickPlayerController : MonoBehaviour
         }
 
         Instance = this;
-        OnInstanceChanged?.Invoke(this);
+        instanceChanged?.Invoke(this);
     }
 
     void OnDestroy()
@@ -40,7 +53,7 @@ public class JoystickPlayerController : MonoBehaviour
         if (Instance == this)
         {
             Instance = null;
-            OnInstanceChanged?.Invoke(null);
+            instanceChanged?.Invoke(null);
         }
     }
 

@@ -83,6 +83,7 @@ public class DialogueSystemV2 : MonoBehaviour
     void OnEnable()
     {
         JoystickPlayerController.OnInstanceChanged += HandlePlayerControllerChanged;
+        HandlePlayerControllerChanged(JoystickPlayerController.Instance);
     }
 
     void OnDisable()
@@ -114,19 +115,7 @@ public class DialogueSystemV2 : MonoBehaviour
 
     void FindReferences()
     {
-
-        if (playerController == null)
-        {
-            playerController = JoystickPlayerController.Instance ?? FindFirstObjectByType<JoystickPlayerController>();
-
-            if (playerController == null)
-            {
-                Debug.LogWarning("[Dialogue] JoystickPlayerController not found!");
-            }
-        }
-
         EnsurePlayerControllerReference();
-
 
         if (joystickUI == null)
         {
@@ -587,9 +576,20 @@ public class DialogueSystemV2 : MonoBehaviour
         if (playerController != null)
             return;
 
-        playerController = JoystickPlayerController.Instance ?? FindFirstObjectByType<JoystickPlayerController>();
+        if (JoystickPlayerController.Instance != null)
+        {
+            playerController = JoystickPlayerController.Instance;
+            return;
+        }
 
-        if (playerController == null && logIfMissing)
+        if (PersistentSpawnManager.Instance != null && PersistentSpawnManager.Instance.player != null)
+        {
+            playerController = PersistentSpawnManager.Instance.player.GetComponent<JoystickPlayerController>();
+            if (playerController != null)
+                return;
+        }
+
+        if (logIfMissing)
         {
             Debug.LogWarning("[Dialogue] JoystickPlayerController not found!");
         }
@@ -600,7 +600,7 @@ public class DialogueSystemV2 : MonoBehaviour
         if (cachedInventoryUI != null)
             return;
 
-        cachedInventoryUI = InventoryUI.Instance ?? FindFirstObjectByType<InventoryUI>();
+        cachedInventoryUI = InventoryUI.Instance;
 
         if (cachedInventoryUI == null)
         {
