@@ -29,12 +29,16 @@ public sealed class EmilyGhost : MonoBehaviour
     NavMeshAgent _agent;
     Animator _anim;
     Rigidbody2D _rb;
+    EmilyAnimator _animator;
+
 
     void Awake()
     {
         _perception = gameObject.AddComponent<EmilyPerception>();
         _move = gameObject.AddComponent<EmilyMovement>();
         _audio = gameObject.AddComponent<EmilyAudio>();
+
+        _animator = GetComponentInChildren<EmilyAnimator>();
 
         _agent = GetComponent<NavMeshAgent>();
         _rb = GetComponent<Rigidbody2D>();
@@ -106,10 +110,24 @@ public sealed class EmilyGhost : MonoBehaviour
 
         // catch check
         if (_cur == State.Hunt &&
-            (transform.position - _player.position).sqrMagnitude < 1.1f)
+    (transform.position - _player.position).sqrMagnitude < 1.0f)
         {
+            Debug.Log("[EMILY] CATCH TRIGGERED");
+
+            // Stop movement completely
+            _move.StopMovement();
+
+            // Play hit animation
+            if (_animator != null)
+                _animator.PlayHit();
+
+            // Catch SFX
             _audio.PlayCatch();
-            FindFirstObjectByType<GameOverManager>()?.TriggerGameOver("Emily caught you…");
+
+            // Game Over UI
+            FindAnyObjectByType<GameOverManager>()?.TriggerGameOver("Emily caught you…");
+
+            return;
         }
 
         // animator
