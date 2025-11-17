@@ -28,7 +28,7 @@ public sealed class EmilyPerception : MonoBehaviour
 
     void Awake()
     {
-        // Auto-find aiForward — even if Start() runs too early
+        // Auto-find aiForward
         if (aiForward == null)
         {
             aiForward = transform.Find("AI_Forward");
@@ -96,12 +96,12 @@ public sealed class EmilyPerception : MonoBehaviour
         // ---------------------------
         // Angle Check
         // ---------------------------
-        Vector2 forward = aiForward.up; // <-- correct facing direction
+        Vector2 forward = aiForward.up;
         float ang = Vector2.Angle(forward, toP);
 
         if (ang > visionAngle * 0.5f)
         {
-            Debug.Log($"[EMILY DEBUG] Angle too wide. ang={ang:F2}, Limit={visionAngle * 0.5f}");
+           Debug.Log($"[EMILY DEBUG] Angle too wide. ang={ang:F2}, Limit={visionAngle * 0.5f}");
             PlayerVisible = false;
             return;
         }

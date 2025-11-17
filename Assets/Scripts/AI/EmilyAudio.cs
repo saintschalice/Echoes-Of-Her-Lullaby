@@ -1,22 +1,47 @@
 using UnityEngine;
 
-[RequireComponent(typeof(AudioSource))]
 public sealed class EmilyAudio : MonoBehaviour
 {
-    public AudioClip idleLoop, huntLoop, catchClip;
+    [Header("Clips")]
+    public AudioClip catchClip;
+    public AudioClip huntClip;
+    public AudioClip searchClip;
+    public AudioClip investigateClip;
+    public AudioClip patrolClip;
+    public AudioClip cooldownClip;
 
-    AudioSource _src; void Awake()
+    AudioSource _source;
+
+    void Awake()
     {
-        _src = GetComponent<AudioSource>();
-        _src.spatialBlend = 1; _src.loop = true; _src.playOnAwake = false;
+        _source = GetComponent<AudioSource>();
+
+        if (_source == null)
+        {
+            Debug.LogError("[EMILY AUDIO] Missing AudioSource on Emily!");
+        }
     }
 
-    public void ToPatrol() => Play(idleLoop);
-    public void ToInvestigate() => Play(idleLoop);
-    public void ToSearch() => Play(idleLoop);
-    public void ToCooldown() => Play(idleLoop);
-    public void ToHunt() => Play(huntLoop);
+    public void PlayCatch()
+    {
+        if (catchClip == null)
+        {
+            Debug.LogError("[EMILY AUDIO] catchClip is NOT assigned!");
+            return;
+        }
 
-    void Play(AudioClip c) { if (!_src || c == null) return; _src.clip = c; _src.Play(); }
-    public void PlayCatch() { AudioSource.PlayClipAtPoint(catchClip, transform.position); }
+        AudioSource.PlayClipAtPoint(catchClip, transform.position, 1f);
+    }
+
+    public void ToHunt() => PlayIfAssigned(huntClip);
+    public void ToSearch() => PlayIfAssigned(searchClip);
+    public void ToInvestigate() => PlayIfAssigned(investigateClip);
+    public void ToPatrol() => PlayIfAssigned(patrolClip);
+    public void ToCooldown() => PlayIfAssigned(cooldownClip);
+
+    void PlayIfAssigned(AudioClip clip)
+    {
+        if (clip == null) return;
+        _source.PlayOneShot(clip);
+    }
 }

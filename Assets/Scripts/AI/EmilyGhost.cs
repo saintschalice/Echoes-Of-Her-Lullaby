@@ -10,7 +10,7 @@ public sealed class EmilyGhost : MonoBehaviour
     [Header("Speed (u/s)")]
     public float patrolSpeed = 1.4f;
     public float investigateSpeed = 2.4f;
-    public float huntSpeed = 3.8f;
+    public float huntSpeed = 2.8f;
 
     [Header("State Timers (s)")]
     public float searchTime = 12f;
@@ -53,7 +53,6 @@ public sealed class EmilyGhost : MonoBehaviour
 
         Debug.Log("[EMILY] Awake on " + gameObject.name);
 
-        // FORCE her AI to start properly
         SetState(State.Patrol);
     }
 
@@ -137,7 +136,11 @@ public sealed class EmilyGhost : MonoBehaviour
         {
             _anim.SetFloat("InputX", vel.x);
             _anim.SetFloat("InputY", vel.y);
+
         }
+
+
+
     }
 
     void SetState(State next)
