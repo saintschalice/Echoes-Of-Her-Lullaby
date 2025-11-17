@@ -159,6 +159,7 @@ GameObject:
   - component: {fileID: 3352718367163757918}
   - component: {fileID: 5862906431052648368}
   - component: {fileID: 3276783980782230005}
+  - component: {fileID: 6366252935566448824}
   m_Layer: 12
   m_Name: EmilyGhost
   m_TagString: Untagged
@@ -400,3 +401,21 @@ MonoBehaviour:
   visionAngle: 60
   aiForward: {fileID: 7288953433528400076}
   hearingRadius: 8
+--- !u!114 &6366252935566448824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7409944623990111159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5184ff4ab4c51b44a91e7e81d434ec9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyAudio
+  catchClip: {fileID: 8300000, guid: 448cc68300f7d7a4abd3c39cf126f15a, type: 3}
+  huntClip: {fileID: 8300000, guid: 828a336dcab0caa4095e072417bbd09f, type: 3}
+  searchClip: {fileID: 0}
+  investigateClip: {fileID: 0}
+  patrolClip: {fileID: 8300000, guid: ed635f4066c92ee4cb754fea36517fd7, type: 3}
+  cooldownClip: {fileID: 0}
