@@ -359,15 +359,31 @@ public void AddItemAndSave(string itemId)
             }
         }
 
-        // Handle Diary (NEW)
+        // Handle Diary
         if (item.itemId == "diary_complete")
         {
             DiaryReaderUI diaryReader = FindFirstObjectByType<DiaryReaderUI>();
             if (diaryReader != null)
             {
-                // NEW: Notify manager before opening the UI
                 NotifyActionStarted();
                 diaryReader.ShowDiary();
+                return true;
+            }
+        }
+
+        // 🎯 NEW: Handle Mr. Snuggles
+        if (item.itemId == "mr_snuggles")
+        {
+            if (SnugglesQuizManager.Instance != null)
+            {
+                NotifyActionStarted();
+                SnugglesQuizManager.Instance.OnTeddyBearExamined();
+                return true;
+            }
+            else
+            {
+                Debug.LogWarning("[InventoryManager] SnugglesQuizManager not found!");
+                ShowItemDescription(item);
                 return true;
             }
         }
