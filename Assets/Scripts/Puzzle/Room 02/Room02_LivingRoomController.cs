@@ -505,8 +505,8 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void OnLooseFloorboardInteract()
     {
-        bool hasDiary3 = SaveSystem.Instance.HasItem(DIARY_3_ID);
-        bool hasDiary4 = SaveSystem.Instance.HasItem(DIARY_4_ID);
+        bool hasDiary3 = (GlobalDiaryManager.Instance != null && GlobalDiaryManager.Instance.HasDiaryPage(DIARY_3_ID)) || SaveSystem.Instance.HasItem(DIARY_3_ID);
+        bool hasDiary4 = (GlobalDiaryManager.Instance != null && GlobalDiaryManager.Instance.HasDiaryPage(DIARY_4_ID)) || SaveSystem.Instance.HasItem(DIARY_4_ID);
 
         if (hasDiary3 && hasDiary4)
         {
