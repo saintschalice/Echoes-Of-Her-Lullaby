@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class ItemExaminationHandler : MonoBehaviour
 {
@@ -192,15 +193,28 @@ public class ItemExaminationHandler : MonoBehaviour
 
     void CombineMusicBox()
     {
+        // 1. Perform logic combination
         bool success = InventoryManager.Instance?.CombineItems("broken_music_box", "winding_key", "music_box_complete") ?? false;
 
         if (success)
         {
-            DialogueSystemV2.Instance?.StartDialogue("I fixed the music box! Maybe if I wind it up, it will play a song.", "Lisa");
-
             if (InventoryManager.Instance != null && InventoryManager.Instance.inventoryUI != null)
                 InventoryManager.Instance.inventoryUI.RefreshInventory();
 
+            // 2. Find MusicBoxController to start the cutscene sequence immediately
+            MusicBoxController musicBox = FindFirstObjectByType<MusicBoxController>();
+            if (musicBox != null)
+            {
+                // Start the cutscene directly
+                musicBox.PlayRevealCutscene();
+            }
+            else
+            {
+                // Fallback if controller is missing
+                DialogueSystemV2.Instance?.StartDialogue("I fixed the music box!", "Lisa");
+            }
+
+            // 3. Update general puzzle state (but do NOT trigger room events automatically yet)
             roomController?.CheckPuzzleCompletion();
         }
     }

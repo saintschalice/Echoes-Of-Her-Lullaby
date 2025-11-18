@@ -4991,6 +4991,8 @@ MonoBehaviour:
   emptyDiaryMessage: No diary pages collected yet.
   emptyStateText: {fileID: 0}
   diaryTitle: Diary Entries
+  enableLisaDialogue: 1
+  lisaCloseMessage: Diary closed!
 --- !u!1 &489798754
 GameObject:
   m_ObjectHideFlags: 0

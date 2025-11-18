@@ -1185,6 +1185,7 @@ GameObject:
   - component: {fileID: 413753364}
   - component: {fileID: 413753361}
   - component: {fileID: 413753367}
+  - component: {fileID: 413753368}
   m_Layer: 0
   m_Name: Room02_Controller
   m_TagString: Untagged
@@ -1283,6 +1284,24 @@ MonoBehaviour:
   quizArmed: 1
   quizSolved: 1
   windingKeyGiven: 1
+--- !u!114 &413753368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413753360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d37916aaf2c21d409ccce0bb1a71e7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicBoxController
+  brokenMusicBoxId: broken_music_box
+  windingKeyId: winding_key
+  completeMusicBoxId: music_box_complete
+  musicBoxCutscene: {fileID: 0}
+  isComplete: 1
+  cutscenePlayed: 1
 --- !u!1 &416627685
 GameObject:
   m_ObjectHideFlags: 0

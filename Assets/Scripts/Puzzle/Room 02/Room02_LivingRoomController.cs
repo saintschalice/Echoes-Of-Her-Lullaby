@@ -3,12 +3,20 @@ using System.Collections;
 
 public class Room02_LivingRoomController : MonoBehaviour
 {
+    public static Room02_LivingRoomController Instance { get; private set; }
+
     [Header("Room Objects")]
     public GameObject tv;
     public GameObject rockingChair;
-    public GameObject coffeeTable_Key;
+    public GameObject coffeeTable_Key; // This is the Hallway Key Item
     public GameObject books_Pushed;
     public GameObject smallKey;
+
+    [Header("Hallway Event Trigger")]
+    [Tooltip("Location where the player must step to trigger the 'What was that?' dialogue. Defaults to center if empty.")]
+    public Transform hallwayTriggerLocation;
+    public float hallwayTriggerRadius = 2.0f;
+    [SerializeField] private bool hallwayTriggerArmed = false; // Set true after cutscene
 
     [Header("Animators")]
     public Animator tvAnimator;
@@ -66,11 +74,40 @@ public class Room02_LivingRoomController : MonoBehaviour
     private bool ghostAudioRunning = false;
     private bool hasPlayedGhostAudio = false;
     private JoystickPlayerController playerController;
+    private Transform playerTransform;
+
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
 
     void Start()
     {
         playerController = FindFirstObjectByType<JoystickPlayerController>();
+        playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+        if (hallwayTriggerLocation == null && coffeeTable_Key != null)
+        {
+            hallwayTriggerLocation = coffeeTable_Key.transform;
+        }
+
         InitializeRoom();
+    }
+
+    void Update()
+    {
+        // Check for Hallway Event Trigger (The "What was that?" moment)
+        // Only active AFTER cutscene (hallwayTriggerArmed) and BEFORE key is revealed.
+        if (hallwayTriggerArmed && playerTransform != null)
+        {
+            Vector3 targetPos = hallwayTriggerLocation != null ? hallwayTriggerLocation.position : Vector3.zero;
+            float dist = Vector2.Distance(playerTransform.position, targetPos);
+
+            if (dist <= hallwayTriggerRadius)
+            {
+                StartCoroutine(PlayHallwayEventSequence());
+            }
+        }
     }
 
     void InitializeRoom()
@@ -128,6 +165,12 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         if (state.collectedItems.Contains(COFFEE_TABLE_KEY_ID) && coffeeTable_Key != null)
             coffeeTable_Key.SetActive(false);
+
+        // If we already revealed the key but didn't pick it up, ensure it's visible
+        if (state.interactedObjects.Contains("coffeeTableKeyRevealed") && !state.collectedItems.Contains(COFFEE_TABLE_KEY_ID))
+        {
+            if (coffeeTable_Key != null) coffeeTable_Key.SetActive(true);
+        }
     }
 
     void SaveRoomState(string key, bool value)
@@ -608,13 +651,7 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void CheckPuzzleCompletion()
     {
-        // ---------------- FIX FOR NRE ----------------
-        if (SaveSystem.Instance == null)
-        {
-            Debug.LogWarning("[Room02_LivingRoomController] SaveSystem.Instance is null. Skipping puzzle check.");
-            return;
-        }
-        // ---------------------------------------------
+        if (SaveSystem.Instance == null) return;
 
         if (!musicBoxPuzzleComplete && SaveSystem.Instance.HasItem(MUSIC_BOX_COMPLETE_ID))
         {
@@ -632,28 +669,31 @@ public class Room02_LivingRoomController : MonoBehaviour
             SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
         }
 
-        if (musicBoxPuzzleComplete && diaryPuzzleComplete)
-        {
-            if (coffeeTable_Key != null && !SaveSystem.Instance.HasItem(COFFEE_TABLE_KEY_ID))
-            {
-                RoomState state = SaveSystem.Instance.GetRoomState(ROOM_NAME);
-
-                if (!state.interactedObjects.Contains("coffeeTableKeyRevealed"))
-                {
-                    StartCoroutine(RevealCoffeeTableKey());
-                    state.interactedObjects.Add("coffeeTableKeyRevealed");
-                    SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
-                }
-                else
-                {
-                    coffeeTable_Key.SetActive(true);
-                }
-            }
-        }
+        // NOTE: Removed automatic RevealCoffeeTableKey here.
+        // Key is now revealed via OnMusicBoxCutsceneEnded -> Trigger -> PlayHallwayEventSequence
     }
 
-    IEnumerator RevealCoffeeTableKey()
+    // NEW: Called by MusicBoxController after cutscene finishes
+    public void OnMusicBoxCutsceneEnded()
     {
+        Debug.Log("[Room02] Cutscene ended. Arming Hallway Event Trigger.");
+        hallwayTriggerArmed = true;
+    }
+
+    // NEW: Sequence for when player steps into the trigger AFTER cutscene
+    IEnumerator PlayHallwayEventSequence()
+    {
+        // Disarm trigger so it happens only once
+        hallwayTriggerArmed = false;
+
+        // 1. Dialogue
+        DialogueSystemV2.Instance?.StartDialogue("What... was that?", "Lisa");
+
+        // Wait for dialogue to start and then finish
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            yield return null;
+
+        // 2. Reveal Key
         if (keyRevealSound != null)
             AudioManager.Instance?.PlaySFX(keyRevealSound);
 
@@ -662,9 +702,13 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (coffeeTable_Key != null)
             coffeeTable_Key.SetActive(true);
 
-        yield return new WaitForSeconds(0.3f);
-
-        DialogueSystemV2.Instance?.StartDialogue("What was that?", "Lisa");
+        // Mark as revealed in save data
+        RoomState state = SaveSystem.Instance.GetRoomState(ROOM_NAME);
+        if (!state.interactedObjects.Contains("coffeeTableKeyRevealed"))
+        {
+            state.interactedObjects.Add("coffeeTableKeyRevealed");
+            SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
+        }
     }
 
     public void OnLullabyPlayed()
@@ -685,5 +729,14 @@ public class Room02_LivingRoomController : MonoBehaviour
             rockingChairAnimator.SetBool("isRocking", true);
 
         AudioManager.Instance?.PlayAmbient(rockingChairSound, loop: true);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (hallwayTriggerLocation != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(hallwayTriggerLocation.position, hallwayTriggerRadius);
+        }
     }
 }
