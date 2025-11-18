@@ -130,7 +130,6 @@ GameObject:
   - component: {fileID: 25882825}
   - component: {fileID: 25882824}
   - component: {fileID: 25882823}
-  - component: {fileID: 25882822}
   m_Layer: 0
   m_Name: Vent
   m_TagString: Untagged
@@ -138,21 +137,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &25882822
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 25882821}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
-  type: 3
-  interactionRange: 2
-  interactPrompt: {fileID: 0}
 --- !u!61 &25882823
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -287,7 +271,6 @@ GameObject:
   - component: {fileID: 819652067}
   - component: {fileID: 819652066}
   - component: {fileID: 819652065}
-  - component: {fileID: 819652064}
   m_Layer: 0
   m_Name: Rug
   m_TagString: Untagged
@@ -295,21 +278,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &819652064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 819652063}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
-  type: 3
-  interactionRange: 2
-  interactPrompt: {fileID: 0}
 --- !u!61 &819652065
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2628,7 +2596,6 @@ GameObject:
   - component: {fileID: 1696361142}
   - component: {fileID: 1696361141}
   - component: {fileID: 1696361140}
-  - component: {fileID: 1696361139}
   m_Layer: 0
   m_Name: Door
   m_TagString: Untagged
@@ -2636,21 +2603,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1696361139
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1696361138}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdebc57fd801ea348b7b27baa3885bd0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LivingRoomInteractable
-  type: 3
-  interactionRange: 2
-  interactPrompt: {fileID: 0}
 --- !u!61 &1696361140
 BoxCollider2D:
   m_ObjectHideFlags: 0

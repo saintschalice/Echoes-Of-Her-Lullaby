@@ -8,12 +8,12 @@ public class Room02_LivingRoomController : MonoBehaviour
     [Header("Room Objects")]
     public GameObject tv;
     public GameObject rockingChair;
-    public GameObject coffeeTable_Key; // This is the Hallway Key Item
+    public GameObject coffeeTable_Key; // This is the Hallway Key Item (sprite with collider)
     public GameObject books_Pushed;
     public GameObject smallKey;
 
     [Header("Hallway Event Trigger")]
-    [Tooltip("Location where the player must step to trigger the 'What was that?' dialogue. Defaults to center if empty.")]
+    [Tooltip("Location where the player must step to trigger the 'What was that?' dialogue. Defaults to CoffeeTable_Key if empty.")]
     public Transform hallwayTriggerLocation;
     public float hallwayTriggerRadius = 2.0f;
     [SerializeField] private bool hallwayTriggerArmed = false; // Set true after cutscene
@@ -27,7 +27,7 @@ public class Room02_LivingRoomController : MonoBehaviour
     public AudioClip rockingChairSound;
     public AudioClip lullabyFragment;
     public AudioClip bookshelfShakeSound;
-    public AudioClip keyRevealSound;
+    public AudioClip keyRevealSound; // plays when CoffeeTable_Key is revealed
 
     [Header("TV Ghost Audio")]
     public AudioSource tvAudioSource;
@@ -76,6 +76,9 @@ public class Room02_LivingRoomController : MonoBehaviour
     private JoystickPlayerController playerController;
     private Transform playerTransform;
 
+    // NEW: guard so hallway sequence doesn't spam
+    [SerializeField] private bool hallwayEventRunning = false;
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -86,6 +89,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         playerController = FindFirstObjectByType<JoystickPlayerController>();
         playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
 
+        // Default trigger location to the key's position if not explicitly set
         if (hallwayTriggerLocation == null && coffeeTable_Key != null)
         {
             hallwayTriggerLocation = coffeeTable_Key.transform;
@@ -98,7 +102,7 @@ public class Room02_LivingRoomController : MonoBehaviour
     {
         // Check for Hallway Event Trigger (The "What was that?" moment)
         // Only active AFTER cutscene (hallwayTriggerArmed) and BEFORE key is revealed.
-        if (hallwayTriggerArmed && playerTransform != null)
+        if (hallwayTriggerArmed && !hallwayEventRunning && playerTransform != null)
         {
             Vector3 targetPos = hallwayTriggerLocation != null ? hallwayTriggerLocation.position : Vector3.zero;
             float dist = Vector2.Distance(playerTransform.position, targetPos);
@@ -112,6 +116,7 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     void InitializeRoom()
     {
+        // Default: hide key, then let LoadRoomState re-show it if already revealed
         if (coffeeTable_Key != null) coffeeTable_Key.SetActive(false);
         if (books_Pushed != null) books_Pushed.SetActive(false);
         if (smallKey != null) smallKey.SetActive(false);
@@ -169,7 +174,11 @@ public class Room02_LivingRoomController : MonoBehaviour
         // If we already revealed the key but didn't pick it up, ensure it's visible
         if (state.interactedObjects.Contains("coffeeTableKeyRevealed") && !state.collectedItems.Contains(COFFEE_TABLE_KEY_ID))
         {
-            if (coffeeTable_Key != null) coffeeTable_Key.SetActive(true);
+            if (coffeeTable_Key != null)
+            {
+                coffeeTable_Key.SetActive(true);
+                Debug.Log("[Room02] CoffeeTable_Key restored visible from saved state.");
+            }
         }
     }
 
@@ -301,22 +310,18 @@ public class Room02_LivingRoomController : MonoBehaviour
         SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_PLAYED);
         SaveSystem.Instance.OnStoryProgressMade();
 
-        // NEW: Show Lisa's reaction dialogue
         bool hasShownDialogue = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_GHOST_DIALOGUE);
         if (!hasShownDialogue)
         {
-            // Stop the player
             if (playerController != null) playerController.enabled = false;
 
             yield return new WaitForSeconds(0.5f);
 
             DialogueSystemV2.Instance?.StartDialogue("It's the TV again... what's wrong with it? I turned it off already.", "Lisa");
 
-            // Wait for dialogue to finish
             while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
                 yield return null;
 
-            // Re-enable player
             if (playerController != null) playerController.enabled = true;
 
             SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_DIALOGUE);
@@ -668,41 +673,70 @@ public class Room02_LivingRoomController : MonoBehaviour
             state.solvedPuzzles.Add("diaryPuzzle");
             SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
         }
-
-        // NOTE: Removed automatic RevealCoffeeTableKey here.
-        // Key is now revealed via OnMusicBoxCutsceneEnded -> Trigger -> PlayHallwayEventSequence
     }
 
-    // NEW: Called by MusicBoxController after cutscene finishes
+    // Called by MusicBoxController after cutscene finishes
     public void OnMusicBoxCutsceneEnded()
     {
-        Debug.Log("[Room02] Cutscene ended. Arming Hallway Event Trigger.");
-        hallwayTriggerArmed = true;
+        Debug.Log("[Room02] Cutscene ended. Revealing key immediately.");
+
+        // Disable the trigger logic just in case
+        hallwayTriggerArmed = false;
+
+        // Reveal the key and play sound immediately
+        RevealCoffeeTableKeyAndSound();
+
+        // Trigger the reaction dialogue
+        DialogueSystemV2.Instance?.StartDialogue("What... was that?", "Lisa");
     }
 
-    // NEW: Sequence for when player steps into the trigger AFTER cutscene
+    // Sequence for when player steps into the trigger AFTER cutscene
     IEnumerator PlayHallwayEventSequence()
     {
-        // Disarm trigger so it happens only once
-        hallwayTriggerArmed = false;
+        if (hallwayEventRunning)
+            yield break; // already running
+
+        hallwayEventRunning = true;
+        hallwayTriggerArmed = false; // fire only once
+
+        Debug.Log("[Room02] Hallway event triggered (What... was that?).");
 
         // 1. Dialogue
         DialogueSystemV2.Instance?.StartDialogue("What... was that?", "Lisa");
 
-        // Wait for dialogue to start and then finish
+        // Wait for dialogue to finish
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
             yield return null;
 
-        // 2. Reveal Key
-        if (keyRevealSound != null)
-            AudioManager.Instance?.PlaySFX(keyRevealSound);
+        // 2. Reveal key + play sound
+        RevealCoffeeTableKeyAndSound();
 
-        yield return new WaitForSeconds(0.2f);
+        hallwayEventRunning = false;
+    }
+
+    // Central helper that actually reveals the CoffeeTable_Key and plays the sound
+    private void RevealCoffeeTableKeyAndSound()
+    {
+        if (keyRevealSound != null)
+        {
+            Debug.Log("[Room02] Playing keyRevealSound.");
+            AudioManager.Instance?.PlaySFX(keyRevealSound);
+        }
+        else
+        {
+            Debug.LogWarning("[Room02] keyRevealSound is NULL – assign an AudioClip in the inspector.");
+        }
 
         if (coffeeTable_Key != null)
+        {
             coffeeTable_Key.SetActive(true);
+            Debug.Log("[Room02] CoffeeTable_Key revealed. activeSelf = " + coffeeTable_Key.activeSelf);
+        }
+        else
+        {
+            Debug.LogError("[Room02] coffeeTable_Key reference is NULL – drag CoffeeTable_Key into the field on this script.");
+        }
 
-        // Mark as revealed in save data
         RoomState state = SaveSystem.Instance.GetRoomState(ROOM_NAME);
         if (!state.interactedObjects.Contains("coffeeTableKeyRevealed"))
         {
