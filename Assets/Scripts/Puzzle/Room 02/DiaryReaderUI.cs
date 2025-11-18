@@ -54,6 +54,12 @@ public class DiaryReaderUI : MonoBehaviour
     [Header("Display Settings")]
     public string diaryTitle = "Diary Entries";
 
+    [Header("Lisa Dialogue")]
+    [Tooltip("Enable Lisa dialogue when diary closes")]
+    public bool enableLisaDialogue = true;
+    [Tooltip("What Lisa says when diary closes")]
+    public string lisaCloseMessage = "Diary closed!";
+
     // Runtime
     private readonly List<Sprite> currentPages = new List<Sprite>();
     private int currentPageIndex = 0;
@@ -246,9 +252,35 @@ public class DiaryReaderUI : MonoBehaviour
 
         EnablePlayerControls();
 
-        // 🔔 Let quiz managers (e.g., SnugglesQuizManager) know we closed
+        // 🔔 Let quiz managers (e.g., SnugglesQuizManager) know we closed FIRST
+        // This allows the quiz to trigger before the "Diary closed!" dialogue
         OnDiaryClosed?.Invoke();
         Debug.Log("[DiaryReaderUI] Diary closed (event invoked).");
+
+        // Show Lisa dialogue AFTER the event
+        // This ensures quiz can interrupt if needed
+        StartCoroutine(ShowLisaDialogueDelayed());
+    }
+
+    private System.Collections.IEnumerator ShowLisaDialogueDelayed()
+    {
+        // Wait a moment to let quiz system respond
+        yield return new WaitForSeconds(0.1f);
+
+        // Only show "Diary closed!" if no quiz or dialogue is active
+        if (DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive())
+        {
+            // Check if quiz panel is active (don't show dialogue during quiz)
+            if (SnugglesQuizManager.Instance != null &&
+                SnugglesQuizManager.Instance.quizPanel != null &&
+                SnugglesQuizManager.Instance.quizPanel.activeSelf)
+            {
+                Debug.Log("[DiaryReaderUI] Quiz is active, skipping 'Diary closed!' dialogue");
+                yield break;
+            }
+
+            ShowLisaDialogue();
+        }
     }
 
     /// <summary>Returns true if the diary is currently visible.</summary>
@@ -400,6 +432,34 @@ public class DiaryReaderUI : MonoBehaviour
 
     #endregion
 
+    #region Lisa Dialogue
+
+    /// <summary>
+    /// Shows Lisa dialogue when diary closes using DialogueSystemV2.
+    /// </summary>
+    private void ShowLisaDialogue()
+    {
+        if (!enableLisaDialogue || string.IsNullOrEmpty(lisaCloseMessage))
+        {
+            Debug.Log("[DiaryReaderUI] Lisa dialogue disabled or message empty.");
+            return;
+        }
+
+        // Use DialogueSystemV2 singleton instance
+        if (DialogueSystemV2.Instance != null)
+        {
+            // Use the simple string + speaker overload
+            DialogueSystemV2.Instance.StartDialogue(lisaCloseMessage, "Lisa");
+            Debug.Log($"[DiaryReaderUI] Lisa dialogue triggered: '{lisaCloseMessage}'");
+        }
+        else
+        {
+            Debug.LogWarning("[DiaryReaderUI] DialogueSystemV2.Instance is null! Cannot show Lisa dialogue.");
+        }
+    }
+
+    #endregion
+
     #region Utilities
 
     private void EnsurePanelReference()
@@ -425,6 +485,9 @@ public class DiaryReaderUI : MonoBehaviour
 
     [ContextMenu("Test: Close Diary")]
     private void _TestCloseDiary() => CloseDiary();
+
+    [ContextMenu("Test: Lisa Dialogue")]
+    private void _TestLisaDialogue() => ShowLisaDialogue();
 
     #endregion
 }

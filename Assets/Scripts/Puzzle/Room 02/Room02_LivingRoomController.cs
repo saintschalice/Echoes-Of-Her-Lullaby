@@ -22,9 +22,9 @@ public class Room02_LivingRoomController : MonoBehaviour
     public AudioClip keyRevealSound;
 
     [Header("TV Ghost Audio")]
-    public AudioSource tvAudioSource;     // Assign in Inspector (AudioSource on the TV)
-    public AudioClip ghostTVAudio;        // Assign the eerie one-time audio
-    public float ghostAudioDelay = 10f;   // Seconds after turning off TV
+    public AudioSource tvAudioSource;
+    public AudioClip ghostTVAudio;
+    public float ghostAudioDelay = 10f;
 
     [Header("Camera Shake")]
     public float shakeIntensity = 0.08f;
@@ -47,6 +47,7 @@ public class Room02_LivingRoomController : MonoBehaviour
     private const string ROOM_NAME = "Room02_LivingRoom";
     private const string FLAG_TV_INTRO_DONE = "TV_IntroSequenceDone";
     private const string FLAG_TV_GHOST_PLAYED = "TV_GhostAudioPlayed";
+    private const string FLAG_TV_GHOST_DIALOGUE = "TV_GhostDialogueShown";
 
     // Item IDs
     private const string SMALL_KEY_ID = "living_room_small_key";
@@ -83,7 +84,6 @@ public class Room02_LivingRoomController : MonoBehaviour
         bool tvIntroDone = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_INTRO_DONE);
         hasPlayedGhostAudio = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_GHOST_PLAYED);
 
-        // If intro not completed, start/continue the intro on entering the room
         if (!tvIntroDone)
         {
             StartCoroutine(TVEntranceSequence());
@@ -95,7 +95,6 @@ public class Room02_LivingRoomController : MonoBehaviour
             tvTurnedOff = true;
             if (tvAnimator != null) tvAnimator.SetTrigger("TurnOff");
 
-            // If intro done but ghost audio not marked played yet, schedule it once
             if (!hasPlayedGhostAudio && ghostTVAudio != null && tvAudioSource != null)
             {
                 StartCoroutine(PlayGhostTVAudioAfterDelay());
@@ -175,12 +174,10 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void OnTVInteract()
     {
-        // Don’t interact during the intro
         if (introSequenceRunning) return;
 
         bool tvIntroDone = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_INTRO_DONE);
 
-        // If ghost audio is running, allow stopping it first
         if (ghostAudioRunning && ghostTVAudio != null)
         {
             AudioManager.Instance?.StopAllSFX();
@@ -198,26 +195,23 @@ public class Room02_LivingRoomController : MonoBehaviour
             return;
         }
 
-        // Normal “already off” case
         if (tvTurnedOff)
         {
             DialogueSystemV2.Instance?.StartDialogue("The TV is already off.", "Lisa");
             return;
         }
 
-        // Otherwise, play Emily's dialogue + turn off process
         if (emilyDialogueSound != null)
             AudioManager.Instance?.PlayDialogue(emilyDialogueSound);
 
         DialogueSystemV2.Instance?.StartDialogue(new DialogueLine[]
         {
-        new DialogueLine { text = "IF YOU DON'T LEAVE THIS HOUSE, YOU'LL REGRET IT.", speakerName = "???" },
-        new DialogueLine { text = "It's coming from the TV! I need to turn it off!", speakerName = "Lisa" }
+            new DialogueLine { text = "IF YOU DON'T LEAVE THIS HOUSE, YOU'LL REGRET IT.", speakerName = "???" },
+            new DialogueLine { text = "It's coming from the TV! I need to turn it off!", speakerName = "Lisa" }
         });
 
         StartCoroutine(TurnOffTVAfterDialogue());
     }
-
 
     IEnumerator TurnOffTVAfterDialogue()
     {
@@ -233,13 +227,11 @@ public class Room02_LivingRoomController : MonoBehaviour
         tvTurnedOff = true;
         SaveRoomState("tvTurnedOff", true);
 
-        // Mark the intro sequence as completed only after the TV is turned off
         SaveSystem.Instance.TriggerDialogue(FLAG_TV_INTRO_DONE);
         SaveSystem.Instance.OnStoryProgressMade();
 
         if (playerController != null) playerController.enabled = true;
 
-        // Schedule the one-time ghost audio if not already played
         if (!hasPlayedGhostAudio && ghostTVAudio != null)
         {
             Debug.Log("[LivingRoom] Scheduling ghost TV audio...");
@@ -249,7 +241,6 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     IEnumerator PlayGhostTVAudioAfterDelay()
     {
-        // Don’t replay if already done
         if (hasPlayedGhostAudio || ghostTVAudio == null)
             yield break;
 
@@ -261,21 +252,39 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         ghostAudioRunning = true;
 
-        // Play through global AudioManager instead of AudioSource
         AudioManager.Instance?.PlaySFX(ghostTVAudio);
 
         hasPlayedGhostAudio = true;
         SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_PLAYED);
         SaveSystem.Instance.OnStoryProgressMade();
 
-        // Optional: Wait for clip length (if known)
+        // NEW: Show Lisa's reaction dialogue
+        bool hasShownDialogue = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_GHOST_DIALOGUE);
+        if (!hasShownDialogue)
+        {
+            // Stop the player
+            if (playerController != null) playerController.enabled = false;
+
+            yield return new WaitForSeconds(0.5f);
+
+            DialogueSystemV2.Instance?.StartDialogue("It's the TV again... what's wrong with it? I turned it off already.", "Lisa");
+
+            // Wait for dialogue to finish
+            while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+                yield return null;
+
+            // Re-enable player
+            if (playerController != null) playerController.enabled = true;
+
+            SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_DIALOGUE);
+            SaveSystem.Instance.OnStoryProgressMade();
+        }
+
         if (ghostTVAudio != null)
             yield return new WaitForSeconds(ghostTVAudio.length);
 
         ghostAudioRunning = false;
     }
-
-
 
     void OnEnable()
     {
@@ -456,7 +465,6 @@ public class Room02_LivingRoomController : MonoBehaviour
         StartCoroutine(ShowCouchItems());
     }
 
-
     IEnumerator ShowCouchItems()
     {
         while (DialogueSystemV2.Instance.IsDialogueActive())
@@ -466,7 +474,6 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         bool needsDiary1 = GlobalDiaryManager.Instance == null || !GlobalDiaryManager.Instance.HasDiaryPage(DIARY_1_ID);
         bool needsDiary2 = GlobalDiaryManager.Instance == null || !GlobalDiaryManager.Instance.HasDiaryPage(DIARY_2_ID);
-
 
         if (needsDiary1 && needsDiary2)
         {
@@ -501,7 +508,6 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         DialogueSystemV2.Instance?.StartDialogue("Diary Pages 1 and 2 added to inventory.", "Lisa");
     }
-
 
     public void OnLooseFloorboardInteract()
     {
@@ -560,7 +566,6 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         DialogueSystemV2.Instance?.StartDialogue("Diary Pages 3 and 4 added to inventory.", "Lisa");
     }
-
 
     public void OnCoffeeTableKeyInteract()
     {
@@ -638,7 +643,6 @@ public class Room02_LivingRoomController : MonoBehaviour
             }
         }
     }
-
 
     IEnumerator RevealCoffeeTableKey()
     {
