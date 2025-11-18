@@ -254,8 +254,8 @@ public class DiaryReaderUI : MonoBehaviour
 
         // 🔔 Let quiz managers (e.g., SnugglesQuizManager) know we closed FIRST
         // This allows the quiz to trigger before the "Diary closed!" dialogue
+        Debug.Log("[DEBUG_TRACE] [DiaryReaderUI] Invoking OnDiaryClosed event...");
         OnDiaryClosed?.Invoke();
-        Debug.Log("[DiaryReaderUI] Diary closed (event invoked).");
 
         // Show Lisa dialogue AFTER the event
         // This ensures quiz can interrupt if needed
@@ -264,21 +264,25 @@ public class DiaryReaderUI : MonoBehaviour
 
     private System.Collections.IEnumerator ShowLisaDialogueDelayed()
     {
-        // Wait a moment to let quiz system respond
-        yield return new WaitForSeconds(0.1f);
+        // Wait a moment to let quiz system respond and process the event
+        yield return new WaitForSeconds(0.2f); // Slightly increased from 0.1f to be safe
 
-        // Only show "Diary closed!" if no quiz or dialogue is active
-        if (DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive())
+        // FIX: Check the Quiz Manager's PENDING state, not just if the panel is active.
+        // The panel might not be active YET (waiting for coroutine), but we know it's coming.
+        bool isQuizBusy = false;
+
+        if (SnugglesQuizManager.Instance != null)
         {
-            // Check if quiz panel is active (don't show dialogue during quiz)
-            if (SnugglesQuizManager.Instance != null &&
-                SnugglesQuizManager.Instance.quizPanel != null &&
-                SnugglesQuizManager.Instance.quizPanel.activeSelf)
+            isQuizBusy = SnugglesQuizManager.Instance.IsEventPendingOrActive;
+            if (isQuizBusy)
             {
-                Debug.Log("[DiaryReaderUI] Quiz is active, skipping 'Diary closed!' dialogue");
-                yield break;
+                Debug.Log("[DEBUG_TRACE] [DiaryReaderUI] SnugglesQuizManager is BUSY (Pending or Active). Skipping 'Diary closed!' dialogue.");
             }
+        }
 
+        // Only show "Diary closed!" if no quiz is incoming and no dialogue is active
+        if (!isQuizBusy && (DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive()))
+        {
             ShowLisaDialogue();
         }
     }
@@ -314,14 +318,6 @@ public class DiaryReaderUI : MonoBehaviour
 
         // Keep index in range
         currentPageIndex = Mathf.Clamp(currentPageIndex, 0, Mathf.Max(0, currentPages.Count - 1));
-
-        // Debug dump
-        {
-            var ids = GlobalDiaryManager.Instance != null ? GlobalDiaryManager.Instance.GetCollectedIds() : new List<string>();
-            var spriteNames = new List<string>();
-            foreach (var s in currentPages) spriteNames.Add(s ? s.name : "NULL");
-            Debug.Log($"[DiaryReaderUI] RefreshPages -> count={currentPages.Count}, ids=[{string.Join(", ", ids)}], sprites=[{string.Join(", ", spriteNames)}], index={currentPageIndex}");
-        }
 
         // If open, make sure the UI reflects new content
         if (IsReaderOpen())

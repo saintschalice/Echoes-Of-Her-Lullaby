@@ -3,6 +3,7 @@
 public class ItemExaminationHandler : MonoBehaviour
 {
     private Room02_LivingRoomController roomController;
+    private MrSnugglesController snugglesController;
 
     // flags
     private const string FLAG_UNDERSTOOD = "understood_snuggles_clue";
@@ -10,6 +11,8 @@ public class ItemExaminationHandler : MonoBehaviour
     void Start()
     {
         roomController = FindFirstObjectByType<Room02_LivingRoomController>();
+        // Find the specific controller for Snuggles logic
+        snugglesController = FindFirstObjectByType<MrSnugglesController>();
 
         if (InventoryManager.Instance != null)
         {
@@ -120,55 +123,29 @@ public class ItemExaminationHandler : MonoBehaviour
 
     void ExamineTeddyBear()
     {
+        // FIX: Delegate directly to the MrSnugglesController if it exists in the scene.
+        // This ensures the complex state machine (First look -> Diary Check -> Arm Quiz) runs correctly.
+        if (snugglesController == null) snugglesController = FindFirstObjectByType<MrSnugglesController>();
+
+        if (snugglesController != null)
+        {
+            Debug.Log("[ItemExaminationHandler] Delegating examination to MrSnugglesController.");
+            snugglesController.OnExamine();
+            return;
+        }
+
+        // Fallback logic only if the controller is missing (e.g. different scene)
         bool hasWindingKey =
             (SaveSystem.Instance != null && SaveSystem.Instance.HasItem("winding_key")) ||
             (InventoryManager.Instance != null && InventoryManager.Instance.HasItem("winding_key"));
 
-        bool hasMusicBoxComplete =
-            (SaveSystem.Instance != null && SaveSystem.Instance.HasItem("music_box_complete")) ||
-            (InventoryManager.Instance != null && InventoryManager.Instance.HasItem("music_box_complete"));
-
-        if (hasWindingKey || hasMusicBoxComplete)
+        if (hasWindingKey)
         {
-            if (hasMusicBoxComplete)
-                DialogueSystemV2.Instance?.StartDialogue("Mr. Snuggles, my childhood teddy bear. I already used the winding key to fix the music box.", "Lisa");
-            else
-                DialogueSystemV2.Instance?.StartDialogue("Mr. Snuggles, my childhood teddy bear. I already found the winding key he was hiding.", "Lisa");
+            DialogueSystemV2.Instance?.StartDialogue("Mr. Snuggles, my childhood teddy bear. I already found the winding key he was hiding.", "Lisa");
             return;
         }
 
-        // Require the knowledge flag, not just owning any page
-        bool knowsSnugglesClue = SaveSystem.Instance.WasDialogueTriggered(FLAG_UNDERSTOOD);
-        if (!knowsSnugglesClue)
-        {
-            DialogueSystemV2.Instance?.StartDialogue("Maybe the diary mentions something about this teddy bear.", "Lisa");
-            return;
-        }
-
-        StartCoroutine(GiveWindingKeyAfterUnderstanding());
-    }
-
-    private System.Collections.IEnumerator GiveWindingKeyAfterUnderstanding()
-    {
-        yield return new WaitUntil(() => !DialogueSystemV2.Instance.IsDialogueActive());
-        yield return new WaitForSeconds(0.3f);
-
-        DialogueSystemV2.Instance?.StartDialogue("Wait… there’s something between the cushions!", "Lisa");
-
-        if (InventoryManager.Instance != null)
-        {
-            if (InventoryManager.Instance.GetType().GetMethod("AddItemAndSave") != null)
-            {
-                InventoryManager.Instance.AddItemAndSave("winding_key");
-            }
-            else
-            {
-                InventoryManager.Instance.AddItem("winding_key");
-                SaveSystem.Instance.AddInventoryItem("winding_key");
-            }
-        }
-
-        DialogueSystemV2.Instance?.StartDialogue("I got the winding key! Now I need to put it in the music box.", "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue("A worn teddy bear. It feels heavy...", "Lisa");
     }
 
     void ExamineBrokenMusicBox()

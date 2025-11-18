@@ -608,6 +608,14 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void CheckPuzzleCompletion()
     {
+        // ---------------- FIX FOR NRE ----------------
+        if (SaveSystem.Instance == null)
+        {
+            Debug.LogWarning("[Room02_LivingRoomController] SaveSystem.Instance is null. Skipping puzzle check.");
+            return;
+        }
+        // ---------------------------------------------
+
         if (!musicBoxPuzzleComplete && SaveSystem.Instance.HasItem(MUSIC_BOX_COMPLETE_ID))
         {
             musicBoxPuzzleComplete = true;

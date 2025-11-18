@@ -1275,8 +1275,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c225fcbfa0451c740bdf51bf5f45c8f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MrSnugglesController
+  diaryPage3Id: diary_page_3
   windingKeyId: winding_key
   musicBoxCompleteId: music_box_complete
+  diaryExamined: 1
+  snugglesExamined: 1
+  quizArmed: 1
+  quizSolved: 1
+  windingKeyGiven: 1
 --- !u!1 &416627685
 GameObject:
   m_ObjectHideFlags: 0
@@ -4942,11 +4948,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SnugglesQuizManager
   snuggles: {fileID: 413753367}
   quizPanel: {fileID: 1016785534}
-  questionText: {fileID: 0}
+  questionText: {fileID: 377217160}
   option1Button: {fileID: 416627687}
   option2Button: {fileID: 1136715010}
   option3Button: {fileID: 200498348}
   option4Button: {fileID: 514724011}
+  option1Text: {fileID: 2054067926}
+  option2Text: {fileID: 763724611}
+  option3Text: {fileID: 1228844203}
+  option4Text: {fileID: 6608541}
+  pendingQuiz: 1
+  waitingRetry: 1
 --- !u!114 &1016785537
 MonoBehaviour:
   m_ObjectHideFlags: 0

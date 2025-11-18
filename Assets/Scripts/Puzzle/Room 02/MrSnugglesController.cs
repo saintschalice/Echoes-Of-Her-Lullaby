@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class MrSnugglesController : MonoBehaviour
 {
@@ -28,11 +29,30 @@ public class MrSnugglesController : MonoBehaviour
 
         // Load state from SaveSystem
         LoadState();
+
+        // AUTO-ARM FIX: If quiz was previously armed (in save data) but not solved,
+        // re-arm the manager immediately on load so the player doesn't have to examine Snuggles again.
+        if (quizArmed && !quizSolved)
+        {
+            StartCoroutine(AutoArmQuizNextFrame());
+        }
     }
 
     void OnDestroy()
     {
         DiaryReaderUI.OnDiaryClosed -= OnDiaryClosed;
+    }
+
+    IEnumerator AutoArmQuizNextFrame()
+    {
+        // Wait one frame to ensure SnugglesQuizManager.Instance is initialized
+        yield return null;
+
+        if (SnugglesQuizManager.Instance != null)
+        {
+            Debug.Log("[MrSnuggles] Detected armed state on load. Re-arming Quiz Manager now.");
+            SnugglesQuizManager.Instance.ArmQuizOnNextDiaryClose();
+        }
     }
 
     void LoadState()
@@ -49,27 +69,29 @@ public class MrSnugglesController : MonoBehaviour
     // Call this from your interactable
     public void OnExamine()
     {
-        // If music box is already complete, never give another key
-        if (SaveSystem.Instance != null && SaveSystem.Instance.HasItem(musicBoxCompleteId))
-        {
-            Say("He feels empty now. I already used what he was hiding.");
-            return;
-        }
+        Debug.Log($"[DEBUG_TRACE] [MrSnuggles] OnExamine. diaryExamined={diaryExamined}, snugglesExamined={snugglesExamined}, quizArmed={quizArmed}, quizSolved={quizSolved}");
 
-        // If quiz is solved and key not yet given → give winding key
+        // 7. If quiz is solved, checking snuggles again grants the key
         if (quizSolved && !windingKeyGiven)
         {
             GiveWindingKey();
             return;
         }
 
-        // Handle the examination flow
+        // If music box is already complete or key given, standard msg
+        if (SaveSystem.Instance != null && (SaveSystem.Instance.HasItem(musicBoxCompleteId) || windingKeyGiven))
+        {
+            Say("He feels empty now. I already used what he was hiding.");
+            return;
+        }
+
+        // Handle the examination flow (Steps 1, 2, 3)
         HandleExamination();
     }
 
     void HandleExamination()
     {
-        // First examination ever
+        // 2. The player needs to examine mr snuggles at least once
         if (!snugglesExamined)
         {
             Say("Why does he seem so familiar?");
@@ -79,55 +101,54 @@ public class MrSnugglesController : MonoBehaviour
             return;
         }
 
-        // Check if we have diary page 3
-        bool hasDiary3 = (GlobalDiaryManager.Instance != null && GlobalDiaryManager.Instance.HasDiaryPage(diaryPage3Id)) ||
-                         (SaveSystem.Instance != null && SaveSystem.Instance.HasItem(diaryPage3Id));
-
-        // If no diary page 3, prompt to find clues
-        if (!hasDiary3)
-        {
-            Say("Maybe I should look for clues about this teddy bear.");
-            return;
-        }
-
-        // If we have diary 3 but haven't examined the diary yet
+        // Check if diary UI has been opened at least once (Step 1 requirement)
         if (!diaryExamined)
         {
-            Say("I think I read something about this teddy bear in the diary entries.");
+            Say("Maybe I should look for clues about this teddy bear in the diary.");
             return;
         }
 
-        // If diary examined, but quiz not armed yet → arm the quiz
-        if (!quizArmed && !quizSolved)
+        // 3. After (both done), when player examines mr snuggles again, start dialogue
+        // IF NOT YET ARMED:
+        if (!quizArmed)
         {
             Say("I think I read something about this teddy bear in the diary entries.");
+
             quizArmed = true;
             SaveSystem.Instance?.TriggerDialogue(FLAG_QUIZ_ARMED);
             SaveSystem.Instance?.OnStoryProgressMade();
 
-            // Arm the quiz to trigger on next diary close
+            Debug.Log("[DEBUG_TRACE] [MrSnuggles] Arming quiz now for NEXT diary close.");
+
+            // 4. Arms the quiz so it appears next time Diary closes
             if (SnugglesQuizManager.Instance != null)
                 SnugglesQuizManager.Instance.ArmQuizOnNextDiaryClose();
+            else
+                Debug.LogError("[DEBUG_TRACE] [MrSnuggles] SnugglesQuizManager.Instance is NULL!");
 
             return;
         }
 
-        // If quiz is armed but not solved, remind to check diary
+        // IF ARMED BUT NOT SOLVED (Reminder):
         if (quizArmed && !quizSolved)
         {
             Say("I should check the diary again. Which page mentioned Mr. Snuggles?");
+
+            // Re-arm just in case it was lost
+            if (SnugglesQuizManager.Instance != null)
+                SnugglesQuizManager.Instance.ArmQuizOnNextDiaryClose();
         }
     }
 
     void OnDiaryClosed()
     {
-        // Mark that the diary has been examined at least once
+        // 1. Mark that the diary UI has been examined at least once
         if (!diaryExamined)
         {
             diaryExamined = true;
             SaveSystem.Instance?.TriggerDialogue(FLAG_DIARY_EXAMINED);
             SaveSystem.Instance?.OnStoryProgressMade();
-            Debug.Log("[MrSnuggles] Diary has been examined for the first time");
+            Debug.Log("[DEBUG_TRACE] [MrSnuggles] Diary has been examined for the first time");
         }
     }
 
@@ -146,6 +167,7 @@ public class MrSnugglesController : MonoBehaviour
             SaveSystem.Instance.AddInventoryItem(windingKeyId);
         }
 
+        // 6. & 7. Dialogue and item get
         Say("Wait... there's something between the cushions! I got the winding key!");
     }
 
@@ -154,7 +176,7 @@ public class MrSnugglesController : MonoBehaviour
         quizSolved = true;
         SaveSystem.Instance?.TriggerDialogue(FLAG_QUIZ_SOLVED);
         SaveSystem.Instance?.OnStoryProgressMade();
-        Debug.Log("[MrSnuggles] Quiz solved! Player can now get winding key on next examination.");
+        Debug.Log("[DEBUG_TRACE] [MrSnuggles] Quiz solved! Player can now get winding key on next examination.");
     }
 
     void Say(string text)

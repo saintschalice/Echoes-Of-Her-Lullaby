@@ -22,9 +22,14 @@ public class SnugglesQuizManager : MonoBehaviour
     public TextMeshProUGUI option3Text;
     public TextMeshProUGUI option4Text;
 
-    private bool pendingQuiz;
-    private bool waitingRetry;
+    // Public getter so DiaryReaderUI can check if we are busy even before the panel opens
+    public bool IsEventPendingOrActive => IsPanelVisible() || pendingQuiz || waitingRetry;
+
+    [Header("Debug")]
+    [SerializeField] private bool pendingQuiz;
+    [SerializeField] private bool waitingRetry;
     private JoystickPlayerController playerController;
+    private CanvasGroup panelCanvasGroup;
 
     void Awake()
     {
@@ -38,8 +43,19 @@ public class SnugglesQuizManager : MonoBehaviour
             return;
         }
 
+        // INITIALIZATION & VISIBILITY FIX
         if (quizPanel != null)
-            quizPanel.SetActive(false);
+        {
+            // Get or Add CanvasGroup to handle visibility without disabling the GameObject
+            panelCanvasGroup = quizPanel.GetComponent<CanvasGroup>();
+            if (panelCanvasGroup == null)
+            {
+                panelCanvasGroup = quizPanel.AddComponent<CanvasGroup>();
+            }
+
+            // Force hide at start
+            HidePanel();
+        }
 
         // Find text components if not assigned
         if (option1Text == null && option1Button != null)
@@ -54,15 +70,21 @@ public class SnugglesQuizManager : MonoBehaviour
 
     void Start()
     {
+        // SAFETY RESET: Ensure pending flags are false on boot to prevent instant triggers
+        // unless explicitly armed by the Controller later.
+        pendingQuiz = false;
+        waitingRetry = false;
+        HidePanel();
+
         playerController = FindFirstObjectByType<JoystickPlayerController>();
-    }
 
-    void OnEnable()
-    {
+        // Ensure subscription happens
+        DiaryReaderUI.OnDiaryClosed -= OnDiaryClosed;
         DiaryReaderUI.OnDiaryClosed += OnDiaryClosed;
+        Debug.Log("[DEBUG_TRACE] SnugglesQuizManager initialized and subscribed.");
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         DiaryReaderUI.OnDiaryClosed -= OnDiaryClosed;
     }
@@ -71,27 +93,35 @@ public class SnugglesQuizManager : MonoBehaviour
     {
         if (snuggles == null)
         {
-            Debug.LogWarning("[SnugglesQuiz] MrSnugglesController reference is null!");
+            Debug.LogWarning("[DEBUG_TRACE] [SnugglesQuiz] MrSnugglesController reference is null!");
             return;
         }
 
-        if (pendingQuiz || waitingRetry)
+        // Allow re-arming if it's just pending (idempotent)
+        if (pendingQuiz)
         {
-            Debug.Log("[SnugglesQuiz] Quiz already armed or waiting for retry");
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Quiz already armed. Ignoring duplicate request.");
+            return;
+        }
+
+        if (waitingRetry)
+        {
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Waiting for retry. Ignoring Arm request.");
             return;
         }
 
         pendingQuiz = true;
-        Debug.Log("[SnugglesQuiz] Quiz armed and will trigger on next diary close");
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] >>> QUIZ ARMED! It will trigger on next diary close.");
     }
 
     void OnDiaryClosed()
     {
-        Debug.Log($"[SnugglesQuiz] Diary closed. pendingQuiz={pendingQuiz}, waitingRetry={waitingRetry}");
+        Debug.Log($"[DEBUG_TRACE] [SnugglesQuiz] OnDiaryClosed. Pending={pendingQuiz}, Retry={waitingRetry}");
 
         // If waiting for retry after wrong answer, show quiz again
         if (waitingRetry)
         {
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Triggering Retry sequence.");
             waitingRetry = false;
             StartCoroutine(ShowQuizAfterDelay());
             return;
@@ -100,7 +130,12 @@ public class SnugglesQuizManager : MonoBehaviour
         // If quiz is armed (first time), show it
         if (pendingQuiz)
         {
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Triggering Armed Quiz sequence.");
             StartCoroutine(ShowQuizAfterDelay());
+        }
+        else
+        {
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Quiz NOT pending. Doing nothing.");
         }
     }
 
@@ -108,18 +143,19 @@ public class SnugglesQuizManager : MonoBehaviour
     {
         // Wait a frame to ensure diary is fully closed
         yield return new WaitForEndOfFrame();
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.15f);
 
         ShowQuiz();
     }
 
     void ShowQuiz()
     {
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] >>> SHOWING QUIZ NOW");
         pendingQuiz = false;
 
         if (quizPanel == null)
         {
-            Debug.LogError("[SnugglesQuiz] Quiz panel is null!");
+            Debug.LogError("[DEBUG_TRACE] [SnugglesQuiz] Quiz panel is null!");
             return;
         }
 
@@ -127,12 +163,21 @@ public class SnugglesQuizManager : MonoBehaviour
         if (playerController != null)
             playerController.enabled = false;
 
-        // Show quiz panel
-        quizPanel.SetActive(true);
+        // Show quiz panel using CanvasGroup or SetActive
+        if (panelCanvasGroup != null)
+        {
+            panelCanvasGroup.alpha = 1f;
+            panelCanvasGroup.interactable = true;
+            panelCanvasGroup.blocksRaycasts = true;
+        }
+        else
+        {
+            quizPanel.SetActive(true);
+        }
 
         // Set question text
         if (questionText != null)
-            questionText.text = "What page mentioned Mr. Snuggles?";
+            questionText.text = "What page did Mr. Snuggles get mentioned?";
 
         // Set button labels
         if (option1Text != null) option1Text.text = "Page 1";
@@ -151,17 +196,14 @@ public class SnugglesQuizManager : MonoBehaviour
         option2Button?.onClick.AddListener(() => Submit(2));
         option3Button?.onClick.AddListener(() => Submit(3)); // ✅ correct
         option4Button?.onClick.AddListener(() => Submit(4));
-
-        Debug.Log("[SnugglesQuiz] Quiz displayed");
     }
 
     void Submit(int choice)
     {
-        Debug.Log($"[SnugglesQuiz] Player selected option {choice}");
+        Debug.Log($"[DEBUG_TRACE] [SnugglesQuiz] Player selected option {choice}");
 
         // Hide quiz panel
-        if (quizPanel != null)
-            quizPanel.SetActive(false);
+        HidePanel();
 
         // Re-enable player controls
         if (playerController != null)
@@ -177,8 +219,29 @@ public class SnugglesQuizManager : MonoBehaviour
         }
     }
 
+    private void HidePanel()
+    {
+        if (panelCanvasGroup != null)
+        {
+            panelCanvasGroup.alpha = 0f;
+            panelCanvasGroup.interactable = false;
+            panelCanvasGroup.blocksRaycasts = false;
+        }
+        else if (quizPanel != null && quizPanel != gameObject)
+        {
+            quizPanel.SetActive(false);
+        }
+    }
+
+    private bool IsPanelVisible()
+    {
+        if (panelCanvasGroup != null) return panelCanvasGroup.alpha > 0;
+        return quizPanel != null && quizPanel.activeSelf;
+    }
+
     IEnumerator HandleCorrectAnswer()
     {
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Answer Correct.");
         // Show success dialogue
         DialogueSystemV2.Instance?.StartDialogue("Got it!", "Lisa");
 
@@ -188,12 +251,11 @@ public class SnugglesQuizManager : MonoBehaviour
 
         // Mark quiz as solved
         snuggles?.MarkQuizSolved();
-
-        Debug.Log("[SnugglesQuiz] Correct answer! Quiz completed.");
     }
 
     IEnumerator HandleWrongAnswer()
     {
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Answer Wrong. Retrying.");
         // Show wrong answer dialogue
         DialogueSystemV2.Instance?.StartDialogue("Wait, that's not correct...", "Lisa");
 
@@ -209,12 +271,12 @@ public class SnugglesQuizManager : MonoBehaviour
         // Reopen the diary
         if (DiaryReaderUI.Instance != null)
         {
-            Debug.Log("[SnugglesQuiz] Wrong answer - reopening diary");
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Reopening diary for retry...");
             DiaryReaderUI.Instance.ShowDiary();
         }
         else
         {
-            Debug.LogError("[SnugglesQuiz] DiaryReaderUI.Instance is null!");
+            Debug.LogError("[DEBUG_TRACE] [SnugglesQuiz] DiaryReaderUI.Instance is null!");
         }
     }
 }
