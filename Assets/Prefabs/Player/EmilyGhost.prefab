@@ -399,6 +399,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmilyPerception
   visionRange: 6
   visionAngle: 60
+  viewDirectionOffset: 270
   aiForward: {fileID: 7288953433528400076}
   hearingRadius: 8
 --- !u!114 &6366252935566448824

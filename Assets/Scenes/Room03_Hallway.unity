@@ -497,9 +497,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ClosetInteractable
   closetAnimator: {fileID: 340224949}
   hideSequence: {fileID: 340224951}
-  scratchSound: {fileID: 0}
+  lockedSound: {fileID: 0}
   doorCreakSound: {fileID: 0}
-  firstDialogue: There are scratches inside... someone was trying to get out.
+  scratchSound: {fileID: 0}
+  examineDialogue: This is really big... I could probably fit inside.
+  lockedDialogue: It won't open. It's stuck.
+  firstDialogue: 
   interactionRange: 3
   interactPrompt: {fileID: 0}
 --- !u!95 &340224949
@@ -585,9 +588,10 @@ MonoBehaviour:
   closetAnimator: {fileID: 340224949}
   fadeCanvas: {fileID: 57714461}
   exitButton: {fileID: 2098927790}
-  muffledLoop: {fileID: 0}
+  muffledLoop: {fileID: 8300000, guid: 4c0ee6a8b1aaff94f809d4d405ac5921, type: 3}
   safeDistance: 8
   exitOffset: {x: 0, y: -1.5}
+  exitWhisper: Not ready... never ready... too much pain...
 --- !u!1 &343244039
 GameObject:
   m_ObjectHideFlags: 0
@@ -819,6 +823,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmilySpawnTrigger
   emilyPrefab: {fileID: 5862906431052648368, guid: 03df2e4908104da4188c7392eb963e88, type: 3}
   spawnPoint: {fileID: 1993897724}
+  closetScript: {fileID: 340224948}
+  pushForce: 15
+  shoveFriction: 10
+  resumeDelay: 0.3
+  emilyShout: GET OUT OF HERE!
+  lisaPanic: Oh no... I need to hide!
 --- !u!1 &552231209
 GameObject:
   m_ObjectHideFlags: 0
@@ -7254,6 +7264,51 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &962835219
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 962835221}
+  - component: {fileID: 962835220}
+  m_Layer: 0
+  m_Name: HallwayAudioController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &962835220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962835219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eab28c88365f1764685729afc9cc3bef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneAmbientPlayer
+  sceneAmbientConfig: {fileID: 11400000, guid: 53e58c51c62da5c47a60513baa391f9e, type: 2}
+--- !u!4 &962835221
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962835219}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.99439, y: -4.17073, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1112669849
 GameObject:
   m_ObjectHideFlags: 0
@@ -7461,6 +7516,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1396112836}
   - component: {fileID: 1396112835}
+  - component: {fileID: 1396112837}
   m_Layer: 0
   m_Name: Vent
   m_TagString: Untagged
@@ -7541,6 +7597,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1396112837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1396112834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc3a5d1381187a94295d33c25b0bf902, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VentInteractable
+  nextSceneName: Room04_KitchenDining
+  interactionRange: 2
+  interactPrompt: {fileID: 0}
+  ventSound: {fileID: 0}
 --- !u!1 &1801099345
 GameObject:
   m_ObjectHideFlags: 0
@@ -7695,7 +7767,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1803581508
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8182,6 +8254,7 @@ CanvasRenderer:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 962835221}
   - {fileID: 638094603}
   - {fileID: 2081814099}
   - {fileID: 552231211}

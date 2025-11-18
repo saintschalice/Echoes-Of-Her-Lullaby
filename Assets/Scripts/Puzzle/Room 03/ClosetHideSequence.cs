@@ -13,11 +13,14 @@ public class ClosetHideSequence : MonoBehaviour
     public float safeDistance = 8f;
     public Vector2 exitOffset = new Vector2(0f, -1.5f);
 
+    [Header("Post-Hide Narrative")]
+    [TextArea] public string exitWhisper = "Not ready... never ready... too much pain...";
+
     private Transform player;
     private Collider2D playerCollider;
     private string originalTag;
     private bool isHiding = false;
-    private bool canHide = false;
+    private bool canHide = false; // Updated by Interactable or external checks
 
     void Start()
     {
@@ -40,29 +43,13 @@ public class ClosetHideSequence : MonoBehaviour
         }
     }
 
-    IEnumerator CheckEmilyStatusRoutine()
-    {
-        float checkInterval = 0.5f; // Only check 2 times per second
-
-        while (true)
-        {
-            var emily = FindFirstObjectByType<EmilyGhost>();
-            canHide = (emily != null && emily.isActiveAndEnabled);
-
-            yield return new WaitForSeconds(checkInterval);
-        }
-    }
-
+    // Called by HallwayClosetInteractable
     public void HideInCloset()
     {
         if (isHiding) return;
 
-        if (!canHide)
-        {
-            DialogueSystemV2.Instance?.StartDialogue("There's no reason to hide right now...", "Lisa");
-            return;
-        }
-
+        // Safety check: ensure Emily exists or logic allows it
+        // For this specific narrative, the Interactable script handles the "Unlock" check
         StartCoroutine(HideRoutine());
     }
 
@@ -100,23 +87,18 @@ public class ClosetHideSequence : MonoBehaviour
         if (exitButton != null)
             exitButton.gameObject.SetActive(true);
 
-        // Wait until Emily is far enough
-        while (true)
-        {
-            var emily = FindFirstObjectByType<EmilyGhost>();
-            if (emily == null) break;
-
-            float dist = Vector2.Distance(emily.transform.position, player.position);
-            if (dist >= safeDistance)
-                break;
-
-            yield return null;
-        }
+        // Wait for player to click exit...
+        // Note: In the original prompt logic, we might want to force the player to wait
+        // until Emily is far away, but for now we let the Exit Button handle the "Exit" command
+        // which triggers GetOutOfCloset()
     }
 
     public void GetOutOfCloset()
     {
         if (!isHiding) return;
+
+        // Optional: Check if safe before allowing exit? 
+        // For now, we assume player decides when to risk it.
         StartCoroutine(ExitRoutine());
     }
 
@@ -156,6 +138,13 @@ public class ClosetHideSequence : MonoBehaviour
         closetAnimator?.SetTrigger("Close");
 
         isHiding = false;
+
+        // --- NEW NARRATIVE ADDITION ---
+        yield return new WaitForSeconds(0.5f); // Small pause after exiting
+        if (DialogueSystemV2.Instance != null)
+        {
+            DialogueSystemV2.Instance.StartDialogue(exitWhisper, "???");
+        }
     }
 
     IEnumerator Fade(float target, float duration)

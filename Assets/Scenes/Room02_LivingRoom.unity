@@ -1234,6 +1234,9 @@ MonoBehaviour:
   coffeeTable_Key: {fileID: 178078046}
   books_Pushed: {fileID: 695383517}
   smallKey: {fileID: 862271085}
+  hallwayTriggerLocation: {fileID: 0}
+  hallwayTriggerRadius: 2
+  hallwayTriggerArmed: 0
   tvAnimator: {fileID: 1651509293}
   rockingChairAnimator: {fileID: 653811733}
   tvStaticSound: {fileID: 8300000, guid: a8113b7936f70624cbad0a6d96b14ed6, type: 3}
@@ -1249,6 +1252,7 @@ MonoBehaviour:
   jumpBackDistance: 1
   jumpBackDuration: 0.3
   emilyDialogueSound: {fileID: 0}
+  hallwayEventRunning: 0
 --- !u!4 &413753366
 Transform:
   m_ObjectHideFlags: 0
@@ -4897,7 +4901,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eab28c88365f1764685729afc9cc3bef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneAmbientPlayer
-  sceneAmbientConfig: {fileID: 11400000, guid: 53e58c51c62da5c47a60513baa391f9e, type: 2}
+  sceneAmbientConfig: {fileID: 11400000, guid: c7d1e1abac5321848ac511f441fe3fe3, type: 2}
 --- !u!4 &984216726
 Transform:
   m_ObjectHideFlags: 0

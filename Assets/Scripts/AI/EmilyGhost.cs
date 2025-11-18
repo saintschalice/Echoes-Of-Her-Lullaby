@@ -9,8 +9,8 @@ public sealed class EmilyGhost : MonoBehaviour
     // ───────── CONFIG ─────────
     [Header("Speed (u/s)")]
     public float patrolSpeed = 1.4f;
-    public float investigateSpeed = 2.4f;
-    public float huntSpeed = 2.8f;
+    public float investigateSpeed = 1.8f;
+    public float huntSpeed = 2f;
 
     [Header("State Timers (s)")]
     public float searchTime = 12f;

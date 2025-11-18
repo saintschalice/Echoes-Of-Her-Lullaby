@@ -1,32 +1,35 @@
 using UnityEngine;
+using System.Collections;
 
 public class HallwayClosetInteractable : MonoBehaviour
 {
     [Header("References")]
     public Animator closetAnimator;
-    public ClosetHideSequence hideSequence; // reference to hiding script
+    public ClosetHideSequence hideSequence;
 
     [Header("Audio")]
-    public AudioClip scratchSound;
+    public AudioClip lockedSound; // Assign a "rattle" or "locked" sound here
     public AudioClip doorCreakSound;
+    public AudioClip scratchSound;
 
     [Header("Dialogue")]
-    [TextArea]
-    public string firstDialogue = "There are scratches inside... someone was trying to get out.";
+    [TextArea] public string examineDialogue = "This is really big... I could probably fit inside.";
+    [TextArea] public string lockedDialogue = "It won't open. It's stuck.";
+    [TextArea] public string firstDialogue = "There are scratches inside... someone was trying to get out.";
 
     [Header("Settings")]
     public float interactionRange = 2f;
     public GameObject interactPrompt;
 
     private Transform player;
-    private bool firstExamined = false;
-    private bool canHide = false;
+    private bool canHide = false; // Default to false until Emily spawns
+    private bool isLocked = true;
+    private bool hasExaminedOnce = false;
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (interactPrompt != null)
-            interactPrompt.SetActive(false);
+        if (interactPrompt != null) interactPrompt.SetActive(false);
     }
 
     void Update()
@@ -39,54 +42,64 @@ public class HallwayClosetInteractable : MonoBehaviour
         if (interactPrompt != null)
             interactPrompt.SetActive(inRange && !DialogueSystemV2.Instance.IsDialogueActive());
 
-        // Touch interaction
+        // Interaction Input
         if (inRange && Input.GetMouseButtonDown(0))
         {
             Vector2 touchPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(touchPos, Vector2.zero);
 
             if (hit.collider != null && hit.collider.gameObject == gameObject)
-                HandleClosetInteraction();
+                HandleInteraction();
         }
     }
 
-    void HandleClosetInteraction()
+    void HandleInteraction()
     {
-        if (!firstExamined)
+        // If the chase sequence is active (unlocked by spawn trigger), allow hiding
+        if (canHide)
         {
-            StartCoroutine(FirstExamineRoutine());
-        }
-        else if (canHide)
-        {
+            // If we haven't done the "Scratches inside" dialogue yet, do that quickly first? 
+            // Or just go straight to hiding because we are being chased. 
+            // Based on the prompt: "The player hides inside the closet." -> Implies immediate hiding.
             hideSequence?.HideInCloset();
         }
+        else
+        {
+            // Before the chase: Examine and find it locked
+            StartCoroutine(ExamineRoutine());
+        }
     }
 
-    System.Collections.IEnumerator FirstExamineRoutine()
+    IEnumerator ExamineRoutine()
     {
-        firstExamined = true;
+        // Prevent spamming
+        if (DialogueSystemV2.Instance.IsDialogueActive()) yield break;
 
-        // Open
-        closetAnimator?.SetTrigger("Open");
-        if (doorCreakSound) AudioManager.Instance?.PlaySFX(doorCreakSound);
+        if (!hasExaminedOnce)
+        {
+            // 1. Initial thought
+            DialogueSystemV2.Instance?.StartDialogue(examineDialogue, "Lisa");
+            while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+            hasExaminedOnce = true;
+        }
+
+        // 2. Attempt to open (Sound + Animation rattle if you have one)
+        if (lockedSound) AudioManager.Instance?.PlaySFX(lockedSound);
+
+        // Optional: Trigger a "Rattle" animation here if exists
+        // closetAnimator?.SetTrigger("Rattle"); 
+
         yield return new WaitForSeconds(0.5f);
 
-        // Dialogue
-        DialogueSystemV2.Instance?.StartDialogue(firstDialogue, "Lisa");
-        while (DialogueSystemV2.Instance.IsDialogueActive())
-            yield return null;
+        // 3. Locked conclusion
+        DialogueSystemV2.Instance?.StartDialogue(lockedDialogue, "Lisa");
+    }
 
-        // Scratching sound
-        if (scratchSound) AudioManager.Instance?.PlaySFX(scratchSound);
-        yield return new WaitForSeconds(1.5f);
-
-        // Close again
-        closetAnimator?.SetTrigger("Close");
-        if (doorCreakSound) AudioManager.Instance?.PlaySFX(doorCreakSound);
-
-        // Enable hiding only after Emily has appeared
-        yield return new WaitForSeconds(0.5f);
+    // CALLED BY EMILY SPAWN TRIGGER
+    public void UnlockForHiding()
+    {
+        isLocked = false;
         canHide = true;
-        Debug.Log("[HallwayClosetInteractable] Closet examined, can now be used for hiding.");
+        Debug.Log("[Closet] Unlocked for hiding sequence.");
     }
 }
