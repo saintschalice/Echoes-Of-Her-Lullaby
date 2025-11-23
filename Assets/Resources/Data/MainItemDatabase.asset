@@ -158,3 +158,107 @@ MonoBehaviour:
     triggersMemory: 0
     memoryFragmentId: 
     requiredForPuzzle: hallway_door
+  - itemId: flour
+    itemName: Flour
+    description: A bag of old baking flour. Still seems usable enough.
+    itemIcon: {fileID: 21300000, guid: 26de69c2a0287be40ab4d7cbd8a298cd, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: sugar
+    itemName: Sugar
+    description: Granulated sugar. It smells faintly like vanilla.
+    itemIcon: {fileID: 21300000, guid: e7ce79411a72f3848af5f34c15b99210, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: vanilla
+    itemName: Vanilla Extract
+    description: A small bottle of vanilla. The scent is strangely comforting.
+    itemIcon: {fileID: 21300000, guid: f7077aea75f58594e812c38aadc707c5, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: chocolate
+    itemName: Chocolate Pieces
+    description: Chunks of chocolate that somehow survived in the fridge.
+    itemIcon: {fileID: 21300000, guid: 5a21135a9e3f326459f8313521f514cf, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: egg
+    itemName: Egg
+    description: "A cold egg from the fridge. You shouldn\u2019t think too hard about
+      how old it is."
+    itemIcon: {fileID: 21300000, guid: b40e6152531901e448c74ac0bed99f48, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: salt
+    itemName: Salt
+    description: Some salt left on the counter. Just enough for a recipe.
+    itemIcon: {fileID: 21300000, guid: 5930a955ea736f342bcbf90a77be1b74, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: bowl_empty
+    itemName: Empty Mixing Bowl
+    description: A large mixing bowl. Perfect for combining ingredients.
+    itemIcon: {fileID: 21300000, guid: 554ee97aed5e3f942bf2907a9f4cd47d, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: bowl_cookie_mix
+    itemName: Bowl of Cookie Dough
+    description: "All the ingredients mixed into a lumpy cookie dough. It\u2019s
+      ready to bake."
+    itemIcon: {fileID: 21300000, guid: 554ee97aed5e3f942bf2907a9f4cd47d, type: 3}
+    isKeyItem: 0
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: recipe_book_kitchen
+    itemName: Old Recipe Book
+    description: A stained recipe book hidden beneath the kitchen island. Two pages
+      are marked with a cookie recipe.
+    itemIcon: {fileID: 21300000, guid: 8b0ae50cf52e71b49a2438828447819b, type: 3}
+    isKeyItem: 0
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: floorboard_bridge
+    itemName: Loose Floorboard
+    description: "A heavy wooden floorboard that came loose. It\u2019s wide enough
+      to bridge a gap in the floor."
+    itemIcon: {fileID: 21300000, guid: 8753f34b7ecb1044f96b7359b0cd4f2a, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: kitchen_cookie_puzzle

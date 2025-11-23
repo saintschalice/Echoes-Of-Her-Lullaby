@@ -4,7 +4,6 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(AudioSource))]
-// Added these to ensure the components exist, since we are now Fetching them instead of creating them
 [RequireComponent(typeof(EmilyPerception))]
 [RequireComponent(typeof(EmilyMovement))]
 [RequireComponent(typeof(EmilyAudio))]
@@ -38,14 +37,10 @@ public sealed class EmilyGhost : MonoBehaviour
 
     void Awake()
     {
-        // FIX: Changed AddComponent to GetComponent.
-        // AddComponent creates a NEW (empty) component, ignoring the one you set up in the Inspector.
-        // GetComponent finds the one you already added and configured.
         _perception = GetComponent<EmilyPerception>();
         _move = GetComponent<EmilyMovement>();
         _audio = GetComponent<EmilyAudio>();
 
-        // Safety check to add them if they are missing (optional fallback)
         if (_perception == null) _perception = gameObject.AddComponent<EmilyPerception>();
         if (_move == null) _move = gameObject.AddComponent<EmilyMovement>();
         if (_audio == null) _audio = gameObject.AddComponent<EmilyAudio>();
@@ -150,11 +145,9 @@ public sealed class EmilyGhost : MonoBehaviour
             _anim.SetFloat("InputY", vel.y);
 
         }
-
-
-
     }
 
+    // INTERNAL STATE SETTER
     void SetState(State next)
     {
         if (_cur == next) return;
@@ -194,5 +187,12 @@ public sealed class EmilyGhost : MonoBehaviour
                 _agent.speed = patrolSpeed;
                 break;
         }
+    }
+
+    // NEW: Public helper to force state from external Directors (like KitchenRoomController)
+    public void SetStateExternal(State next)
+    {
+        Debug.Log($"[EMILY] External State Override -> {next}");
+        SetState(next);
     }
 }

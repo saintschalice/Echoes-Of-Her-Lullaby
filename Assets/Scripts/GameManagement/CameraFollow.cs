@@ -87,7 +87,7 @@ public class CameraFollow : MonoBehaviour
                 target = player.transform;
         }
 
-        // 3. 🎯 NEW: Snap camera to the target's initial position + offset
+        // 3. Snap camera to the target's initial position + offset
         if (target != null)
         {
             Vector3 desiredPosition = target.position + offset;
@@ -113,7 +113,7 @@ public class CameraFollow : MonoBehaviour
             transform.position = desiredPosition;
             velocity = Vector3.zero; // Reset velocity to prevent immediate "snap back" due to smoothing
 
-            Debug.Log($"[CameraFollow] Initial snap position: {transform.position}");
+            //Debug.Log($"[CameraFollow] Initial snap position: {transform.position}");
         }
     }
 
@@ -146,7 +146,7 @@ public class CameraFollow : MonoBehaviour
 
         if (Mathf.Abs(currentHalfWidth - cameraHalfWidth) > 0.1f)
         {
-            Debug.Log($"[CameraFollow] Aspect ratio changed from {cameraHalfWidth / cam.orthographicSize:F2} to {cam.aspect:F2}");
+            //Debug.Log($"[CameraFollow] Aspect ratio changed from {cameraHalfWidth / cam.orthographicSize:F2} to {cam.aspect:F2}");
             CalculateCameraSize();
 
             if (useTilemapBoundaries)
@@ -183,7 +183,7 @@ public class CameraFollow : MonoBehaviour
             cameraHalfWidth = cameraHalfHeight * cam.aspect;
         }
 
-        Debug.Log($"[CameraFollow] Camera size - Half Width: {cameraHalfWidth:F2}, Half Height: {cameraHalfHeight:F2}");
+       // Debug.Log($"[CameraFollow] Camera size - Half Width: {cameraHalfWidth:F2}, Half Height: {cameraHalfHeight:F2}");
     }
 
     void UpdateTilemapBoundaries()
@@ -237,7 +237,7 @@ public class CameraFollow : MonoBehaviour
             combinedBounds.Encapsulate(tileBounds);
         }
 
-        Debug.Log($"[CameraFollow] Combined tilemap bounds: Center({combinedBounds.center}), Size({combinedBounds.size})");
+        //Debug.Log($"[CameraFollow] Combined tilemap bounds: Center({combinedBounds.center}), Size({combinedBounds.size})");
         return combinedBounds;
     }
 
@@ -269,7 +269,7 @@ public class CameraFollow : MonoBehaviour
                 offset.z
             );
 
-            Debug.Log($"[CameraFollow] Room smaller than camera! Locking at center: {lockedCameraPosition}");
+            //Debug.Log($"[CameraFollow] Room smaller than camera! Locking at center: {lockedCameraPosition}");
 
             // Set boundaries to center
             minX = maxX = tilemapBounds.center.x;
@@ -288,7 +288,7 @@ public class CameraFollow : MonoBehaviour
             {
                 float centerX = tilemapBounds.center.x;
                 minX = maxX = centerX;
-                Debug.LogWarning($"[CameraFollow] X boundaries invalid, centering at {centerX}");
+               // Debug.LogWarning($"[CameraFollow] X boundaries invalid, centering at {centerX}");
             }
             if (minY > maxY)
             {
@@ -297,7 +297,7 @@ public class CameraFollow : MonoBehaviour
                 Debug.LogWarning($"[CameraFollow] Y boundaries invalid, centering at {centerY}");
             }
 
-            Debug.Log($"[CameraFollow] Boundaries set: X({minX:F2} to {maxX:F2}), Y({minY:F2} to {maxY:F2})");
+          //  Debug.Log($"[CameraFollow] Boundaries set: X({minX:F2} to {maxX:F2}), Y({minY:F2} to {maxY:F2})");
         }
     }
 
@@ -308,7 +308,7 @@ public class CameraFollow : MonoBehaviour
         minY = manualMinY;
         maxY = manualMaxY;
         roomSmallerThanCamera = false;
-        Debug.Log($"[CameraFollow] Using manual boundaries: X({minX} to {maxX}), Y({minY} to {maxY})");
+        //Debug.Log($"[CameraFollow] Using manual boundaries: X({minX} to {maxX}), Y({minY} to {maxY})");
     }
 
     void LateUpdate()
@@ -355,14 +355,14 @@ public class CameraFollow : MonoBehaviour
         useManualBoundaries = true;
         useTilemapBoundaries = false;
         roomSmallerThanCamera = false;
-        Debug.Log($"[CameraFollow] Manual boundaries set: X({minX} to {maxX}), Y({minY} to {maxY})");
+       // Debug.Log($"[CameraFollow] Manual boundaries set: X({minX} to {maxX}), Y({minY} to {maxY})");
     }
 
     public void RefreshTilemapBoundaries()
     {
         if (useTilemapBoundaries)
         {
-            Debug.Log("[CameraFollow] Manually refreshing tilemap boundaries...");
+           // Debug.Log("[CameraFollow] Manually refreshing tilemap boundaries...");
             UpdateTilemapBoundaries();
         }
     }

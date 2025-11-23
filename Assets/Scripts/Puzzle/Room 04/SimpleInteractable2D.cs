@@ -5,23 +5,27 @@ using System.Collections;
 public class SimpleInteractable2D : MonoBehaviour
 {
     [Header("Base Settings")]
-    [Tooltip("If true, the collider is a Trigger. If false, it's a physical wall.")]
+    [Tooltip("If true, the collider is a Trigger (walk-through). If false, it's a solid wall.")]
     public bool isTrigger = true;
     public bool interactable = true;
+
+    [Header("Distance Settings")]
+    public float interactionRadius = 2.5f; // Distance within which interaction is allowed
+    public bool debugRadius = true;
 
     [Header("Dialogue")]
     [TextArea(2, 4)]
     public string interactionDialogue;
     public string speakerName = "Lisa";
+    [Tooltip("Message shown if player taps but is too far away.")]
+    public string tooFarMessage = "I need to get closer.";
 
     [Header("Audio")]
     public AudioClip interactionSFX;
 
-    protected bool isPlayerInRange = false;
-
     protected virtual void Start()
     {
-        // Ensure collider is set up correctly
+        // Force the collider to match the script setting
         BoxCollider2D col = GetComponent<BoxCollider2D>();
         if (col != null)
         {
@@ -29,63 +33,93 @@ public class SimpleInteractable2D : MonoBehaviour
         }
     }
 
-    protected virtual void OnTriggerEnter2D(Collider2D other)
+    /// <summary>
+    /// Built-in Unity method that detects Clicks (Mouse) and Taps (Touch) on this collider.
+    /// This makes the object "Tappable" without needing an extra Raycast script.
+    /// </summary>
+    protected virtual void OnMouseDown()
     {
-        if (other.CompareTag("Player"))
-        {
-            isPlayerInRange = true;
-            // Optional: Show an "Interact" UI button here if you have one
-        }
-    }
-
-    protected virtual void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            isPlayerInRange = false;
-            // Optional: Hide "Interact" UI button here
-        }
+        // If UI is blocking the tap, you might want to check EventSystem.current.IsPointerOverGameObject() here
+        // For now, we assume direct tap.
+        Interact();
     }
 
     /// <summary>
-    /// Call this method from your Input System (e.g. Interaction Button onClick).
+    /// Checks distance and performs interaction.
     /// </summary>
     public virtual void Interact()
     {
-        if (!interactable || !isPlayerInRange) return;
+        if (!interactable) return;
 
+        // 1. Find Player
+        Vector3 playerPos = Vector3.zero;
+        if (JoystickPlayerController.Instance != null)
+        {
+            playerPos = JoystickPlayerController.Instance.transform.position;
+        }
+        else
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null) playerPos = player.transform.position;
+            else return; // No player found
+        }
+
+        // 2. Check Distance (Radius)
+        float distance = Vector2.Distance(transform.position, playerPos);
+        if (distance > interactionRadius)
+        {
+            Debug.Log($"[Interaction] Too far! Dist: {distance:F1} / Radius: {interactionRadius}");
+
+            // Optional: Show "Too far" dialogue
+            if (DialogueSystemV2.Instance != null && !string.IsNullOrEmpty(tooFarMessage))
+            {
+                // Only show if not already talking (prevents spamming)
+                if (!DialogueSystemV2.Instance.IsDialogueActive())
+                {
+                    DialogueSystemV2.Instance.StartDialogue(tooFarMessage, "Lisa");
+                }
+            }
+            return;
+        }
+
+        // 3. Perform Interaction (In Range)
         Debug.Log($"[Interaction] Interacting with {gameObject.name}");
 
-        // 1. Play Sound
+        // Play Sound
         if (interactionSFX != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(interactionSFX);
         }
 
-        // 2. Show Dialogue
+        // Show Dialogue
         if (!string.IsNullOrEmpty(interactionDialogue) && DialogueSystemV2.Instance != null)
         {
             DialogueSystemV2.Instance.StartDialogue(interactionDialogue, speakerName);
 
-            // Hook into dialogue end for post-interaction logic (like pickups)
-            DialogueSystemV2.Instance.OnDialogueEnded -= OnDialogueEnded; // Safety remove
+            DialogueSystemV2.Instance.OnDialogueEnded -= OnDialogueEnded;
             DialogueSystemV2.Instance.OnDialogueEnded += OnDialogueEnded;
         }
         else
         {
-            // If no dialogue, trigger end logic immediately
             OnDialogueEnded();
         }
     }
 
-    /// <summary>
-    /// Override this to add logic AFTER the dialogue finishes (e.g. adding item to inventory).
-    /// </summary>
     protected virtual void OnDialogueEnded()
     {
         if (DialogueSystemV2.Instance != null)
         {
             DialogueSystemV2.Instance.OnDialogueEnded -= OnDialogueEnded;
+        }
+    }
+
+    // Visualization for the Editor
+    protected virtual void OnDrawGizmosSelected()
+    {
+        if (debugRadius)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, interactionRadius);
         }
     }
 }

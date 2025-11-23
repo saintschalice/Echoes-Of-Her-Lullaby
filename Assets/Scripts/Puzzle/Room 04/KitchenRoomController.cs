@@ -1,15 +1,16 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class KitchenRoomController : MonoBehaviour
 {
     public static KitchenRoomController Instance { get; private set; }
 
-    [Header("Room Settings")]
-    [SerializeField] private string roomName = "Room04_KitchenDining";
-    [SerializeField] private string puzzleId = "kitchen_cookie_puzzle";
+    [Header("Puzzle Configuration")]
+    public string puzzleId = "kitchen_cookie_puzzle";
+    public string roomName = "Room04_KitchenDining";
 
-    [Header("State Flags (Read-Only Debug)")]
+    [Header("Puzzle Flags (Read Only)")]
     public bool recipeRead;
     public bool hasFlour;
     public bool hasSugar;
@@ -22,28 +23,20 @@ public class KitchenRoomController : MonoBehaviour
     public bool cookiesBakedAndStored;
     public bool floorboardObtained;
     public bool bridgePlaced;
+    public bool emilyIntroDone;
 
-    // Item IDs corresponding to your ItemDatabase
-    private const string ITEM_FLOUR = "flour";
-    private const string ITEM_SUGAR = "sugar";
-    private const string ITEM_VANILLA = "vanilla";
-    private const string ITEM_CHOCOLATE = "chocolate";
-    private const string ITEM_EGG = "egg";
-    private const string ITEM_SALT = "salt";
-    private const string ITEM_RECIPE_BOOK = "recipe_book_kitchen";
-    private const string ITEM_BOWL_MIX = "bowl_cookie_mix";
-    private const string ITEM_FLOORBOARD = "floorboard_bridge";
+    [Header("State Flags")]
+    // The Island interaction script updates this when Lisa hides/unhides
+    public bool isPlayerHidden = false;
+    // NEW: Allows Island interaction during the intro sequence
+    public bool introInProgress = false;
 
-    // State Markers for RoomState.interactedObjects
-    private const string MARKER_RECIPE_READ = "recipe_read";
-    private const string MARKER_DOUGH_MIXED = "dough_mixed";
-    private const string MARKER_OVEN_SET = "oven_set_350_12";
-    private const string MARKER_COOKIES_BAKED = "cookies_baked";
-    private const string MARKER_BRIDGE_PLACED = "bridge_placed";
+    [Header("Intro Settings")]
+    public float introKnockbackDuration = 0.5f;
+    public Vector2 introKnockbackTarget = new Vector2(2.5f, 1.2f);
 
-    void Awake()
+    private void Awake()
     {
-        // Singleton pattern scoped to the scene (destroyed on load)
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -52,125 +45,99 @@ public class KitchenRoomController : MonoBehaviour
         Instance = this;
     }
 
-    void Start()
+    private void Start()
     {
-        // 1. Load existing state from SaveSystem
         LoadRoomState();
-
-        // 2. Check for First Time Entry
-        HandleRoomEntry();
+        CheckFirstVisit();
     }
 
-    /// <summary>
-    /// Loads flags from SaveSystem (RoomState) and InventoryManager.
-    /// </summary>
-    public void LoadRoomState()
+    private void LoadRoomState()
     {
         if (SaveSystem.Instance == null)
         {
-            Debug.LogError("[KitchenRoomController] SaveSystem is missing!");
+            Debug.LogWarning("[KitchenRoomController] SaveSystem missing. Using default state.");
             return;
         }
 
         RoomState state = SaveSystem.Instance.GetRoomState(roomName);
+        if (state == null) return;
 
-        // 1. Load Inventory Flags (Directly from InventoryManager or SaveSystem)
-        hasFlour = SaveSystem.Instance.HasItem(ITEM_FLOUR);
-        hasSugar = SaveSystem.Instance.HasItem(ITEM_SUGAR);
-        hasVanilla = SaveSystem.Instance.HasItem(ITEM_VANILLA);
-        hasChocolate = SaveSystem.Instance.HasItem(ITEM_CHOCOLATE);
-        hasEgg = SaveSystem.Instance.HasItem(ITEM_EGG);
-        hasSalt = SaveSystem.Instance.HasItem(ITEM_SALT);
+        bridgePlaced = state.solvedPuzzles.Contains(puzzleId + "_bridge");
+        emilyIntroDone = state.solvedPuzzles.Contains("emily_kitchen_intro");
+        floorboardObtained = state.collectedItems.Contains("floorboard_bridge");
+        recipeRead = SaveSystem.Instance.HasItem("recipe_book_kitchen");
 
-        // 2. Load Interaction Flags from RoomState.interactedObjects
-        recipeRead = state.interactedObjects.Contains(MARKER_RECIPE_READ) || SaveSystem.Instance.HasItem(ITEM_RECIPE_BOOK);
-        doughMixed = state.interactedObjects.Contains(MARKER_DOUGH_MIXED) || SaveSystem.Instance.HasItem(ITEM_BOWL_MIX);
-        ovenSetCorrect = state.interactedObjects.Contains(MARKER_OVEN_SET);
-        cookiesBakedAndStored = state.interactedObjects.Contains(MARKER_COOKIES_BAKED) || SaveSystem.Instance.IsPuzzleSolved(puzzleId);
-        bridgePlaced = state.interactedObjects.Contains(MARKER_BRIDGE_PLACED);
-
-        // Floorboard logic: if we have the item, we obtained it. 
-        // If the bridge is placed, we technically "used" it, but the puzzle is solved.
-        floorboardObtained = SaveSystem.Instance.HasItem(ITEM_FLOORBOARD);
-
-        Debug.Log($"[KitchenRoomController] State Loaded. RecipeRead: {recipeRead}, Baked: {cookiesBakedAndStored}, Bridge: {bridgePlaced}");
+        Debug.Log($"[KitchenRoomController] State Loaded. Intro Done: {emilyIntroDone}");
     }
 
-    /// <summary>
-    /// Handles logic when the player enters the room (Intro Dialogue).
-    /// </summary>
-    private void HandleRoomEntry()
+    private void CheckFirstVisit()
     {
-        RoomState state = SaveSystem.Instance.GetRoomState(roomName);
+        if (SaveSystem.Instance == null) return;
 
+        RoomState state = SaveSystem.Instance.GetRoomState(roomName);
         if (!state.hasBeenVisited)
         {
-            Debug.Log("[KitchenRoomController] First visit detected.");
-
-            // Trigger Intro Dialogue
-            if (DialogueSystemV2.Instance != null)
-            {
-                DialogueSystemV2.Instance.StartDialogue("This kitchen smells like death masked by old vanilla. Something terrible happened here.", "Lisa");
-            }
-
-            // Mark as visited
+            StartCoroutine(PlayEntryDialogue());
             state.hasBeenVisited = true;
             SaveSystem.Instance.UpdateRoomState(roomName, state);
+            SaveSystem.Instance.SaveGame(0);
+        }
+    }
+
+    private IEnumerator PlayEntryDialogue()
+    {
+        yield return new WaitForSeconds(0.5f);
+        if (DialogueSystemV2.Instance != null)
+        {
+            DialogueSystemV2.Instance.StartDialogue("This kitchen smells like death masked by old vanilla. Something terrible happened here.", "Lisa");
         }
     }
 
     // ========================================================================
-    // PUBLIC ACTIONS (Called by Interactables)
+    // PUZZLE INTERFACE
     // ========================================================================
 
     public void OnRecipeBookRead()
     {
         recipeRead = true;
-        AddRoomStateMarker(MARKER_RECIPE_READ);
-        Debug.Log("[KitchenRoomController] Recipe book read.");
+        Debug.Log("[KitchenRoomController] Recipe read.");
     }
 
-    public void OnIngredientCollected(string ingredientId)
+    public void OnIngredientCollected(string itemId)
     {
-        // Just refresh flags based on ID
-        switch (ingredientId)
+        switch (itemId)
         {
-            case ITEM_FLOUR: hasFlour = true; break;
-            case ITEM_SUGAR: hasSugar = true; break;
-            case ITEM_VANILLA: hasVanilla = true; break;
-            case ITEM_CHOCOLATE: hasChocolate = true; break;
-            case ITEM_EGG: hasEgg = true; break;
-            case ITEM_SALT: hasSalt = true; break;
+            case "flour": hasFlour = true; break;
+            case "sugar": hasSugar = true; break;
+            case "vanilla": hasVanilla = true; break;
+            case "chocolate": hasChocolate = true; break;
+            case "egg": hasEgg = true; break;
+            case "salt": hasSalt = true; break;
         }
-        // No need to save a marker here, InventoryManager handles item persistence.
-        Debug.Log($"[KitchenRoomController] Ingredient collected: {ingredientId}");
+        CheckDoughIngredients();
+    }
+
+    private void CheckDoughIngredients()
+    {
+        // Internal check logic
     }
 
     public void OnDoughMixed()
     {
         doughMixed = true;
-        AddRoomStateMarker(MARKER_DOUGH_MIXED);
         Debug.Log("[KitchenRoomController] Dough mixed.");
     }
 
     public void OnOvenSetCorrect()
     {
         ovenSetCorrect = true;
-        AddRoomStateMarker(MARKER_OVEN_SET);
-        Debug.Log("[KitchenRoomController] Oven set to 350F / 12min.");
+        Debug.Log("[KitchenRoomController] Oven set correctly.");
     }
 
     public void OnCookiesBakedAndStored()
     {
-        if (cookiesBakedAndStored) return; // Already done
-
         cookiesBakedAndStored = true;
-        AddRoomStateMarker(MARKER_COOKIES_BAKED);
-
-        // This is the moment the puzzle is technically "solved" enough to get the reward
-        SaveSystem.Instance.MarkPuzzleSolved(puzzleId);
-
-        Debug.Log("[KitchenRoomController] Cookies baked and stored. Puzzle Solved!");
+        Debug.Log("[KitchenRoomController] Cookies baked and stored.");
     }
 
     public void OnFloorboardObtained()
@@ -182,41 +149,202 @@ public class KitchenRoomController : MonoBehaviour
     public void OnBridgePlaced()
     {
         bridgePlaced = true;
-        AddRoomStateMarker(MARKER_BRIDGE_PLACED);
         Debug.Log("[KitchenRoomController] Bridge placed.");
-    }
 
-    // ========================================================================
-    // HELPER METHODS
-    // ========================================================================
-
-    /// <summary>
-    /// Helper to add a string marker to the RoomState's interactedObjects list and save immediately.
-    /// </summary>
-    private void AddRoomStateMarker(string marker)
-    {
-        RoomState state = SaveSystem.Instance.GetRoomState(roomName);
-
-        if (!state.interactedObjects.Contains(marker))
+        if (SaveSystem.Instance != null)
         {
-            state.interactedObjects.Add(marker);
-            SaveSystem.Instance.UpdateRoomState(roomName, state);
+            SaveSystem.Instance.MarkPuzzleSolved(puzzleId);
+            SaveSystem.Instance.MarkPuzzleSolved(puzzleId + "_bridge");
         }
     }
 
-    /// <summary>
-    /// Check if player has all ingredients currently in inventory.
-    /// </summary>
-    public bool HasAllIngredients()
-    {
-        // Re-check inventory to be safe
-        hasFlour = SaveSystem.Instance.HasItem(ITEM_FLOUR);
-        hasSugar = SaveSystem.Instance.HasItem(ITEM_SUGAR);
-        hasVanilla = SaveSystem.Instance.HasItem(ITEM_VANILLA);
-        hasChocolate = SaveSystem.Instance.HasItem(ITEM_CHOCOLATE);
-        hasEgg = SaveSystem.Instance.HasItem(ITEM_EGG);
-        hasSalt = SaveSystem.Instance.HasItem(ITEM_SALT);
+    // ========================================================================
+    // EMILY INTRO SEQUENCE
+    // ========================================================================
 
-        return hasFlour && hasSugar && hasVanilla && hasChocolate && hasEgg && hasSalt;
+    public void StartEmilyKitchenIntro(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint)
+    {
+        if (emilyIntroDone)
+        {
+            Debug.Log("[KitchenRoomController] Emily intro already finished, skipping.");
+            return;
+        }
+
+        if (player == null || emilyPrefab == null || emilySpawnPoint == null)
+        {
+            Debug.LogError("[KitchenRoomController] Missing references for Emily Intro!");
+            return;
+        }
+
+        StartCoroutine(EmilyIntroRoutine(player, emilyPrefab, emilySpawnPoint));
+    }
+
+    private IEnumerator EmilyIntroRoutine(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint)
+    {
+        Debug.Log("[KitchenRoomController] Starting Emily Intro Sequence...");
+        introInProgress = true; // Enable flag to allow Island hiding
+
+        JoystickPlayerController playerController = player.GetComponent<JoystickPlayerController>();
+
+        // 1. Spawn Emily (AI Disabled)
+        EmilyGhost emilyInstance = Instantiate(emilyPrefab, emilySpawnPoint.position, emilySpawnPoint.rotation);
+        Animator emilyAnim = emilyInstance.GetComponentInChildren<Animator>();
+
+        emilyInstance.enabled = false;
+        UnityEngine.AI.NavMeshAgent emilyAgent = emilyInstance.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (emilyAgent != null) emilyAgent.enabled = false;
+
+        // 2. Knockback / Shock (Disables Input)
+        yield return StartCoroutine(PushLisaToPosition(player, playerController, introKnockbackTarget, introKnockbackDuration));
+
+        // 3. Dialogue - Part 1
+        if (DialogueSystemV2.Instance != null)
+        {
+            DialogueSystemV2.Instance.StartDialogue("GET OUT OF HERE!", "Emily");
+            while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+
+            yield return new WaitForSeconds(0.3f);
+
+            DialogueSystemV2.Instance.StartDialogue("I need to hide!", "Lisa");
+            while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        }
+        else
+        {
+            yield return new WaitForSeconds(2f);
+        }
+
+        // 4. Player Free To Move / Emily Scripted Walk
+        Vector2[] path = new Vector2[] {
+            new Vector2(2.5f, 1.2f),
+            new Vector2(-2.5f, 1.2f)
+        };
+
+        // Give player time to move/hide while Emily walks slowly
+        yield return StartCoroutine(MoveEmilyAlongPath(emilyInstance.transform, emilyAnim, path, 1.8f));
+
+        // 5. Tension Pause & Hiding Check
+        yield return new WaitForSeconds(0.8f);
+
+        // Logic Branch based on hiding
+        if (isPlayerHidden)
+        {
+            if (DialogueSystemV2.Instance != null)
+            {
+                DialogueSystemV2.Instance.StartDialogue("I WILL FIND YOU!", "Emily");
+                while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+
+                // BUG 3 FIX: Small delay to ensure speaker context switches cleanly
+                yield return new WaitForSeconds(0.1f);
+
+                DialogueSystemV2.Instance.StartDialogue("I need to keep quiet...", "Lisa");
+                while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+            }
+        }
+        else
+        {
+            // BUG 2 FIX: Removed "THERE YOU ARE!" dialogue.
+            // If player isn't hidden, we just silently proceed to the Hunt.
+            Debug.Log("[KitchenRoomController] Player not hidden, skipping dialogue and going to Hunt.");
+        }
+
+        // 6. AI Handover
+        Debug.Log("[KitchenRoomController] Handing over to Emily AI...");
+
+        // Re-enable Agent & Warp to sync internal position
+        if (emilyAgent != null)
+        {
+            emilyAgent.enabled = true;
+            emilyAgent.Warp(emilyInstance.transform.position);
+        }
+
+        emilyInstance.enabled = true;
+
+        // Set Initial State
+        if (isPlayerHidden)
+        {
+            emilyInstance.SetStateExternal(EmilyGhost.State.Search);
+        }
+        else
+        {
+            emilyInstance.SetStateExternal(EmilyGhost.State.Hunt);
+        }
+
+        // 7. Save State
+        emilyIntroDone = true;
+        introInProgress = false; // Reset flag
+
+        if (SaveSystem.Instance != null)
+        {
+            SaveSystem.Instance.MarkPuzzleSolved("emily_kitchen_intro");
+            SaveSystem.Instance.SaveGame(0);
+        }
+
+        Debug.Log("[KitchenRoomController] Intro Sequence Complete.");
+    }
+
+    // --- Helpers ---
+
+    private IEnumerator PushLisaToPosition(Transform playerTransform, JoystickPlayerController controller, Vector2 targetPos, float duration)
+    {
+        Debug.Log("[KitchenRoomController] Pushing Lisa...");
+
+        if (controller != null) controller.enabled = false;
+
+        Rigidbody2D rb = playerTransform.GetComponent<Rigidbody2D>();
+        if (rb != null) rb.linearVelocity = Vector2.zero;
+
+        Vector3 startPos = playerTransform.position;
+        float timer = 0f;
+
+        try
+        {
+            while (timer < duration)
+            {
+                timer += Time.deltaTime;
+                float t = timer / duration;
+                t = Mathf.Sin(t * Mathf.PI * 0.5f);
+
+                Vector3 newPos = Vector3.Lerp(startPos, new Vector3(targetPos.x, targetPos.y, 0), t);
+
+                if (rb != null) rb.MovePosition(newPos);
+                else playerTransform.position = newPos;
+
+                yield return null;
+            }
+        }
+        finally
+        {
+            if (controller != null) controller.enabled = true;
+        }
+    }
+
+    private IEnumerator MoveEmilyAlongPath(Transform emilyTransform, Animator anim, Vector2[] waypoints, float speed)
+    {
+        Debug.Log("[KitchenRoomController] Emily walking scripted path...");
+
+        foreach (Vector2 target in waypoints)
+        {
+            while (Vector2.Distance(emilyTransform.position, target) > 0.1f)
+            {
+                Vector3 dir = ((Vector3)target - emilyTransform.position).normalized;
+                emilyTransform.position += dir * speed * Time.deltaTime;
+
+                if (anim != null)
+                {
+                    anim.SetBool("isWalking", true);
+                    anim.SetFloat("InputX", dir.x);
+                    anim.SetFloat("InputY", dir.y);
+                    anim.SetFloat("MoveX", dir.x);
+                    anim.SetFloat("MoveY", dir.y);
+                }
+
+                yield return null;
+            }
+        }
+
+        if (anim != null)
+        {
+            anim.SetBool("isWalking", false);
+        }
     }
 }
