@@ -25,9 +25,12 @@ public sealed class EmilyPerception : MonoBehaviour
 
     Transform _player;
     float _lastNoise;
+    Rigidbody2D _rb;
 
     void Awake()
     {
+        _rb = GetComponent<Rigidbody2D>();
+
         // Auto-find aiForward
         if (aiForward == null)
         {
@@ -50,6 +53,24 @@ public sealed class EmilyPerception : MonoBehaviour
         StartCoroutine(VisionRoutine());
     }
 
+    void Update()
+    {
+        // ---------------------------------------------------------
+        // FIX: Rotate AI_Forward to match movement direction
+        // ---------------------------------------------------------
+        if (_rb != null && aiForward != null)
+        {
+            Vector2 vel = _rb.linearVelocity;
+
+            // Only rotate if moving significantly
+            if (vel.sqrMagnitude > 0.01f)
+            {
+                // Align the "Up" (Green) axis of the child to the velocity vector
+                aiForward.up = vel.normalized;
+            }
+        }
+    }
+
 
     IEnumerator VisionRoutine()
     {
@@ -68,14 +89,14 @@ public sealed class EmilyPerception : MonoBehaviour
     {
         if (_player == null)
         {
-            Debug.Log("[EMILY DEBUG] Player transform is NULL.");
+            // Debug.Log("[EMILY DEBUG] Player transform is NULL.");
             PlayerVisible = false;
             return;
         }
 
         if (aiForward == null)
         {
-            Debug.Log("[EMILY DEBUG] aiForward is NULL. Cannot compute vision.");
+            // Debug.Log("[EMILY DEBUG] aiForward is NULL. Cannot compute vision.");
             PlayerVisible = false;
             return;
         }
@@ -88,7 +109,7 @@ public sealed class EmilyPerception : MonoBehaviour
         // ---------------------------
         if (dist > visionRange)
         {
-            Debug.Log($"[EMILY DEBUG] Player too far. Dist={dist:F2}, Limit={visionRange}");
+            // Debug.Log($"[EMILY DEBUG] Player too far. Dist={dist:F2}, Limit={visionRange}");
             PlayerVisible = false;
             return;
         }
@@ -101,7 +122,7 @@ public sealed class EmilyPerception : MonoBehaviour
 
         if (ang > visionAngle * 0.5f)
         {
-           Debug.Log($"[EMILY DEBUG] Angle too wide. ang={ang:F2}, Limit={visionAngle * 0.5f}");
+            // Debug.Log($"[EMILY DEBUG] Angle too wide. ang={ang:F2}, Limit={visionAngle * 0.5f}");
             PlayerVisible = false;
             return;
         }
@@ -118,22 +139,22 @@ public sealed class EmilyPerception : MonoBehaviour
 
         if (!hit)
         {
-            Debug.Log("[EMILY DEBUG] Raycast hit NOTHING.");
+            // Debug.Log("[EMILY DEBUG] Raycast hit NOTHING.");
             PlayerVisible = false;
             return;
         }
 
-        Debug.Log($"[EMILY DEBUG] Raycast hit: {hit.collider.name}, Layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}");
+        // Debug.Log($"[EMILY DEBUG] Raycast hit: {hit.collider.name}, Layer={LayerMask.LayerToName(hit.collider.gameObject.layer)}");
 
         if (hit.collider.CompareTag("Player"))
         {
-            Debug.Log("[EMILY DEBUG] >>> PLAYER VISIBLE <<<");
+            // Debug.Log("[EMILY DEBUG] >>> PLAYER VISIBLE <<<");
             PlayerVisible = true;
             LastSeenPos = _player.position;
         }
         else
         {
-            Debug.Log("[EMILY DEBUG] Blocked by: " + hit.collider.name);
+            // Debug.Log("[EMILY DEBUG] Blocked by: " + hit.collider.name);
             PlayerVisible = false;
         }
     }

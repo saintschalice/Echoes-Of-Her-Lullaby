@@ -4,13 +4,17 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(AudioSource))]
+// Added these to ensure the components exist, since we are now Fetching them instead of creating them
+[RequireComponent(typeof(EmilyPerception))]
+[RequireComponent(typeof(EmilyMovement))]
+[RequireComponent(typeof(EmilyAudio))]
 public sealed class EmilyGhost : MonoBehaviour
 {
     // ───────── CONFIG ─────────
     [Header("Speed (u/s)")]
-    public float patrolSpeed = 1.4f;
-    public float investigateSpeed = 1.8f;
-    public float huntSpeed = 2f;
+    public float patrolSpeed = 0.5f;
+    public float investigateSpeed = 0.5f;
+    public float huntSpeed = 0.5f;
 
     [Header("State Timers (s)")]
     public float searchTime = 12f;
@@ -34,9 +38,17 @@ public sealed class EmilyGhost : MonoBehaviour
 
     void Awake()
     {
-        _perception = gameObject.AddComponent<EmilyPerception>();
-        _move = gameObject.AddComponent<EmilyMovement>();
-        _audio = gameObject.AddComponent<EmilyAudio>();
+        // FIX: Changed AddComponent to GetComponent.
+        // AddComponent creates a NEW (empty) component, ignoring the one you set up in the Inspector.
+        // GetComponent finds the one you already added and configured.
+        _perception = GetComponent<EmilyPerception>();
+        _move = GetComponent<EmilyMovement>();
+        _audio = GetComponent<EmilyAudio>();
+
+        // Safety check to add them if they are missing (optional fallback)
+        if (_perception == null) _perception = gameObject.AddComponent<EmilyPerception>();
+        if (_move == null) _move = gameObject.AddComponent<EmilyMovement>();
+        if (_audio == null) _audio = gameObject.AddComponent<EmilyAudio>();
 
         _animator = GetComponentInChildren<EmilyAnimator>();
 

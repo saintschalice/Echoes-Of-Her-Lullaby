@@ -7517,6 +7517,7 @@ GameObject:
   - component: {fileID: 1396112836}
   - component: {fileID: 1396112835}
   - component: {fileID: 1396112837}
+  - component: {fileID: 1396112838}
   m_Layer: 0
   m_Name: Vent
   m_TagString: Untagged
@@ -7604,7 +7605,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1396112834}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc3a5d1381187a94295d33c25b0bf902, type: 3}
   m_Name: 
@@ -7613,6 +7614,38 @@ MonoBehaviour:
   interactionRange: 2
   interactPrompt: {fileID: 0}
   ventSound: {fileID: 0}
+--- !u!114 &1396112838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1396112834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
+  targetSceneName: Room04_KitchenDining
+  doorID: Door_Hallway_To_Kitchen_Dining
+  startsLocked: 0
+  requiredItemId: 
+  consumeKeyOnUse: 0
+  unlockPermanently: 1
+  targetSpawnPointID: Main
+  spawnOffset: {x: 0, y: 0, z: 0}
+  interactionRadius: 1.5
+  requiredTag: Player
+  usePhysicalCollider: 1
+  lockedIndicator: {fileID: 0}
+  interactionPrompt: {fileID: 0}
+  lockedDoorSound: {fileID: 0}
+  unlockDoorSound: {fileID: 0}
+  doorOpenSound: {fileID: 0}
+  doorAnimator: {fileID: 0}
+  openTrigger: Open
+  transitionDelay: 1.5
+  useFadeTransition: 1
 --- !u!1 &1801099345
 GameObject:
   m_ObjectHideFlags: 0
@@ -7895,7 +7928,7 @@ Transform:
   m_GameObject: {fileID: 1906983357}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.45, y: 4.39, z: 0}
+  m_LocalPosition: {x: -11.09, y: 4.45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
