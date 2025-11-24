@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenRoomController
   puzzleId: kitchen_cookie_puzzle
-  roomName: Room04_KitchenDining
+  roomName: Room04_Kitchen
   recipeRead: 0
   hasFlour: 0
   hasSugar: 0
@@ -320,8 +320,11 @@ MonoBehaviour:
   bridgePlaced: 0
   emilyIntroDone: 0
   isPlayerHidden: 0
+  introInProgress: 0
   introKnockbackDuration: 0.5
   introKnockbackTarget: {x: 2.5, y: 1.2}
+  introJumpscareSFX: {fileID: 8300000, guid: 218e6040e060b7946b3b50ebb3c8b0c4, type: 3}
+  scriptedWalkSFX: {fileID: 8300000, guid: 828a336dcab0caa4095e072417bbd09f, type: 3}
 --- !u!1 &206105266
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,7 +435,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 8
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -573,7 +576,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 8
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -615,7 +618,7 @@ GameObject:
   - component: {fileID: 476541643}
   - component: {fileID: 476541642}
   - component: {fileID: 476541644}
-  - component: {fileID: 476541645}
+  - component: {fileID: 476541647}
   m_Layer: 0
   m_Name: Bowl
   m_TagString: Untagged
@@ -689,7 +692,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 476541640}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -746,7 +749,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.75, y: 0.5}
   m_EdgeRadius: 0
---- !u!114 &476541645
+--- !u!114 &476541647
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -755,17 +758,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 476541640}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db87e32ba3575d745a7a3b8d7a7773d6, type: 3}
+  m_Script: {fileID: 11500000, guid: 74c6287a41594824aaa182e3ff977f67, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BowlPickupInteractable
-  isTrigger: 0
-  interactable: 1
-  interactionRadius: 2.5
-  debugRadius: 1
-  interactionDialogue: "It\u2019s a big bowl, but there\u2019s nothing inside it."
-  speakerName: Lisa
-  tooFarMessage: I need to get closer.
-  interactionSFX: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::MixingBowlInteractable
+  objectId: kitchen_mixing_station
+  interactionRadius: 2
+  visualRenderer: {fileID: 476541642}
+  emptyBowlId: bowl_empty
+  mixedBowlId: bowl_cookie_mix
 --- !u!1 &657975783
 GameObject:
   m_ObjectHideFlags: 0
@@ -876,7 +876,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 8
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -918,6 +918,7 @@ GameObject:
   - component: {fileID: 719478547}
   - component: {fileID: 719478546}
   - component: {fileID: 719478548}
+  - component: {fileID: 719478549}
   m_Layer: 0
   m_Name: Flour_Cabinet
   m_TagString: Untagged
@@ -991,7 +992,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 719478544}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 0.05, y: 0.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1048,6 +1049,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 10, y: 5}
   m_EdgeRadius: 0
+--- !u!114 &719478549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 719478544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44de78ebdd062c248aa4ebeb55e6b75f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
+  objectId: cabinet_flour
+  interactionRadius: 2
+  visualRenderer: {fileID: 0}
+  ingredientItemId: flour
+  foundDialogue: '"Found the flour."'
 --- !u!1 &754286120
 GameObject:
   m_ObjectHideFlags: 0
@@ -1060,6 +1078,7 @@ GameObject:
   - component: {fileID: 754286122}
   - component: {fileID: 754286124}
   - component: {fileID: 754286125}
+  - component: {fileID: 754286126}
   m_Layer: 0
   m_Name: Salt
   m_TagString: Untagged
@@ -1133,7 +1152,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 754286120}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1204,12 +1223,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaltPickupInteractable
   isTrigger: 0
   interactable: 1
-  interactionRadius: 2.5
+  interactionRadius: 2
   debugRadius: 1
   interactionDialogue: Some salt left on the counter.
   speakerName: Lisa
   tooFarMessage: I need to get closer.
   interactionSFX: {fileID: 0}
+--- !u!114 &754286126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 754286120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b8deedd303e71840bad9f65399d128b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleKitchenPickup
+  objectId: pickup_salt
+  interactionRadius: 2
+  visualRenderer: {fileID: 754286122}
+  itemId: salt
+  pickupDialogue: '"Some salt left on the counter."'
+  shouldPickupItem: 1
 --- !u!1 &819652063
 GameObject:
   m_ObjectHideFlags: 0
@@ -1293,7 +1330,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 819652063}
   m_LocalRotation: {x: -1, y: 0, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1304,6 +1341,51 @@ RectTransform:
   m_AnchoredPosition: {x: 3, y: 4.48}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &919766453
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 919766455}
+  - component: {fileID: 919766454}
+  m_Layer: 0
+  m_Name: KitchenAudioController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &919766454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919766453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eab28c88365f1764685729afc9cc3bef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneAmbientPlayer
+  sceneAmbientConfig: {fileID: 11400000, guid: 7d775fcc1b8db4b4a8b6e2e65819d50f, type: 2}
+--- !u!4 &919766455
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919766453}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.99439, y: -4.17073, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &946670907
 GameObject:
   m_ObjectHideFlags: 0
@@ -1435,7 +1517,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1016582356}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 0.31762502, y: 0.32625002, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1509,7 +1591,9 @@ MonoBehaviour:
   hideZoomSize: 3.5
   zoomDuration: 0.5
   shakeMagnitude: 0.1
-  heartbeatClip: {fileID: 0}
+  shakeSmoothing: 0.15
+  shakeFrequency: 0.75
+  heartbeatClip: {fileID: 8300000, guid: bd97005d8dd3ae14582be03bffd17120, type: 3}
   heartbeatVolume: 1
   audioFadeDuration: 0.5
   isHiding: 0
@@ -3898,7 +3982,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1443452253}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3984,7 +4068,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c86595f0edbbdc40812e6adae5f9a4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomSpawnPoint
-  roomName: Room04_KitchenDining
+  roomName: Room04_Kitchen
   isDefaultSpawnPoint: 1
   spawnPointID: Hallway
   matchRotation: 0
@@ -4136,7 +4220,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1696361138}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4190,6 +4274,7 @@ GameObject:
   - component: {fileID: 1714008293}
   - component: {fileID: 1714008292}
   - component: {fileID: 1714008294}
+  - component: {fileID: 1714008295}
   m_Layer: 0
   m_Name: Vanilla_Cabinet
   m_TagString: Untagged
@@ -4263,7 +4348,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1714008291}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 0.15, y: 0.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4320,6 +4405,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 10, y: 5}
   m_EdgeRadius: 0
+--- !u!114 &1714008295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1714008291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44de78ebdd062c248aa4ebeb55e6b75f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
+  objectId: cabinet_vanilla
+  interactionRadius: 2
+  visualRenderer: {fileID: 0}
+  ingredientItemId: vanilla
+  foundDialogue: '"Found the vanilla."'
 --- !u!1 &1735144557
 GameObject:
   m_ObjectHideFlags: 0
@@ -4451,7 +4553,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1735144557}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4494,6 +4596,7 @@ GameObject:
   - component: {fileID: 1741958469}
   - component: {fileID: 1741958468}
   - component: {fileID: 1741958470}
+  - component: {fileID: 1741958471}
   m_Layer: 0
   m_Name: Fridge
   m_TagString: Untagged
@@ -4567,7 +4670,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1741958467}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 0.12, y: 0.6, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4624,6 +4727,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 10, y: 5}
   m_EdgeRadius: 0
+--- !u!114 &1741958471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1741958467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27d1b39e2dd963649a76f843b5c1c6f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FridgeInteractable
+  objectId: kitchen_fridge
+  interactionRadius: 2
+  visualRenderer: {fileID: 0}
+  eggItemId: egg
+  chocolateItemId: chocolate
 --- !u!1 &1743719869
 GameObject:
   m_ObjectHideFlags: 0
@@ -4708,7 +4828,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1743719869}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 0.075, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5994,6 +6114,7 @@ GameObject:
   - component: {fileID: 1907774862}
   - component: {fileID: 1907774861}
   - component: {fileID: 1907774863}
+  - component: {fileID: 1907774864}
   m_Layer: 0
   m_Name: Sugar_Cabinet
   m_TagString: Untagged
@@ -6067,7 +6188,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1907774859}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
   m_LocalScale: {x: 0.15, y: 0.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6124,6 +6245,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 10, y: 5}
   m_EdgeRadius: 0
+--- !u!114 &1907774864
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907774859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44de78ebdd062c248aa4ebeb55e6b75f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
+  objectId: cabinet_sugar
+  interactionRadius: 2
+  visualRenderer: {fileID: 0}
+  ingredientItemId: sugar
+  foundDialogue: '"Found the sugar."'
 --- !u!1 &2034927231
 GameObject:
   m_ObjectHideFlags: 0
@@ -6232,6 +6370,7 @@ GameObject:
   - component: {fileID: 2077772128}
   - component: {fileID: 2077772127}
   - component: {fileID: 2077772126}
+  - component: {fileID: 2077772129}
   m_Layer: 0
   m_Name: Walkable
   m_TagString: Untagged
@@ -6466,10 +6605,57 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.1, y: 1}
   m_EdgeRadius: 0
+--- !u!61 &2077772129
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2077772122}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.17, y: 0.08}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.23, y: 0.15}
+  m_EdgeRadius: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 919766455}
   - {fileID: 2077772125}
   - {fileID: 1048575122}
   - {fileID: 53130742}

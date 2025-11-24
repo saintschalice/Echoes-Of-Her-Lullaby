@@ -7610,8 +7610,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
-  targetSceneName: Room04_KitchenDining
-  doorID: Door_Hallway_To_KitchenDining
+  targetSceneName: Room04_Kitchen
+  doorID: Door_Hallway_To_Kitchen
   startsLocked: 0
   requiredItemId: 
   consumeKeyOnUse: 0

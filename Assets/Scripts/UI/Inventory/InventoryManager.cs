@@ -24,9 +24,10 @@ public class InventoryManager : MonoBehaviour
     public System.Action<InventoryItem> OnItemRemoved;
     public System.Action<InventoryItem> OnItemUsed;
 
-    // Item IDs for mail transformation
+    // Item IDs
     private const string MAIL_ITEM_ID = "foyer_mail";
     private const string LETTER_ITEM_ID = "foyer_letter";
+    private const string RECIPE_BOOK_ID = "recipe_book_kitchen"; // NEW
 
     public static InventoryManager Instance { get; private set; }
 
@@ -196,7 +197,6 @@ public class InventoryManager : MonoBehaviour
 
         PlaySound(itemUseSound);
 
-        // NEW: Handle mail -> letter transformation
         if (itemId == MAIL_ITEM_ID)
         {
             return TransformMailToLetter();
@@ -222,18 +222,15 @@ public class InventoryManager : MonoBehaviour
 
     public bool CombineItems(string itemAId, string itemBId, string resultItemId)
     {
-        // Ensure both items exist
         if (!HasItem(itemAId) || !HasItem(itemBId))
         {
             Debug.LogWarning($"[InventoryManager] CombineItems failed - missing items: {itemAId}, {itemBId}");
             return false;
         }
 
-        // Remove both items from SaveSystem
         SaveSystem.Instance?.RemoveInventoryItem(itemAId);
         SaveSystem.Instance?.RemoveInventoryItem(itemBId);
 
-        // Add the combined result
         InventoryItem combinedItem = itemDatabase?.GetItem(resultItemId);
         if (combinedItem == null)
         {
@@ -243,26 +240,19 @@ public class InventoryManager : MonoBehaviour
 
         SaveSystem.Instance?.AddInventoryItem(resultItemId);
 
-        Debug.Log($"[InventoryManager] Combined {itemAId} + {itemBId} → {resultItemId}");
+        Debug.Log($"[InventoryManager] Combined {itemAId} + {itemBId} -> {resultItemId}");
 
-        // Refresh inventory UI
         RefreshUI();
 
-        // Trigger any UI or logic listeners
         OnItemAdded?.Invoke(combinedItem);
 
-        // Optional: play pickup or success sound
         PlaySound(itemPickupSound);
 
         return true;
     }
 
-
-
-
     public bool CombineMultipleItems(string[] itemIds, string resultItemId)
     {
-        // Check if player has all items
         foreach (string itemId in itemIds)
         {
             if (!HasItem(itemId))
@@ -272,13 +262,11 @@ public class InventoryManager : MonoBehaviour
             }
         }
 
-        // Remove all source items
         foreach (string itemId in itemIds)
         {
             SaveSystem.Instance?.RemoveInventoryItem(itemId);
         }
 
-        // Add combined item
         InventoryItem resultItem = itemDatabase?.GetItem(resultItemId);
         if (resultItem == null)
         {
@@ -300,7 +288,8 @@ public class InventoryManager : MonoBehaviour
         if (inventoryUI != null)
             inventoryUI.ForceCloseInventory();
     }
-public void AddItemAndSave(string itemId)
+
+    public void AddItemAndSave(string itemId)
     {
         AddItem(itemId);
         if (SaveSystem.Instance != null)
@@ -310,12 +299,10 @@ public void AddItemAndSave(string itemId)
     }
 
 
-    // NEW: Transform mail into readable letter
     bool TransformMailToLetter()
     {
         Debug.Log("[InventoryManager] Transforming mail into letter...");
 
-        // ... (code to remove mail, add letter) ...
         SaveSystem.Instance?.RemoveInventoryItem(MAIL_ITEM_ID);
         SaveSystem.Instance?.AddInventoryItem(LETTER_ITEM_ID);
         RefreshUI();
@@ -323,13 +310,8 @@ public void AddItemAndSave(string itemId)
         MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
         if (mailReader != null)
         {
-            // NEW: Notify manager before opening the UI
             NotifyActionStarted();
             mailReader.OpenMail();
-        }
-        else
-        {
-            Debug.LogWarning("[InventoryManager] MailReaderUI not found in the scene.");
         }
 
         return true;
@@ -337,18 +319,34 @@ public void AddItemAndSave(string itemId)
 
     bool HandleItemUsage(InventoryItem item)
     {
-        // If player uses the readable letter
+        // 1. Recipe Book (NEW)
+        if (item.itemId == RECIPE_BOOK_ID)
+        {
+            if (RecipeBookUI.Instance != null)
+            {
+                NotifyActionStarted(); // Hides inventory
+                RecipeBookUI.Instance.OpenBook();
+                return true;
+            }
+            else
+            {
+                Debug.LogWarning("[InventoryManager] RecipeBookUI not found!");
+            }
+        }
+
+        // 2. Letter
         if (item.itemId == LETTER_ITEM_ID)
         {
             MailReaderUI mailReader = FindFirstObjectByType<MailReaderUI>();
             if (mailReader != null)
             {
+                NotifyActionStarted();
                 mailReader.OpenMail();
                 return true;
             }
         }
 
-        // Handle memory fragments
+        // 3. Memory Fragments
         if (item.triggersMemory && !string.IsNullOrEmpty(item.memoryFragmentId))
         {
             if (!SaveSystem.Instance.HasMemoryFragment(item.memoryFragmentId))
@@ -359,26 +357,25 @@ public void AddItemAndSave(string itemId)
             }
         }
 
-        // Handle Diary (NEW)
+        // 4. Diary
         if (item.itemId == "diary_complete")
         {
             DiaryReaderUI diaryReader = FindFirstObjectByType<DiaryReaderUI>();
             if (diaryReader != null)
             {
-                // NEW: Notify manager before opening the UI
                 NotifyActionStarted();
                 diaryReader.ShowDiary();
                 return true;
             }
         }
 
-        // Handle puzzle-related items
+        // 5. Puzzle Items
         if (!string.IsNullOrEmpty(item.requiredForPuzzle))
         {
             return TryUsePuzzleItem(item);
         }
 
-        // Default: show item description
+        // Default
         ShowItemDescription(item);
         return true;
     }
@@ -403,6 +400,7 @@ public void AddItemAndSave(string itemId)
         ShowItemDescription(item);
         return false;
     }
+
     void TriggerMemorySequence(InventoryItem item)
     {
         DialogueSystemV2 dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
@@ -411,8 +409,6 @@ public void AddItemAndSave(string itemId)
             string memoryDialogue = $"Lisa examines the {item.itemName}\n\n{item.description}";
             dialogueSystem.StartDialogue(memoryDialogue, "Lisa");
         }
-
-        Debug.Log($"Memory fragment triggered: {item.memoryFragmentId}");
     }
 
     void ShowItemDescription(InventoryItem item)
@@ -441,53 +437,5 @@ public void AddItemAndSave(string itemId)
     {
         if (clip == null) return;
         AudioManager.Instance?.PlaySFX(clip);
-    }
-
-    public int GetItemCount()
-    {
-        return GetAllItems().Count;
-    }
-
-    public List<InventoryItem> GetKeyItems()
-    {
-        return GetAllItems().Where(item => item.isKeyItem).ToList();
-    }
-
-    public List<InventoryItem> GetRegularItems()
-    {
-        return GetAllItems().Where(item => !item.isKeyItem).ToList();
-    }
-
-    public bool HasAnyItems()
-    {
-        return GetItemCount() > 0;
-    }
-
-    public bool HasRequiredItems(List<string> requiredItemIds)
-    {
-        return requiredItemIds.All(itemId => HasItem(itemId));
-    }
-
-    [ContextMenu("Debug Add Test Item")]
-    void DebugAddTestItem()
-    {
-        AddItem("house_key");
-    }
-
-    [ContextMenu("Debug Print Inventory")]
-    void DebugPrintInventory()
-    {
-        var items = GetAllItems();
-        Debug.Log($"Inventory contains {items.Count} items:");
-        foreach (var item in items)
-        {
-            Debug.Log($"- {item.itemName} ({item.itemId})");
-        }
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, pickupRange);
     }
 }

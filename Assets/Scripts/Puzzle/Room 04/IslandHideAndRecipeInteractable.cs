@@ -11,8 +11,16 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
     [Header("Hiding Visuals")]
     public float hideZoomSize = 3.5f;
     public float zoomDuration = 0.5f;
-    [Tooltip("Subtle shake while hiding (e.g. 0.1)")]
-    public float shakeMagnitude = 0.1f;
+
+    [Tooltip("Very subtle shake magnitude in world units (try 0.0003–0.001).")]
+    public float shakeMagnitude = 0.0005f;
+
+    [Tooltip("How quickly the camera follows the shake offset (0–1).")]
+    [Range(0f, 1f)]
+    public float shakeSmoothing = 0.15f;
+
+    [Tooltip("How fast the shake moves (frequency).")]
+    public float shakeFrequency = 0.75f;
 
     [Header("Audio")]
     public AudioClip heartbeatClip;
@@ -24,7 +32,6 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
     [SerializeField] private bool scratchesShown = false;
     [SerializeField] private bool recipeFound = false;
 
-    // Internal References
     private Camera mainCamera;
     private JoystickPlayerController playerController;
     private SpriteRenderer[] playerRenderers;
@@ -43,9 +50,7 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
     {
         mainCamera = Camera.main;
         if (mainCamera != null)
-        {
             originalOrthoSize = mainCamera.orthographicSize;
-        }
 
         heartbeatSource = gameObject.AddComponent<AudioSource>();
         heartbeatSource.clip = heartbeatClip;
@@ -59,17 +64,14 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
 
     void OnDisable()
     {
-        if (isHiding)
-        {
-            ResetHidingStateInstant();
-        }
+        if (isHiding) ResetHidingStateInstant();
     }
 
     private void SyncWithRoomController()
     {
         if (KitchenRoomController.Instance != null)
         {
-            if (KitchenRoomController.Instance.recipeRead)
+            if (KitchenRoomController.Instance.recipeRead || InventoryManager.Instance.HasItem(recipeItemId))
             {
                 scratchesShown = true;
                 recipeFound = true;
@@ -95,13 +97,10 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
         if (dist > interactionRadius)
         {
             if (DialogueSystemV2.Instance != null && !DialogueSystemV2.Instance.IsDialogueActive())
-            {
                 DialogueSystemV2.Instance.StartDialogue("It's too far to reach.", "Lisa");
-            }
             return;
         }
 
-        // BUG 1 FIX: Check if intro is in progress OR Emily has already appeared
         bool emilyHasAppeared = false;
         bool introRunning = false;
 
@@ -111,30 +110,19 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
             introRunning = KitchenRoomController.Instance.introInProgress;
         }
 
-        // Allow hiding if Emily has appeared OR if the intro sequence is currently running
         bool canHide = emilyHasAppeared || introRunning;
 
         if (!canHide)
         {
-            // PRE-EMILY: Comment only, NO hiding
             if (DialogueSystemV2.Instance != null && !DialogueSystemV2.Instance.IsDialogueActive())
-            {
                 DialogueSystemV2.Instance.StartDialogue("What a weird kitchen island... There's plenty of space beneath it.", "Lisa");
-            }
             return;
         }
 
-        // POST-EMILY: Hiding Allowed
         if (activeSequence != null) return;
 
-        if (isHiding)
-        {
-            ExitHiding();
-        }
-        else
-        {
-            StartCoroutine(EnterHidingSequence());
-        }
+        if (isHiding) ExitHiding();
+        else StartCoroutine(EnterHidingSequence());
     }
 
     IEnumerator EnterHidingSequence()
@@ -150,18 +138,14 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
             if (rb != null) rb.linearVelocity = Vector2.zero;
 
             if (playerRenderers != null)
-            {
                 foreach (var sr in playerRenderers) sr.enabled = false;
-            }
 
             originalPlayerLayer = playerController.gameObject.layer;
             playerController.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
         }
 
         if (KitchenRoomController.Instance != null)
-        {
             KitchenRoomController.Instance.isPlayerHidden = true;
-        }
 
         activeSequence = StartCoroutine(CameraZoom(hideZoomSize));
         shakeCoroutine = StartCoroutine(CameraShakeRoutine());
@@ -176,9 +160,7 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
             {
                 DialogueSystemV2.Instance.StartDialogue("There are scratches here, as if made with someone's fingernails.", "Lisa");
                 while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
-
                 yield return new WaitForSeconds(0.2f);
-
                 DialogueSystemV2.Instance.StartDialogue("Oh, a recipe book. That might be important.", "Lisa");
                 while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
             }
@@ -186,11 +168,6 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
             if (InventoryManager.Instance != null)
             {
                 InventoryManager.Instance.AddItem(recipeItemId);
-            }
-
-            if (KitchenRoomController.Instance != null)
-            {
-                KitchenRoomController.Instance.OnRecipeBookRead();
             }
 
             scratchesShown = true;
@@ -202,39 +179,31 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
     {
         if (!isHiding) return;
         if (activeSequence != null) StopCoroutine(activeSequence);
-
         StartCoroutine(ExitHidingRoutine());
     }
 
     IEnumerator ExitHidingRoutine()
     {
         isHiding = false;
-
         if (KitchenRoomController.Instance != null)
-        {
             KitchenRoomController.Instance.isPlayerHidden = false;
-        }
 
         if (playerController != null)
         {
             playerController.gameObject.layer = originalPlayerLayer;
-
             if (playerRenderers != null)
-            {
                 foreach (var sr in playerRenderers) sr.enabled = true;
-            }
-
             playerController.enabled = true;
         }
 
         if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+        // Reset camera position to prevent drift before zooming out
         if (mainCamera != null) mainCamera.transform.position = originalCameraPos;
 
         FadeHeartbeat(false);
 
         activeSequence = StartCoroutine(CameraZoom(originalOrthoSize));
         yield return activeSequence;
-
         activeSequence = null;
     }
 
@@ -256,17 +225,14 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
     IEnumerator CameraZoom(float targetSize)
     {
         if (mainCamera == null) yield break;
-
         float startSize = mainCamera.orthographicSize;
         float elapsed = 0f;
-
         while (elapsed < zoomDuration)
         {
             elapsed += Time.deltaTime;
             mainCamera.orthographicSize = Mathf.Lerp(startSize, targetSize, elapsed / zoomDuration);
             yield return null;
         }
-
         mainCamera.orthographicSize = targetSize;
     }
 
@@ -274,14 +240,42 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
     {
         if (mainCamera == null) yield break;
 
+        float time = 0f;
+
+        // Make sure we start exactly at the stored position
+        mainCamera.transform.position = originalCameraPos;
+
         while (isHiding)
         {
-            Vector3 offset = (Vector3)Random.insideUnitCircle * shakeMagnitude;
-            offset.z = 0;
+            time += Time.deltaTime * shakeFrequency;
 
-            mainCamera.transform.position = originalCameraPos + offset;
+            // Smooth Perlin-based offsets between -1 and 1
+            // We use different seeds (0 vs time) for X and Y to ensure they don't move diagonally
+            float noiseX = (Mathf.PerlinNoise(time, 0f) - 0.5f) * 2f;
+            float noiseY = (Mathf.PerlinNoise(0f, time) - 0.5f) * 2f;
+
+            Vector3 targetOffset = new Vector3(
+                noiseX * shakeMagnitude,
+                noiseY * shakeMagnitude,
+                0f
+            );
+
+            Vector3 targetPos = originalCameraPos + targetOffset;
+
+            // Smoothly interpolate toward the target position
+            mainCamera.transform.position = Vector3.Lerp(
+                mainCamera.transform.position,
+                targetPos,
+                shakeSmoothing
+            );
 
             yield return null;
+        }
+
+        // When hiding ends, snap back to the original position
+        if (mainCamera != null)
+        {
+            mainCamera.transform.position = originalCameraPos;
         }
     }
 
@@ -294,12 +288,9 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
     IEnumerator FadeHeartbeatRoutine(bool fadeIn)
     {
         if (heartbeatSource == null) yield break;
-
         float target = fadeIn ? heartbeatVolume : 0f;
         float start = heartbeatSource.volume;
-
         if (fadeIn && !heartbeatSource.isPlaying) heartbeatSource.Play();
-
         float elapsed = 0f;
         while (elapsed < audioFadeDuration)
         {
@@ -307,16 +298,7 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
             heartbeatSource.volume = Mathf.Lerp(start, target, elapsed / audioFadeDuration);
             yield return null;
         }
-
         heartbeatSource.volume = target;
         if (!fadeIn) heartbeatSource.Stop();
     }
-
-#if UNITY_EDITOR
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, interactionRadius);
-    }
-#endif
 }
