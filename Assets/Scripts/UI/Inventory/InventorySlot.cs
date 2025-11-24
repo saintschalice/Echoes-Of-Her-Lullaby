@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-// CHANGED: Removed IPointerEnterHandler, IPointerExitHandler
+// CHANGED: Removed IPointerEnterHandler, IPointerExitHandler to prevent mouse-hover interference on mobile
 public class InventorySlot : MonoBehaviour, IPointerClickHandler
 {
     [Header("UI References")]
@@ -22,6 +22,10 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
     private InventoryItem currentItem;
     private InventoryUI inventoryUI;
     private bool isEmpty = true;
+
+    // --- MANUAL DOUBLE TAP VARIABLES ---
+    private float lastTapTime = -1f; // Initialize to -1 so the first click at time 0 doesn't trigger it
+    private const float DOUBLE_TAP_THRESHOLD = 0.3f; // 0.3 seconds is standard for mobile double taps
 
     public InventoryItem CurrentItem => currentItem;
     public bool IsEmpty => isEmpty;
@@ -80,7 +84,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
         }
         if (slotBackground != null)
         {
-            // Restore original color when not hovered
+            // Restore original color
             slotBackground.color = currentItem.isKeyItem ? keyItemColor : normalColor;
         }
         if (keyItemIndicator != null)
@@ -93,7 +97,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    // --- NEW OnPointerClick LOGIC for Taps ---
+    // --- UPDATED OnPointerClick FOR ANDROID/MOBILE ---
     public void OnPointerClick(PointerEventData eventData)
     {
         if (inventoryUI == null) return;
@@ -105,40 +109,42 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        if (eventData.clickCount >= 2)
+        // We use Time.unscaledTime to handle pausing correctly (if UI works while paused)
+        float currentTime = Time.unscaledTime;
+
+        // Check if the time since the last tap is within our threshold (0.3s)
+        if (currentTime - lastTapTime < DOUBLE_TAP_THRESHOLD)
         {
-            // --- DOUBLE TAP ---
-            // Use the item (which triggers dialogue/readers)
+            // --- DOUBLE TAP DETECTED ---
+            // Reset lastTapTime so a 3rd rapid click doesn't trigger this again immediately
+            lastTapTime = -1f;
+
             inventoryUI.HideItemTooltip();
-            inventoryUI.OnSlotClicked(this); // This calls InventoryManager.UseItem
+            inventoryUI.OnSlotClicked(this); // Use the item
             PlayClickSound();
         }
-        else if (eventData.clickCount == 1)
+        else
         {
-            // --- SINGLE TAP ---
-            // Show the tooltip
+            // --- SINGLE TAP DETECTED ---
+            // (Or the first tap of a double tap sequence)
+            lastTapTime = currentTime;
+
             inventoryUI.ShowItemTooltip(currentItem, transform.position);
-            PlayHoverSound(); // Re-using hover sound for tap
+            PlayHoverSound(); // Re-using hover sound for single tap feedback
         }
     }
 
-    // --- DELETED OnPointerEnter and OnPointerExit ---
-
     void PlayClickSound()
     {
-        Debug.Log($"Inventory slot double-clicked: {currentItem?.itemName}");
+        Debug.Log($"[InventorySlot] Double-tap detected: {currentItem?.itemName}");
         // AudioManager.Instance?.PlaySFX("inventory_click");
     }
 
     void PlayHoverSound()
     {
-        Debug.Log($"Inventory slot single-tapped: {currentItem?.itemName}");
+        Debug.Log($"[InventorySlot] Single-tap detected: {currentItem?.itemName}");
         // AudioManager.Instance?.PlaySFX("inventory_hover");
     }
-
-    // (All animation helper methods remain the same)
-
-    // ... (rest of the file is unchanged) ...
 
     public void AnimatePickup()
     {
