@@ -255,7 +255,7 @@ MonoBehaviour:
     itemName: Loose Floorboard
     description: "A heavy wooden floorboard that came loose. It\u2019s wide enough
       to bridge a gap in the floor."
-    itemIcon: {fileID: 21300000, guid: 8753f34b7ecb1044f96b7359b0cd4f2a, type: 3}
+    itemIcon: {fileID: 21300000, guid: 6289eca60c2ef374eb73bf1314e3e861, type: 3}
     isKeyItem: 1
     isUsable: 0
     isConsumable: 1
