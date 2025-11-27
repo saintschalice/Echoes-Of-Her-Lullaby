@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class HallwayClosetInteractable : MonoBehaviour
+public class HallwayClosetInteractable : MonoBehaviour, IInteractable
 {
     [Header("References")]
     public Animator closetAnimator;
@@ -32,29 +32,13 @@ public class HallwayClosetInteractable : MonoBehaviour
         if (interactPrompt != null) interactPrompt.SetActive(false);
     }
 
-    void Update()
+    public void OnInteract(PlayerContext context)
     {
-        if (player == null) return;
+        player = context.Transform;
 
-        float distance = Vector2.Distance(transform.position, player.position);
-        bool inRange = distance <= interactionRange;
+        if (!IsInRange(player) || (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()))
+            return;
 
-        if (interactPrompt != null)
-            interactPrompt.SetActive(inRange && !DialogueSystemV2.Instance.IsDialogueActive());
-
-        // Interaction Input
-        if (inRange && Input.GetMouseButtonDown(0))
-        {
-            Vector2 touchPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(touchPos, Vector2.zero);
-
-            if (hit.collider != null && hit.collider.gameObject == gameObject)
-                HandleInteraction();
-        }
-    }
-
-    void HandleInteraction()
-    {
         // If the chase sequence is active (unlocked by spawn trigger), allow hiding
         if (canHide)
         {
@@ -68,6 +52,26 @@ public class HallwayClosetInteractable : MonoBehaviour
             // Before the chase: Examine and find it locked
             StartCoroutine(ExamineRoutine());
         }
+    }
+
+    public void OnFocus(PlayerContext context)
+    {
+        player = context.Transform;
+        bool inRange = IsInRange(player);
+        if (interactPrompt != null)
+            interactPrompt.SetActive(inRange && (DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive()));
+    }
+
+    public void OnBlur(PlayerContext context)
+    {
+        if (interactPrompt != null)
+            interactPrompt.SetActive(false);
+    }
+
+    bool IsInRange(Transform target)
+    {
+        if (target == null) return false;
+        return Vector2.Distance(transform.position, target.position) <= interactionRange;
     }
 
     IEnumerator ExamineRoutine()

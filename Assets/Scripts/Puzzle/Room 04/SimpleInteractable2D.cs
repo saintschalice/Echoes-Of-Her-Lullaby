@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(BoxCollider2D))]
-public class SimpleInteractable2D : MonoBehaviour
+public class SimpleInteractable2D : MonoBehaviour, IInteractable
 {
     [Header("Base Settings")]
     [Tooltip("If true, the collider is a Trigger (walk-through). If false, it's a solid wall.")]
@@ -31,17 +31,6 @@ public class SimpleInteractable2D : MonoBehaviour
         {
             col.isTrigger = isTrigger;
         }
-    }
-
-    /// <summary>
-    /// Built-in Unity method that detects Clicks (Mouse) and Taps (Touch) on this collider.
-    /// This makes the object "Tappable" without needing an extra Raycast script.
-    /// </summary>
-    protected virtual void OnMouseDown()
-    {
-        // If UI is blocking the tap, you might want to check EventSystem.current.IsPointerOverGameObject() here
-        // For now, we assume direct tap.
-        Interact();
     }
 
     /// <summary>
@@ -121,5 +110,20 @@ public class SimpleInteractable2D : MonoBehaviour
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, interactionRadius);
         }
+    }
+
+    public void OnInteract(PlayerContext context)
+    {
+        Interact();
+    }
+
+    public virtual void OnFocus(PlayerContext context)
+    {
+        // No-op by default
+    }
+
+    public virtual void OnBlur(PlayerContext context)
+    {
+        // No-op by default
     }
 }

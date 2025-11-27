@@ -3,6 +3,19 @@ using UnityEngine.EventSystems;
 
 public class TouchHandler : MonoBehaviour
 {
+    private PlayerInputRouter inputRouter;
+
+    void OnEnable()
+    {
+        PlayerInputRouter.OnInstanceChanged += HandleInputRouterChanged;
+        HandleInputRouterChanged(PlayerInputRouter.Instance);
+    }
+
+    void OnDisable()
+    {
+        PlayerInputRouter.OnInstanceChanged -= HandleInputRouterChanged;
+    }
+
     void Update()
     {
         // Check for touch input
@@ -30,7 +43,14 @@ public class TouchHandler : MonoBehaviour
                     Debug.Log("Touched: " + hit.collider.gameObject.name);
                     // Your game object touch logic here
                 }
+
+                inputRouter?.TriggerInteract();
             }
         }
+    }
+
+    private void HandleInputRouterChanged(PlayerInputRouter router)
+    {
+        inputRouter = router;
     }
 }

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class UnifiedDoorInteraction : MonoBehaviour
+public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
 {
     [Header("Door Settings")]
     public string targetSceneName = "Room02_LivingRoom";
@@ -75,68 +75,43 @@ public class UnifiedDoorInteraction : MonoBehaviour
         }
     }
 
-    void Update()
+    public void OnInteract(PlayerContext context)
     {
-        CheckPlayerDistance();
-
-        // Keyboard interaction
-        if (playerInRange && !isTransitioning && Input.GetKeyDown(KeyCode.E))
-        {
-            AttemptOpenDoor();
-        }
-    }
-
-    void OnMouseDown()
-    {
-        Debug.Log($"[UnifiedDoor] Mouse clicked on {doorID}");
+        playerInRange = IsPlayerInRange(context.Transform);
 
         if (!playerInRange)
         {
-            Debug.Log($"[UnifiedDoor] Player not in range (need to be within {interactionRadius} units)");
-
-            if (dialogueSystem != null)
-            {
-                dialogueSystem.StartDialogue("I need to get closer to the door.", "Lisa");
-            }
+            ShowDialogue($"I need to get closer to the door.");
             return;
         }
 
-        if (isTransitioning)
-        {
-            Debug.Log("[UnifiedDoor] Door transition already in progress");
-            return;
-        }
+        if (isTransitioning) return;
 
         AttemptOpenDoor();
     }
 
-    void CheckPlayerDistance()
+    public void OnFocus(PlayerContext context)
     {
-        GameObject player = GameObject.FindGameObjectWithTag(requiredTag);
-
-        if (player != null)
+        playerInRange = IsPlayerInRange(context.Transform);
+        if (interactionPrompt != null)
         {
-            float distance = Vector2.Distance(transform.position, player.transform.position);
-            bool wasInRange = playerInRange;
-            playerInRange = distance <= interactionRadius;
+            interactionPrompt.SetActive(playerInRange && !isTransitioning);
+        }
+    }
 
-            // Update interaction prompt visibility
-            if (wasInRange != playerInRange)
-            {
-                if (interactionPrompt != null)
-                {
-                    interactionPrompt.SetActive(playerInRange && !isTransitioning);
-                }
-            }
-        }
-        else
+    public void OnBlur(PlayerContext context)
+    {
+        playerInRange = false;
+        if (interactionPrompt != null)
         {
-            playerInRange = false;
-            if (interactionPrompt != null)
-            {
-                interactionPrompt.SetActive(false);
-            }
+            interactionPrompt.SetActive(false);
         }
+    }
+
+    bool IsPlayerInRange(Transform playerTransform)
+    {
+        if (playerTransform == null) return false;
+        return Vector2.Distance(transform.position, playerTransform.position) <= interactionRadius;
     }
 
     void LoadDoorState()

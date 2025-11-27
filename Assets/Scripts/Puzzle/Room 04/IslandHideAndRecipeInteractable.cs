@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(Collider2D))]
-public class IslandHideAndRecipeInteractable : MonoBehaviour
+public class IslandHideAndRecipeInteractable : MonoBehaviour, IInteractable
 {
     [Header("Interaction Settings")]
     public float interactionRadius = 1.5f;
@@ -79,11 +79,11 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
         }
     }
 
-    void OnMouseDown()
+    public void OnInteract(PlayerContext context)
     {
         if (playerController == null)
         {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            GameObject p = context.PlayerObject ?? GameObject.FindGameObjectWithTag("Player");
             if (p != null)
             {
                 playerController = p.GetComponent<JoystickPlayerController>();
@@ -124,6 +124,11 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour
         if (isHiding) ExitHiding();
         else StartCoroutine(EnterHidingSequence());
     }
+
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
+
 
     IEnumerator EnterHidingSequence()
     {

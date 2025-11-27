@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class VentInteractable : MonoBehaviour
+public class VentInteractable : MonoBehaviour, IInteractable
 {
     [Header("Settings")]
     public string nextSceneName = "Room04_KitchenDining";
@@ -17,33 +17,13 @@ public class VentInteractable : MonoBehaviour
         if (interactPrompt != null) interactPrompt.SetActive(false);
     }
 
-    void Update()
+    public void OnInteract(PlayerContext context)
     {
-        if (player == null) return;
+        player = context.Transform;
 
-        // Check distance
-        float distance = Vector2.Distance(transform.position, player.position);
-        bool inRange = distance <= interactionRange;
+        if (!IsInRange(player) || (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()))
+            return;
 
-        // Show UI prompt
-        if (interactPrompt != null)
-            interactPrompt.SetActive(inRange && !DialogueSystemV2.Instance.IsDialogueActive());
-
-        // Interaction
-        if (inRange && Input.GetMouseButtonDown(0))
-        {
-            Vector2 touchPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(touchPos, Vector2.zero);
-
-            if (hit.collider != null && hit.collider.gameObject == gameObject)
-            {
-                EnterVent();
-            }
-        }
-    }
-
-    void EnterVent()
-    {
         if (ventSound != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(ventSound);
@@ -51,5 +31,30 @@ public class VentInteractable : MonoBehaviour
 
         Debug.Log("Exiting to Kitchen...");
         SceneManager.LoadScene(nextSceneName);
+    }
+
+    public void OnFocus(PlayerContext context)
+    {
+        player = context.Transform;
+        bool inRange = IsInRange(player);
+        if (interactPrompt != null)
+        {
+            bool canShow = inRange && (DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive());
+            interactPrompt.SetActive(canShow);
+        }
+    }
+
+    public void OnBlur(PlayerContext context)
+    {
+        if (interactPrompt != null)
+        {
+            interactPrompt.SetActive(false);
+        }
+    }
+
+    bool IsInRange(Transform target)
+    {
+        if (target == null) return false;
+        return Vector2.Distance(transform.position, target.position) <= interactionRange;
     }
 }

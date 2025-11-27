@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-public class MrSnugglesController : MonoBehaviour
+public class MrSnugglesController : MonoBehaviour, IInteractable
 {
     [Header("IDs")]
     [SerializeField] private string diaryPage3Id = "diary_page_3";
@@ -183,4 +183,13 @@ public class MrSnugglesController : MonoBehaviour
     {
         DialogueSystemV2.Instance?.StartDialogue(text, "Lisa");
     }
+
+    public void OnInteract(PlayerContext context)
+    {
+        OnExamine();
+    }
+
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
 }

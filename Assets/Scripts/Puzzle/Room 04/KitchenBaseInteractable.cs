@@ -3,10 +3,9 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Base class for simple click-to-interact objects in the Kitchen.
-/// reverted to OnMouseDown to match Island behavior.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
-public abstract class KitchenBaseInteractable : MonoBehaviour
+public abstract class KitchenBaseInteractable : MonoBehaviour, IInteractable
 {
     [Header("Base Settings")]
     [Tooltip("Unique ID for saving whether this object was collected/interacted with.")]
@@ -33,31 +32,6 @@ public abstract class KitchenBaseInteractable : MonoBehaviour
         CheckPersistence();
     }
 
-    // Reverted to OnMouseDown as requested, since Island works this way
-    protected virtual void OnMouseDown()
-    {
-        // Safety check if UI is blocking (Optional: Remove this if you want to click THROUGH UI)
-        // if (UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
-
-        if (player == null)
-        {
-            // Try finding player again if missing (safety)
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.GetComponent<JoystickPlayerController>();
-        }
-
-        if (player == null) return;
-
-        float dist = Vector2.Distance(transform.position, player.transform.position);
-        if (dist > interactionRadius)
-        {
-            ShowDialogue("It's too far to reach.");
-            return;
-        }
-
-        Interact();
-    }
-
     protected void CheckPersistence()
     {
         if (SaveSystem.Instance != null)
@@ -78,6 +52,36 @@ public abstract class KitchenBaseInteractable : MonoBehaviour
 
     // Child classes implement specific logic here
     protected abstract void Interact();
+
+    public void OnInteract(PlayerContext context)
+    {
+        if (player == null)
+        {
+            GameObject p = context.PlayerObject;
+            if (p == null)
+            {
+                p = GameObject.FindGameObjectWithTag("Player");
+            }
+
+            if (p != null) player = p.GetComponent<JoystickPlayerController>();
+        }
+
+        Transform target = player != null ? player.transform : context.Transform;
+        if (target == null) return;
+
+        float dist = Vector2.Distance(transform.position, target.position);
+        if (dist > interactionRadius)
+        {
+            ShowDialogue("It's too far to reach.");
+            return;
+        }
+
+        Interact();
+    }
+
+    public virtual void OnFocus(PlayerContext context) { }
+
+    public virtual void OnBlur(PlayerContext context) { }
 
     protected void MarkAsCollected()
     {

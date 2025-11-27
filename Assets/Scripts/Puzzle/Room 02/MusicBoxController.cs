@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-public class MusicBoxController : MonoBehaviour
+public class MusicBoxController : MonoBehaviour, IInteractable
 {
     [Header("IDs")]
     [SerializeField] private string brokenMusicBoxId = "broken_music_box";
@@ -39,6 +39,15 @@ public class MusicBoxController : MonoBehaviour
         if (cutscenePlayed) return;
         StartCoroutine(BeginCutsceneSequence());
     }
+
+    public void OnInteract(PlayerContext context)
+    {
+        OnExamine();
+    }
+
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
 
     public void OnExamine()
     {

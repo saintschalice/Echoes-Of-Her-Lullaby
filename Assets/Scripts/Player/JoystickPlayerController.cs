@@ -32,6 +32,10 @@ public class JoystickPlayerController : MonoBehaviour
     [Header("Joystick Reference")]
     public VirtualJoystick joystick;
 
+    public event Action InteractPerformed;
+
+    private PlayerInputRouter inputRouter;
+
     // Variables to store input and state
     private Vector2 moveDirection = Vector2.zero; // Stores input from Update()
     private Vector2 lastDirection = Vector2.down; // Used for idle animation direction
@@ -48,6 +52,24 @@ public class JoystickPlayerController : MonoBehaviour
         instanceChanged?.Invoke(this);
     }
 
+    private void OnEnable()
+    {
+        SubscribeToJoystick(joystick);
+
+        PlayerInputRouter.OnInstanceChanged += HandleInputRouterChanged;
+        HandleInputRouterChanged(PlayerInputRouter.Instance);
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromJoystick();
+        PlayerInputRouter.OnInstanceChanged -= HandleInputRouterChanged;
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= OnInteractTriggered;
+        }
+    }
+
     void OnDestroy()
     {
         if (Instance == this)
@@ -55,6 +77,8 @@ public class JoystickPlayerController : MonoBehaviour
             Instance = null;
             instanceChanged?.Invoke(null);
         }
+
+        UnsubscribeFromJoystick();
     }
 
     void Start()
@@ -67,6 +91,8 @@ public class JoystickPlayerController : MonoBehaviour
         // Find joystick if not assigned
         if (joystick == null)
             joystick = FindFirstObjectByType<VirtualJoystick>();
+
+        SubscribeToJoystick(joystick);
 
         // Run your custom spawn logic
         SpawnAtSavedPoint();
@@ -124,6 +150,63 @@ public class JoystickPlayerController : MonoBehaviour
     {
         // **3. Handle Physics Movement**
         HandleMovement();
+    }
+
+    private void SubscribeToJoystick(VirtualJoystick target)
+    {
+        if (target == joystick && target != null)
+            return;
+
+        UnsubscribeFromJoystick();
+        joystick = target;
+
+        if (joystick != null)
+        {
+            joystick.InteractPressed += OnInteractTriggered;
+        }
+
+        RefreshRouterSubscription();
+    }
+
+    private void UnsubscribeFromJoystick()
+    {
+        if (joystick != null)
+        {
+            joystick.InteractPressed -= OnInteractTriggered;
+        }
+
+        joystick = null;
+        RefreshRouterSubscription();
+    }
+
+    private void HandleInputRouterChanged(PlayerInputRouter router)
+    {
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= OnInteractTriggered;
+        }
+
+        inputRouter = router;
+
+        RefreshRouterSubscription();
+    }
+
+    private void OnInteractTriggered()
+    {
+        InteractPerformed?.Invoke();
+    }
+
+    private void RefreshRouterSubscription()
+    {
+        if (inputRouter == null)
+            return;
+
+        inputRouter.InteractPerformed -= OnInteractTriggered;
+
+        if (joystick == null)
+        {
+            inputRouter.InteractPerformed += OnInteractTriggered;
+        }
     }
 
     void HandleMovement()
