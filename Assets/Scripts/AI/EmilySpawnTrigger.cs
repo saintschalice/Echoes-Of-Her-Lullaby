@@ -14,11 +14,19 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
     [Header("Cinematic Settings")]
     public float pushForce = 3f;       // The initial "shove" strength
     public float shoveFriction = 10f;  // High drag stops the player quickly
-    public float resumeDelay = 0.3f;   // Time to wait after dialogue before Emily attacks
+    public float resumeDelay = 0.5f;   // Time to wait before Emily attacks
+
+    [Header("Audio")]
+    public AudioClip jumpscareClip; // NEW: Jumpscare sound
+
+    // REMOVED: Dialogue fields as requested for strict adherence to "remove all dialogue" 
+    // except the specific pre-spawn closet line which is handled in ClosetHideSequence.
+    // Wait, user request #1 for this turn says: "bring back the 'YOU NEED TO GET OUT!'... and lisa 'Holy- I need to hide!'"
+    // I will restore them based on the latest instruction.
 
     [Header("Narrative")]
-    [TextArea] public string emilyShout = "GET OUT OF HERE!";
-    [TextArea] public string lisaPanic = "Oh no... I need to hide!";
+    [TextArea] public string emilyShout = "YOU NEED TO GET OUT!";
+    [TextArea] public string lisaPanic = "<i>Holy-</i> I need to hide!";
 
     private EmilyGhost _instance;
     private BoxCollider2D _triggerCollider;
@@ -43,62 +51,73 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
         // 1. Spawn Emily (Frozen)
         if (emilyPrefab != null && spawnPoint != null)
         {
+            // Instantiate directly at the spawnPoint.position, overriding any prefab defaults
             _instance = Instantiate(emilyPrefab, spawnPoint.position, Quaternion.identity);
 
-            // CHANGE: Hardcode Y position to -6f
-            _instance.transform.position = new Vector3(spawnPoint.position.x, -6f, 0f);
+            // Explicitly override position again just to be safe
+            _instance.transform.position = spawnPoint.position;
+
+            // FORCE RIGHT FACING
+            // Assuming default sprite faces right, positive X scale means facing right.
+            Vector3 scale = _instance.transform.localScale;
+            scale.x = Mathf.Abs(scale.x);
+            _instance.transform.localScale = scale;
 
             _instance.gameObject.SetActive(true);
-            _instance.enabled = false;
+            _instance.enabled = false; // AI off initially
         }
 
-        // 2. Unlock Closet
+        // 2. Play Jumpscare
+        if (jumpscareClip != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySFX(jumpscareClip);
+        }
+
+        // 3. Unlock Closet (Legacy support if script exists)
         if (closetScript != null) closetScript.UnlockForHiding();
 
-        // 3. Push Mechanic (Fixed for your Unity version)
+        // 4. Push Mechanic
         Rigidbody2D playerRb = playerObj.GetComponent<Rigidbody2D>();
         JoystickPlayerController playerController = playerObj.GetComponent<JoystickPlayerController>();
         float originalDrag = 0f;
 
         if (playerRb != null)
         {
-            // FIX: Changed 'linearDrag' to 'drag' to resolve compiler error
             originalDrag = playerRb.linearDamping;
-
-            // Apply high friction so they stop fast
             playerRb.linearDamping = shoveFriction;
 
-            // Disable inputs
             if (playerController != null) playerController.enabled = false;
 
-            // Push
             Vector2 pushDir = (playerObj.transform.position - spawnPoint.position).normalized;
             if (pushDir == Vector2.zero) pushDir = Vector2.down;
             playerRb.AddForce(pushDir * pushForce, ForceMode2D.Impulse);
         }
 
-        // 4. Dialogue: Emily Shouts
+        // 5. Dialogue Sequence (RESTORED)
         if (DialogueSystemV2.Instance != null)
         {
-            yield return new WaitForSeconds(0.2f); // Short pause to see the shove happen
+            // Emily Shouts
+            yield return new WaitForSeconds(0.2f); // Short pause to register the push
             DialogueSystemV2.Instance.StartDialogue(emilyShout, "???");
             while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
-        }
 
-        // 5. Dialogue: Lisa Panics
-        if (DialogueSystemV2.Instance != null)
-        {
+            // Lisa Panics
             DialogueSystemV2.Instance.StartDialogue(lisaPanic, "Lisa");
             while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
         }
+        else
+        {
+            // Fallback delay if no dialogue system
+            yield return new WaitForSeconds(2.0f);
+        }
 
-        // 6. Resume Delay
-        yield return new WaitForSeconds(resumeDelay);
+        // 6. Wait 1 Second (Requested Delay)
+        yield return new WaitForSeconds(1.0f);
 
         // 7. Restore Player State
         if (playerRb != null)
         {
-            playerRb.linearDamping = originalDrag; // FIX: Reset using .drag
+            playerRb.linearDamping = originalDrag;
         }
         if (playerController != null)
         {
