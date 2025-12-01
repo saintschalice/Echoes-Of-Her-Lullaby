@@ -7,7 +7,12 @@ using UnityEngine;
 /// </summary>
 public class PlayerInteractionTracker : MonoBehaviour
 {
-    [SerializeField] private float detectionRadius = 2.5f;
+    [Header("Detection Settings")]
+    [SerializeField] private Vector2 detectionSize = new Vector2(1f, 2f);
+    [SerializeField] private CapsuleDirection2D detectionDirection = CapsuleDirection2D.Vertical;
+    [SerializeField] private float detectionAngle = 0f;
+    [SerializeField] private Vector2 detectionOffset = Vector2.zero;
+
     [SerializeField] private LayerMask interactableLayers = ~0;
     [SerializeField] private Transform detectionOrigin;
 
@@ -48,8 +53,11 @@ public class PlayerInteractionTracker : MonoBehaviour
 
     private void RefreshNearbyInteractables()
     {
-        Vector3 origin = detectionOrigin != null ? detectionOrigin.position : transform.position;
-        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, detectionRadius, interactableLayers);
+        Vector3 basePos = detectionOrigin != null ? detectionOrigin.position : transform.position;
+        Vector3 origin = basePos + (Vector3)detectionOffset;
+
+        // CHANGED: Use OverlapCapsuleAll instead of OverlapCircleAll
+        Collider2D[] hits = Physics2D.OverlapCapsuleAll(origin, detectionSize, detectionDirection, detectionAngle, interactableLayers);
 
         nearbyInteractables.Clear();
         focusedInteractable = null;
@@ -63,6 +71,7 @@ public class PlayerInteractionTracker : MonoBehaviour
 
             nearbyInteractables.Add(interactable);
 
+            // Calculate distance from the detection center (origin) to the interactable
             float distance = Vector2.Distance(origin, interactable.transform.position);
             if (distance < closestDistance)
             {
@@ -107,7 +116,20 @@ public class PlayerInteractionTracker : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
-        Vector3 origin = detectionOrigin != null ? detectionOrigin.position : transform.position;
-        Gizmos.DrawWireSphere(origin, detectionRadius);
+        Vector3 basePos = detectionOrigin != null ? detectionOrigin.position : transform.position;
+        Vector3 origin = basePos + (Vector3)detectionOffset;
+
+        // Save original matrix
+        Matrix4x4 originalMatrix = Gizmos.matrix;
+
+        // Apply rotation for the capsule angle
+        Gizmos.matrix = Matrix4x4.TRS(origin, Quaternion.Euler(0, 0, detectionAngle), Vector3.one);
+
+        // Draw a wire cube representing the bounds of the capsule (visual approximation)
+        // Since Unity Gizmos doesn't have a 2D Capsule drawer, this shows the area covered.
+        Gizmos.DrawWireCube(Vector3.zero, new Vector3(detectionSize.x, detectionSize.y, 0.1f));
+
+        // Restore matrix
+        Gizmos.matrix = originalMatrix;
     }
 }

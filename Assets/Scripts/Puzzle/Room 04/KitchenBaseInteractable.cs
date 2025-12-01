@@ -3,8 +3,9 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Base class for simple click-to-interact objects in the Kitchen.
+/// FIX: Now enforces BoxCollider2D and Public Interact for the OnScreenButton.
 /// </summary>
-[RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(BoxCollider2D))]
 public abstract class KitchenBaseInteractable : MonoBehaviour, IInteractable
 {
     [Header("Base Settings")]
@@ -20,9 +21,22 @@ public abstract class KitchenBaseInteractable : MonoBehaviour, IInteractable
     protected JoystickPlayerController player;
     protected Collider2D myCollider;
 
+    // AUTO-FIX: Automatically sets the collider to Trigger when you add the script
+    protected virtual void Reset()
+    {
+        BoxCollider2D box = GetComponent<BoxCollider2D>();
+        if (box != null) box.isTrigger = true;
+    }
+
     protected virtual void Start()
     {
         myCollider = GetComponent<Collider2D>();
+
+        // DEBUG: Warning if layer is Default (common cause of button not lighting up)
+        if (gameObject.layer == LayerMask.NameToLayer("Default"))
+        {
+            Debug.LogWarning($"[KitchenInteractable] '{name}' is on 'Default' layer. Ensure your InteractionTracker checks this layer!", this);
+        }
 
         // 1. Find Player
         GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -51,26 +65,25 @@ public abstract class KitchenBaseInteractable : MonoBehaviour, IInteractable
     }
 
     // =================================================================================
-    // FIX: Changed from 'protected' to 'public' so the Button/Tracker can call it.
+    // CORE INTERFACE IMPLEMENTATION
     // =================================================================================
+
+    // FIX: Must be PUBLIC so the OnScreenInteractButton can call it directly
     public abstract void Interact();
 
+    // Standard Touch/Mouse Handler
     public void OnInteract(PlayerContext context)
     {
         if (player == null)
         {
-            GameObject p = context.PlayerObject;
-            if (p == null)
-            {
-                p = GameObject.FindGameObjectWithTag("Player");
-            }
-
+            GameObject p = context.PlayerObject ?? GameObject.FindGameObjectWithTag("Player");
             if (p != null) player = p.GetComponent<JoystickPlayerController>();
         }
 
         Transform target = player != null ? player.transform : context.Transform;
         if (target == null) return;
 
+        // Optional Distance Check
         float dist = Vector2.Distance(transform.position, target.position);
         if (dist > interactionRadius)
         {
@@ -85,13 +98,16 @@ public abstract class KitchenBaseInteractable : MonoBehaviour, IInteractable
 
     public virtual void OnBlur(PlayerContext context) { }
 
+    // =================================================================================
+    // HELPERS
+    // =================================================================================
+
     protected void MarkAsCollected()
     {
         if (isCollected) return;
 
         isCollected = true;
 
-        // Save to RoomState
         if (SaveSystem.Instance != null)
         {
             string sceneName = SceneManager.GetActiveScene().name;
@@ -116,7 +132,6 @@ public abstract class KitchenBaseInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            // If no renderer, disable the collider so we can't click again
             if (myCollider != null) myCollider.enabled = false;
         }
     }

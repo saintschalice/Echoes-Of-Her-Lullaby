@@ -2,27 +2,43 @@ using UnityEngine;
 
 public class OvenPuzzleInteractable : KitchenBaseInteractable
 {
-    // FIX: Changed from 'protected' to 'public'
     public override void Interact()
     {
-        // 1. Check Controller
         if (KitchenRoomController.Instance == null) return;
+        var ctrl = KitchenRoomController.Instance;
 
-        // 2. Check if already solved
-        if (KitchenRoomController.Instance.ovenSetCorrect)
+        // 4. If emily has spawned AND recipe read AND mixed AND puzzle completed
+        if (ctrl.ovenSetCorrect)
         {
-            ShowDialogue("The oven is already set.");
+            ShowDialogue("We're done there.");
             return;
         }
 
-        // 3. Check Pre-requisite (Recipe)
-        if (!KitchenRoomController.Instance.recipeRead)
+        // 1. If emily has not spawned yet
+        if (!ctrl.emilyIntroDone)
         {
             ShowDialogue("Seems to be working fine.");
             return;
         }
 
-        // 4. Open UI
+        // Prerequisite for further steps: Recipe must be read.
+        // If Emily spawned but recipe NOT read, we default to the generic message 
+        // (as the player doesn't know about ingredients yet).
+        if (!ctrl.recipeRead)
+        {
+            ShowDialogue("Seems to be working fine.");
+            return;
+        }
+
+        // 2. If emily spawned AND recipe read, but ingredients NOT mixed yet
+        // (This covers gathering ingredients and having them but not mixing them yet)
+        if (!ctrl.doughMixed)
+        {
+            ShowDialogue("I should get all the ingredients first.");
+            return;
+        }
+
+        // 3. If emily spawned AND recipe read AND ingredients mixed
         ShowDialogue("I should set the timer to...");
 
         if (OvenUI.Instance != null)

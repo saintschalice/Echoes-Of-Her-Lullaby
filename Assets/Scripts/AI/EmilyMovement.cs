@@ -51,6 +51,10 @@ public sealed class EmilyMovement : MonoBehaviour
     {
         get
         {
+            // CRITICAL FIX: If not on NavMesh, we can't check path status.
+            // Return false or handle gracefully to prevent crashes.
+            if (_agent == null || !_agent.isOnNavMesh) return false;
+
             if (_agent.pathPending) return false;
             return !_agent.hasPath || _agent.remainingDistance <= stopDistance;
         }
@@ -59,14 +63,14 @@ public sealed class EmilyMovement : MonoBehaviour
     public void Wander()
     {
         _directPursuit = false;
-        _agent.isStopped = false;
+        if (_agent.isOnNavMesh) _agent.isStopped = false;
         GoTo(RandomPoint(), _agent.speed);
     }
 
     public void GoTo(Vector3 pos, float spd)
     {
         _directPursuit = false;
-        _agent.isStopped = false;
+        if (_agent.isOnNavMesh) _agent.isStopped = false;
 
         _agent.speed = spd;
         _agent.SetDestination(pos);
@@ -78,16 +82,15 @@ public sealed class EmilyMovement : MonoBehaviour
         _directSpeed = spd;
         _directTarget = pos;
 
-        _agent.isStopped = true;
+        if (_agent.isOnNavMesh) _agent.isStopped = true;
     }
 
     public void SearchAround(Vector3 center, float spd)
     {
         _directPursuit = false;
-        _agent.isStopped = false;
+        if (_agent.isOnNavMesh) _agent.isStopped = false;
 
         // FIX: Ensure the random point is actually ON the NavMesh
-        // Otherwise she might try to walk into a wall forever.
         Vector3 randomOffset = (Vector3)Random.insideUnitCircle * 2.5f;
         Vector3 targetPos = center + randomOffset;
 
@@ -97,7 +100,6 @@ public sealed class EmilyMovement : MonoBehaviour
         }
         else
         {
-            // Fallback if sample fails
             GoTo(center, spd);
         }
     }
@@ -107,7 +109,7 @@ public sealed class EmilyMovement : MonoBehaviour
         _directPursuit = false;
         _directSpeed = 0f;
 
-        if (_agent != null)
+        if (_agent != null && _agent.isOnNavMesh)
         {
             _agent.isStopped = true;
             _agent.ResetPath();
@@ -119,6 +121,14 @@ public sealed class EmilyMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        // CRITICAL FIX: The error "IsStopped can only be called on an active agent..." 
+        // happens here if we try to read _agent.isStopped before the agent is placed on the NavMesh.
+        if (_agent == null || !_agent.isOnNavMesh)
+        {
+            _rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         _timeSinceDirectionChange += Time.fixedDeltaTime;
 
         Vector2 finalVelocity = Vector2.zero;
@@ -135,7 +145,8 @@ public sealed class EmilyMovement : MonoBehaviour
         else
         {
             // NavMesh logic
-            if (_agent.isStopped || Reached) // Use Reached property to catch arrival
+            // We use the property Reached which now has a safety check
+            if (_agent.isStopped || Reached)
             {
                 shouldMove = false;
             }
@@ -183,25 +194,17 @@ public sealed class EmilyMovement : MonoBehaviour
         float absX = Mathf.Abs(input.x);
         float absY = Mathf.Abs(input.y);
 
-        // ---------------------------------------------------------
         // LOGIC A: EMERGENCY TURN ALLOWANCE
-        // If the AI wants to turn > 90 degrees (reverse direction),
-        // we MUST allow it immediately, otherwise she overshoots corners 
-        // and vibrates back and forth.
-        // ---------------------------------------------------------
         if (_lastNonZeroDirection.sqrMagnitude > 0.1f)
         {
             float dot = Vector2.Dot(_lastNonZeroDirection, input.normalized);
             if (dot < 0)
             {
-                // We are turning around. Reset timer to allow immediate switch.
                 _timeSinceDirectionChange = directionLockTime + 1f;
             }
         }
 
-        // ---------------------------------------------------------
         // LOGIC B: Timer Lock
-        // ---------------------------------------------------------
         if (_timeSinceDirectionChange < directionLockTime)
         {
             if (_lastAxisWasHorizontal)
@@ -214,9 +217,7 @@ public sealed class EmilyMovement : MonoBehaviour
             }
         }
 
-        // ---------------------------------------------------------
         // LOGIC C: Hysteresis Bias
-        // ---------------------------------------------------------
         float bias = 1.2f;
 
         if (_lastAxisWasHorizontal) absX *= bias;

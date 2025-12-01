@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,11 +28,12 @@ public class InventoryManager : MonoBehaviour
     // Item IDs
     private const string MAIL_ITEM_ID = "foyer_mail";
     private const string LETTER_ITEM_ID = "foyer_letter";
-    private const string RECIPE_BOOK_ID = "recipe_book_kitchen"; // NEW
+    private const string RECIPE_BOOK_ID = "recipe_book_kitchen";
 
     public static InventoryManager Instance { get; private set; }
 
     private bool wasInventoryOpenBeforeAction = false;
+    private Coroutine reopenCoroutine;
 
     void Awake()
     {
@@ -70,13 +72,28 @@ public class InventoryManager : MonoBehaviour
 
     public void NotifyActionStarted()
     {
-        if (inventoryUI != null && inventoryUI.IsOpen)
+        // Check if we are currently waiting to reopen.
+        bool isPendingReopen = (reopenCoroutine != null);
+
+        if (reopenCoroutine != null)
+        {
+            StopCoroutine(reopenCoroutine);
+            reopenCoroutine = null;
+        }
+
+        // Logic Update:
+        // 1. If inventory IS open, mark it.
+        // 2. If it WAS pending reopen (chained action), mark it.
+        // 3. CRITICAL: If wasInventoryOpenBeforeAction is ALREADY true, keep it true. 
+        //    (This handles double-taps where the first tap closed it, but we want to remember it was open originally)
+        if ((inventoryUI != null && inventoryUI.IsOpen) || isPendingReopen)
         {
             wasInventoryOpenBeforeAction = true;
             inventoryUI.ForceCloseInventory();
         }
-        else
+        else if (!wasInventoryOpenBeforeAction)
         {
+            // Only set to false if it wasn't already true.
             wasInventoryOpenBeforeAction = false;
         }
     }
@@ -85,12 +102,34 @@ public class InventoryManager : MonoBehaviour
     {
         if (wasInventoryOpenBeforeAction)
         {
-            if (inventoryUI != null)
-            {
-                inventoryUI.OpenInventory();
-            }
-            wasInventoryOpenBeforeAction = false; // Reset flag
+            if (reopenCoroutine != null) StopCoroutine(reopenCoroutine);
+            reopenCoroutine = StartCoroutine(ReopenInventoryDelay());
         }
+    }
+
+    IEnumerator ReopenInventoryDelay()
+    {
+        // Delay to handle chained events
+        yield return new WaitForSeconds(0.1f);
+
+        // CHECK: Is the Diary open?
+        // If the Diary is open, we MUST NOT reopen the inventory on top of it.
+        // The Diary's own Close() method handles reopening the inventory later if needed.
+        if (DiaryReaderUI.Instance != null && DiaryReaderUI.Instance.IsReaderOpen())
+        {
+            // Reset the flag because the Diary has "taken over" control of the UI state.
+            wasInventoryOpenBeforeAction = false;
+            reopenCoroutine = null;
+            yield break; // Exit immediately
+        }
+
+        if (inventoryUI != null)
+        {
+            inventoryUI.OpenInventory();
+        }
+
+        reopenCoroutine = null;
+        wasInventoryOpenBeforeAction = false;
     }
 
     public List<InventoryItem> GetAllItems()
@@ -289,13 +328,11 @@ public class InventoryManager : MonoBehaviour
             inventoryUI.ForceCloseInventory();
     }
 
-    // --- FIX: Added OpenInventoryUI method ---
     public void OpenInventoryUI()
     {
         if (inventoryUI != null)
             inventoryUI.OpenInventory();
     }
-    // ----------------------------------------
 
     public void AddItemAndSave(string itemId)
     {
@@ -327,18 +364,14 @@ public class InventoryManager : MonoBehaviour
 
     bool HandleItemUsage(InventoryItem item)
     {
-        // 1. Recipe Book (NEW)
+        // 1. Recipe Book
         if (item.itemId == RECIPE_BOOK_ID)
         {
             if (RecipeBookUI.Instance != null)
             {
-                NotifyActionStarted(); // Hides inventory
+                NotifyActionStarted();
                 RecipeBookUI.Instance.OpenBook();
                 return true;
-            }
-            else
-            {
-                Debug.LogWarning("[InventoryManager] RecipeBookUI not found!");
             }
         }
 

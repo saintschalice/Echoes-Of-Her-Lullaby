@@ -66,6 +66,11 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
 
             // Disable AI update loop initially
             _instance.enabled = false;
+
+            // NEW FIX: Also disable the Movement component so FixedUpdate doesn't try to run 
+            // while she is frozen (prevents "IsStopped" crash).
+            if (_instance.GetComponent<EmilyMovement>() != null)
+                _instance.GetComponent<EmilyMovement>().enabled = false;
         }
 
         // 2. Play Jumpscare
@@ -128,6 +133,10 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
         // 8. Resume Emily & Apply Configured State
         if (_instance != null)
         {
+            // Re-enable Movement first
+            if (_instance.GetComponent<EmilyMovement>() != null)
+                _instance.GetComponent<EmilyMovement>().enabled = true;
+
             _instance.enabled = true;
             _instance.SetStateExternal(spawnState);
             Debug.Log($"[EMILY SPAWN] Resumed in state: {spawnState}");

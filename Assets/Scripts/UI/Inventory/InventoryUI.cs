@@ -65,7 +65,7 @@ public class InventoryUI : MonoBehaviour
         if (toggleButton != null)
         {
             toggleButton.onClick.AddListener(() => {
-                Debug.Log("Toggle button clicked!");
+                //debug.Log("Toggle button clicked!");
                 ToggleInventory();
             });
         }
@@ -73,14 +73,14 @@ public class InventoryUI : MonoBehaviour
         if (tooltipPanel != null)
             tooltipPanel.SetActive(false);
 
-        Debug.Log("[InventoryUI] Simple inventory system initialized");
+        //debug.Log("[InventoryUI] Simple inventory system initialized");
     }
 
     void SetupInventory()
     {
         if (inventoryPanel == null)
         {
-            Debug.LogError("[InventoryUI] No inventory panel assigned!");
+            //debug.LogError("[InventoryUI] No inventory panel assigned!");
             return;
         }
 
@@ -114,7 +114,7 @@ public class InventoryUI : MonoBehaviour
         ScrollRect scrollRect = inventoryPanel.GetComponentInChildren<ScrollRect>();
         if (scrollRect == null)
         {
-            Debug.LogWarning("[InventoryUI] No ScrollRect found in inventory panel");
+            //debug.LogWarning("[InventoryUI] No ScrollRect found in inventory panel");
             return;
         }
 
@@ -149,14 +149,14 @@ public class InventoryUI : MonoBehaviour
             }
         }
 
-        Debug.Log("[InventoryUI] ScrollRect configured for GridLayout.");
+        //debug.Log("[InventoryUI] ScrollRect configured for GridLayout.");
     }
 
     void CreateSlots()
     {
         if (slotPrefab == null || slotParent == null)
         {
-            Debug.LogError("[InventoryUI] Missing slot prefab or slot parent!");
+            //debug.LogError("[InventoryUI] Missing slot prefab or slot parent!");
             return;
         }
 
@@ -182,11 +182,11 @@ public class InventoryUI : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[InventoryUI] Slot prefab doesn't have InventorySlot component!");
+                //debug.LogWarning($"[InventoryUI] Slot prefab doesn't have InventorySlot component!");
             }
         }
 
-        Debug.Log($"[InventoryUI] Created {slots.Count} inventory slots");
+        //debug.Log($"[InventoryUI] Created {slots.Count} inventory slots");
     }
 
     void SetVisible(bool visible)
@@ -205,7 +205,7 @@ public class InventoryUI : MonoBehaviour
             inventoryPanel.SetActive(visible);
         }
 
-        Debug.Log($"[InventoryUI] Set inventory visible: {visible}");
+        //debug.Log($"[InventoryUI] Set inventory visible: {visible}");
     }
 
     public void ToggleInventory()
@@ -220,7 +220,7 @@ public class InventoryUI : MonoBehaviour
             hasNotifiedTutorial = true;
         }
 
-        Debug.Log($"[InventoryUI] Toggled inventory - now open: {isOpen}");
+        //debug.Log($"[InventoryUI] Toggled inventory - now open: {isOpen}");
     }
 
     bool ShouldBlockInventory()
@@ -251,7 +251,7 @@ public class InventoryUI : MonoBehaviour
             isOpen = false;
             SetVisible(false);
             HideItemTooltip();
-            Debug.Log("[InventoryUI] Inventory force closed");
+            //debug.Log("[InventoryUI] Inventory force closed");
         }
     }
 
@@ -279,41 +279,41 @@ public class InventoryUI : MonoBehaviour
     {
         if (inventoryManager == null)
         {
-            Debug.LogWarning("[InventoryUI] InventoryManager is null!");
+            //debug.LogWarning("[InventoryUI] InventoryManager is null!");
             return;
         }
 
         if (slots.Count == 0)
         {
-            Debug.LogWarning("[InventoryUI] No slots created!");
+            //debug.LogWarning("[InventoryUI] No slots created!");
             return;
         }
 
         List<InventoryItem> items = inventoryManager.GetAllItems();
-        Debug.Log($"[InventoryUI] Found {items.Count} items in inventory");
+        //debug.Log($"[InventoryUI] Found {items.Count} items in inventory");
 
         for (int i = 0; i < items.Count; i++)
         {
-            Debug.Log($"[InventoryUI] Item {i}: {items[i].itemName} ({items[i].itemId})");
+            //debug.Log($"[InventoryUI] Item {i}: {items[i].itemName} ({items[i].itemId})");
         }
 
         for (int i = 0; i < slots.Count; i++)
         {
             if (i < items.Count)
             {
-                Debug.Log($"[InventoryUI] Setting slot {i} to item: {items[i].itemName}");
+                //debug.Log($"[InventoryUI] Setting slot {i} to item: {items[i].itemName}");
                 slots[i].SetItem(items[i]);
                 slots[i].gameObject.SetActive(true);
             }
             else
             {
-                Debug.Log($"[InventoryUI] Setting slot {i} to empty");
+                //debug.Log($"[InventoryUI] Setting slot {i} to empty");
                 slots[i].SetItem(null);
                 slots[i].gameObject.SetActive(true);
             }
         }
 
-        Debug.Log($"[InventoryUI] Refreshed {items.Count} items in {slots.Count} slots");
+        //debug.Log($"[InventoryUI] Refreshed {items.Count} items in {slots.Count} slots");
     }
 
     public void OnSlotClicked(InventorySlot slot)
@@ -321,7 +321,7 @@ public class InventoryUI : MonoBehaviour
         if (slot == null || slot.IsEmpty) return;
 
         InventoryItem item = slot.CurrentItem;
-        Debug.Log($"[InventoryUI] Clicked item: {item.itemName}");
+        //debug.Log($"[InventoryUI] Clicked item: {item.itemName}");
 
         if (inventoryManager != null)
         {

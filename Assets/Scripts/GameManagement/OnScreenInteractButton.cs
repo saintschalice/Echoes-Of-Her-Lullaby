@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System.Collections;
 
 /// <summary>
-/// Binds a UI button to the player's interact action so mobile/on-screen buttons
-/// can trigger world interactions without enabling menu inputs.
+/// Binds a UI button to the player's interact action.
+/// Simplified to ensure reliability without getting stuck in Disabled states.
 /// </summary>
 [RequireComponent(typeof(Button))]
+[RequireComponent(typeof(CanvasGroup))]
 public class OnScreenInteractButton : MonoBehaviour
 {
     [Tooltip("Button used to trigger the interact action.")]
@@ -19,29 +22,44 @@ public class OnScreenInteractButton : MonoBehaviour
     [SerializeField] private bool debugForceEnable = false;
 
     private PlayerInputRouter inputRouter;
-    private bool lastInteractableState = true; // For debug logging only
+    private CanvasGroup canvasGroup;
+    private Coroutine showCoroutine;
+
+    // Allows external scripts (like IslandHide) to lock the button "On"
+    private bool externalInteractionLock = false;
 
     private void Reset()
     {
         interactButton = GetComponent<Button>();
+        canvasGroup = GetComponent<CanvasGroup>();
+        SetupButtonNavigation();
     }
 
     private void Awake()
     {
-        if (interactButton == null)
+        if (interactButton == null) interactButton = GetComponent<Button>();
+
+        SetupButtonNavigation();
+
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
+    }
+
+    private void SetupButtonNavigation()
+    {
+        // Disable navigation to prevent the button from holding "Selected" focus visually
+        if (interactButton != null)
         {
-            interactButton = GetComponent<Button>();
+            Navigation nav = new Navigation();
+            nav.mode = Navigation.Mode.None;
+            interactButton.navigation = nav;
         }
     }
 
     private void OnEnable()
     {
-        if (interactButton == null)
-        {
-            interactButton = GetComponent<Button>();
-        }
+        if (interactButton == null) interactButton = GetComponent<Button>();
 
-        // Clean up: Remove the listener first so we don't stack them up if enabled/disabled multiple times
         interactButton.onClick.RemoveListener(TriggerInteract);
         interactButton.onClick.AddListener(TriggerInteract);
 
@@ -59,29 +77,69 @@ public class OnScreenInteractButton : MonoBehaviour
 
     private void Update()
     {
-        if (interactionTracker != null && interactButton != null)
+        bool isDialogueOpen = DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive();
+
+        if (isDialogueOpen)
         {
-            // LOGIC: Enable button if we found a target OR if debug mode is on
-            bool hasFocus = interactionTracker.FocusedInteractable != null;
-            bool shouldBeInteractable = hasFocus || debugForceEnable;
-
-            if (interactButton.interactable != shouldBeInteractable)
+            if (showCoroutine != null)
             {
-                interactButton.interactable = shouldBeInteractable;
+                StopCoroutine(showCoroutine);
+                showCoroutine = null;
+            }
 
-                string status = shouldBeInteractable ? "ENABLED" : "DISABLED (No Target)";
-                Debug.Log($"[OnScreenInteractButton] State updated to: {status}");
+            canvasGroup.alpha = 0f;
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable = false;
+            return;
+        }
+        else
+        {
+            if (canvasGroup.alpha == 0f && showCoroutine == null)
+            {
+                showCoroutine = StartCoroutine(ShowButtonDelayed());
             }
         }
-        else if (interactionTracker == null)
+
+        // Only update interactivity if fully visible
+        if (canvasGroup.alpha > 0.9f)
         {
-            // If no tracker is assigned, default to enabled so the button isn't broken
-            if (interactButton.interactable == false)
+            // Safety: Ensure Raycasts are always allowed when visible
+            if (!canvasGroup.blocksRaycasts) canvasGroup.blocksRaycasts = true;
+
+            if (interactionTracker != null && interactButton != null)
             {
-                interactButton.interactable = true;
-                Debug.LogWarning("[OnScreenInteractButton] No InteractionTracker assigned. Button forcing to ENABLED.");
+                bool hasFocus = interactionTracker.FocusedInteractable != null;
+
+                // LOGIC: Active if Focus exists OR Debug is checked OR External Lock is active
+                bool shouldBeInteractable = hasFocus || debugForceEnable || externalInteractionLock;
+
+                // FIX: Check BOTH interactButton AND canvasGroup.
+                // Previously, we only checked interactButton. If interactButton was ALREADY true (from before dialogue),
+                // but canvasGroup was false (from being hidden), this check would fail, leaving the CanvasGroup disabled.
+                if (interactButton.interactable != shouldBeInteractable || canvasGroup.interactable != shouldBeInteractable)
+                {
+                    interactButton.interactable = shouldBeInteractable;
+                    canvasGroup.interactable = shouldBeInteractable;
+                }
+            }
+            else if (interactionTracker == null)
+            {
+                // If no tracker assigned, always enabled
+                if (interactButton.interactable == false)
+                {
+                    interactButton.interactable = true;
+                    canvasGroup.interactable = true;
+                }
             }
         }
+    }
+
+    private IEnumerator ShowButtonDelayed()
+    {
+        yield return new WaitForSeconds(0.1f);
+        canvasGroup.alpha = 1f;
+        canvasGroup.blocksRaycasts = true;
+        showCoroutine = null;
     }
 
     private void HandleInputRouterChanged(PlayerInputRouter router)
@@ -91,29 +149,28 @@ public class OnScreenInteractButton : MonoBehaviour
 
     public void TriggerInteract()
     {
-        Debug.Log("[OnScreenInteractButton] Button Clicked!");
+        if (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) return;
 
-        if (interactionTracker != null)
+        // Guard: If logic says we shouldn't interact, abort.
+        if (interactionTracker != null && interactionTracker.FocusedInteractable == null && !debugForceEnable && !externalInteractionLock)
         {
-            if (interactionTracker.FocusedInteractable == null)
-            {
-                // If we forced the button on, we will hit this warning.
-                // This confirms the button works, but the Tracker is blind.
-                Debug.LogWarning("[OnScreenInteractButton] Clicked, but Tracker says nothing is focused. Please check Colliders on the object.");
-                return;
-            }
-            else
-            {
-                Debug.Log($"[OnScreenInteractButton] Target confirm: {interactionTracker.FocusedInteractable.name}");
-            }
-        }
-
-        if (inputRouter == null)
-        {
-            Debug.LogError("[OnScreenInteractButton] CRITICAL: PlayerInputRouter is missing!");
             return;
         }
 
         inputRouter?.TriggerInteract();
+
+        // FIX: Simply clear the EventSystem selection.
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+    }
+
+    /// <summary>
+    /// Called by Hiding/Interaction scripts to force the button to remain Interactable.
+    /// </summary>
+    public void SetInteractionLock(bool isLocked)
+    {
+        externalInteractionLock = isLocked;
     }
 }

@@ -919,7 +919,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MixingBowlInteractable
   objectId: kitchen_mixing_station
-  interactionRadius: 0.8
+  interactionRadius: 1
   visualRenderer: {fileID: 476541642}
   emptyBowlId: bowl_empty
   mixedBowlId: bowl_cookie_mix
@@ -1356,7 +1356,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
   objectId: cabinet_flour
-  interactionRadius: 0.7
+  interactionRadius: 1
   visualRenderer: {fileID: 0}
   ingredientItemId: flour
   foundDialogue: '"Found the flour."'
@@ -1528,7 +1528,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleKitchenPickup
   objectId: pickup_salt
-  interactionRadius: 0.7
+  interactionRadius: 1
   visualRenderer: {fileID: 754286122}
   itemId: salt
   pickupDialogue: '"Some salt left on the counter."'
@@ -1872,8 +1872,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02f6dc435c8ee8d4bb8f54d6c21e12db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IslandHideAndRecipeInteractable
-  interactionBoxSize: {x: 3.6, y: 2.6}
-  interactionOffset: {x: 0, y: -0.25}
+  interactionRadius: 2
   recipeItemId: recipe_book_kitchen
   hideZoomSize: 3.5
   zoomDuration: 0.5
@@ -1950,7 +1949,7 @@ MonoBehaviour:
   m_BuildHeightMesh: 0
   m_MinRegionArea: 0
   m_HideEditorLogs: 0
-  m_NavMeshData: {fileID: 23800000, guid: 5009f74502b8fa64b81241921aaaeee6, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 28911b3772fa9d54ea6f24f48906d919, type: 2}
 --- !u!4 &1048575122
 Transform:
   m_ObjectHideFlags: 0
@@ -5203,7 +5202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
   objectId: cabinet_vanilla
-  interactionRadius: 0.7
+  interactionRadius: 1
   visualRenderer: {fileID: 0}
   ingredientItemId: vanilla
   foundDialogue: '"Found the vanilla."'
@@ -5615,7 +5614,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FridgeInteractable
   objectId: kitchen_fridge
-  interactionRadius: 0.8
+  interactionRadius: 1.1
   visualRenderer: {fileID: 0}
   eggItemId: egg
   chocolateItemId: chocolate
@@ -5774,7 +5773,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OvenPuzzleInteractable
   objectId: kitchen_oven
-  interactionRadius: 0.7
+  interactionRadius: 1
   visualRenderer: {fileID: 0}
 --- !u!1 &1846786872
 GameObject:
@@ -10419,7 +10418,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
   objectId: cabinet_sugar
-  interactionRadius: 0.7
+  interactionRadius: 1
   visualRenderer: {fileID: 0}
   ingredientItemId: sugar
   foundDialogue: '"Found the sugar."'
@@ -10622,7 +10621,7 @@ Transform:
   m_GameObject: {fileID: 2077772122}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.19, y: 0.85, z: 0}
+  m_LocalPosition: {x: -1.89, y: 0.97, z: 0}
   m_LocalScale: {x: 14, y: 10, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
