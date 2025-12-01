@@ -6,7 +6,8 @@ public class FridgeInteractable : KitchenBaseInteractable
     public string eggItemId = "egg";
     public string chocolateItemId = "chocolate";
 
-    protected override void Interact()
+    // FIX: Changed from 'protected' to 'public'
+    public override void Interact()
     {
         // 1. Check if collected
         if (isCollected)

@@ -37,6 +37,57 @@ public class LivingRoomInteractable : MonoBehaviour, IInteractable
         }
     }
 
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        // Safety check if dialogue is open
+        if (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            return;
+
+        if (roomController == null)
+        {
+            roomController = FindFirstObjectByType<Room02_LivingRoomController>();
+            if (roomController == null) return;
+        }
+
+        // Logic copied from OnInteract, but without the manual Distance check 
+        // because the InteractionTracker already confirmed we are close enough.
+
+        switch (type)
+        {
+            case InteractableType.TV:
+                roomController.OnTVInteract();
+                break;
+            case InteractableType.Frame:
+                roomController.OnFrameExamine();
+                break;
+            case InteractableType.Bookshelf:
+                DialogueSystemV2.Instance?.StartDialogue("Just a bookshelf with old, dusty books.", "Lisa");
+                break;
+            case InteractableType.Bookshelf2:
+                roomController.OnBookshelf2Interact();
+                break;
+            case InteractableType.ToyBox:
+                roomController.OnToyBoxInteract();
+                break;
+            case InteractableType.Couch:
+                roomController.OnCouchInteract();
+                break;
+            case InteractableType.LooseFloorboard:
+                roomController.OnLooseFloorboardInteract();
+                break;
+            case InteractableType.SmallKey:
+                roomController.OnSmallKeyInteract();
+                break;
+            case InteractableType.CoffeeTableKey:
+                roomController.OnCoffeeTableKeyInteract();
+                break;
+        }
+    }
+    // =================================================================================
+
     public void OnInteract(PlayerContext context)
     {
         player = context.Transform;

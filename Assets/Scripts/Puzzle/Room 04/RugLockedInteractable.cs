@@ -12,6 +12,9 @@ public class RugLockedInteractable : SimpleInteractable2D
             interactionDialogue = "It's locked.";
     }
 
+    // =================================================================================
+    // FIX: Confirmed this is 'public' to satisfy the button requirement.
+    // =================================================================================
     public override void Interact()
     {
         // Play specific locked sound if assigned, otherwise base handles it

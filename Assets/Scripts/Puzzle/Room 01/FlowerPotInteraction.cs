@@ -113,6 +113,31 @@ public class FlowerPotInteraction : MonoBehaviour, IInteractable
         }
     }
 
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        if (waitingForDialogueClose || waitingForResponse)
+            return;
+
+        if (keyRevealed && houseKey != null && houseKey.activeSelf)
+        {
+            PickupKey();
+            return;
+        }
+
+        if (!hasBeenExamined)
+        {
+            FirstExamine();
+        }
+        else if (!hasBeenBroken)
+        {
+            AskToBreakPot();
+        }
+    }
+    // =================================================================================
+
     public void OnInteract(PlayerContext context)
     {
         playerInRange = IsInRange(context.Transform);

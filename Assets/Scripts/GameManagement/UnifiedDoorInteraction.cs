@@ -75,6 +75,18 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
         }
     }
 
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        // Tracker handles range, so we just check state
+        if (isTransitioning) return;
+
+        AttemptOpenDoor();
+    }
+    // =================================================================================
+
     public void OnInteract(PlayerContext context)
     {
         playerInRange = IsPlayerInRange(context.Transform);

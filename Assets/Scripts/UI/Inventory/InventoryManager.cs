@@ -289,6 +289,14 @@ public class InventoryManager : MonoBehaviour
             inventoryUI.ForceCloseInventory();
     }
 
+    // --- FIX: Added OpenInventoryUI method ---
+    public void OpenInventoryUI()
+    {
+        if (inventoryUI != null)
+            inventoryUI.OpenInventory();
+    }
+    // ----------------------------------------
+
     public void AddItemAndSave(string itemId)
     {
         AddItem(itemId);

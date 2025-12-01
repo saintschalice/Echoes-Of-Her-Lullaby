@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Collections;
 
 public class HallwayClosetInteractable : MonoBehaviour, IInteractable
 {
@@ -15,57 +14,148 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
     [Header("Dialogue")]
     [TextArea] public string examineDialogue = "This is really big... I could probably fit inside.";
     [TextArea] public string lockedDialogue = "It won't open. It's stuck.";
-    [TextArea] public string firstDialogue = "There are scratches inside... someone was trying to get out.";
+    [TextArea] public string firstDialogue = "There are scratches inside... someone was trying to get out."; // Kept if needed for later, though not currently used in logic below
 
     [Header("Settings")]
     public float interactionRange = 2f;
-    public GameObject interactPrompt;
 
-    private Transform player;
+    // State tracking (Matching MailboxInteraction style)
+    private bool playerInRange = false;
+    private bool waitingForDialogueClose = false;
     private bool canHide = false; // Default to false until Emily spawns
-    private bool isLocked = true;
     private bool hasExaminedOnce = false;
+
+    private DialogueSystemV2 dialogueSystem;
+
+    // Audio tracking
+    private float lockedSoundCooldown = 0f;
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (interactPrompt != null) interactPrompt.SetActive(false);
+        dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
     }
 
-    public void OnInteract(PlayerContext context)
+    void Update()
     {
-        player = context.Transform;
+        // Cooldown for the rattle sound so it doesn't play every frame if spammed
+        if (lockedSoundCooldown > 0) lockedSoundCooldown -= Time.deltaTime;
 
-        if (!IsInRange(player) || (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()))
+        // State Machine: Watch for dialogue to close (Just like MailboxInteraction)
+        if (waitingForDialogueClose)
+        {
+            if (dialogueSystem != null && !dialogueSystem.IsDialogueActive())
+            {
+                waitingForDialogueClose = false;
+                // Interaction cycle complete.
+            }
+        }
+    }
+
+    // =================================================================================
+    // PRIMARY INTERACTION ENTRY POINT (Called by OnScreenInteractButton)
+    // =================================================================================
+    public void Interact()
+    {
+        // 1. Guard: Busy waiting for dialogue?
+        if (waitingForDialogueClose)
+        {
+            Debug.Log("Closet busy: waiting for dialogue to close.");
+            return;
+        }
+
+        // 2. Guard: Dialogue system active elsewhere?
+        if (dialogueSystem != null && dialogueSystem.IsDialogueActive())
             return;
 
-        // If the chase sequence is active (unlocked by spawn trigger), allow hiding
+        // 3. Logic: Chase Sequence vs. Locked State
         if (canHide)
         {
-            // If we haven't done the "Scratches inside" dialogue yet, do that quickly first? 
-            // Or just go straight to hiding because we are being chased. 
-            // Based on the prompt: "The player hides inside the closet." -> Implies immediate hiding.
-            hideSequence?.HideInCloset();
+            // The chase is on! Hide immediately.
+            if (hideSequence != null)
+            {
+                hideSequence.HideInCloset();
+            }
+            else
+            {
+                Debug.LogError("Closet unlocked but HideSequence reference is missing!");
+            }
         }
         else
         {
-            // Before the chase: Examine and find it locked
-            StartCoroutine(ExamineRoutine());
+            // Normal exploration state
+            PerformExamineLogic();
         }
+    }
+
+    // =================================================================================
+    // INTERFACE METHODS (IInteractable)
+    // =================================================================================
+
+    public void OnInteract(PlayerContext context)
+    {
+        // STRICTLY EMPTY: 
+        // We do not want touching/clicking the closet directly to do anything.
+        // The interaction must come via the OnScreenInteractButton calling Interact() above.
     }
 
     public void OnFocus(PlayerContext context)
     {
-        player = context.Transform;
-        bool inRange = IsInRange(player);
-        if (interactPrompt != null)
-            interactPrompt.SetActive(inRange && (DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive()));
+        // Only update range for internal logic or debug, but DO NOT show prompts.
+        playerInRange = IsInRange(context.Transform);
     }
 
     public void OnBlur(PlayerContext context)
     {
-        if (interactPrompt != null)
-            interactPrompt.SetActive(false);
+        playerInRange = false;
+    }
+
+    // =================================================================================
+    // INTERNAL LOGIC
+    // =================================================================================
+
+    private void PerformExamineLogic()
+    {
+        // Set flag so we don't interact again until dialogue finishes
+        waitingForDialogueClose = true;
+
+        if (!hasExaminedOnce)
+        {
+            // 1. First time examination
+            if (dialogueSystem != null)
+            {
+                dialogueSystem.StartDialogue(examineDialogue, "Lisa");
+            }
+            hasExaminedOnce = true;
+        }
+        else
+        {
+            // 2. Subsequent times: It's locked
+            // Play Sound
+            if (lockedSound != null && lockedSoundCooldown <= 0)
+            {
+                AudioManager.Instance?.PlaySFX(lockedSound, transform.position);
+                lockedSoundCooldown = 1.0f; // Prevent sound spam
+            }
+
+            // Optional: Animation
+            if (closetAnimator != null)
+            {
+                closetAnimator.SetTrigger("Rattle");
+            }
+
+            // Show Dialogue
+            if (dialogueSystem != null)
+            {
+                dialogueSystem.StartDialogue(lockedDialogue, "Lisa");
+            }
+        }
+    }
+
+    // Called by Emily Spawn Trigger / Game Event
+    public void UnlockForHiding()
+    {
+        canHide = true;
+        Debug.Log("[Closet] Unlocked for hiding sequence.");
     }
 
     bool IsInRange(Transform target)
@@ -74,36 +164,9 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
         return Vector2.Distance(transform.position, target.position) <= interactionRange;
     }
 
-    IEnumerator ExamineRoutine()
+    void OnDrawGizmosSelected()
     {
-        // Prevent spamming
-        if (DialogueSystemV2.Instance.IsDialogueActive()) yield break;
-
-        if (!hasExaminedOnce)
-        {
-            // 1. Initial thought
-            DialogueSystemV2.Instance?.StartDialogue(examineDialogue, "Lisa");
-            while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
-            hasExaminedOnce = true;
-        }
-
-        // 2. Attempt to open (Sound + Animation rattle if you have one)
-        if (lockedSound) AudioManager.Instance?.PlaySFX(lockedSound);
-
-        // Optional: Trigger a "Rattle" animation here if exists
-        // closetAnimator?.SetTrigger("Rattle"); 
-
-        yield return new WaitForSeconds(0.5f);
-
-        // 3. Locked conclusion
-        DialogueSystemV2.Instance?.StartDialogue(lockedDialogue, "Lisa");
-    }
-
-    // CALLED BY EMILY SPAWN TRIGGER
-    public void UnlockForHiding()
-    {
-        isLocked = false;
-        canHide = true;
-        Debug.Log("[Closet] Unlocked for hiding sequence.");
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactionRange);
     }
 }

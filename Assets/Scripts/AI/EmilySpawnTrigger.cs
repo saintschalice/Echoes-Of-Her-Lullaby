@@ -8,6 +8,13 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
     public EmilyGhost emilyPrefab;
     public Transform spawnPoint;
 
+    [Header("AI Configuration")]
+    [Tooltip("The state Emily will enter immediately after the cutscene ends.")]
+    public EmilyGhost.State spawnState = EmilyGhost.State.Hunt;
+
+    [Tooltip("Direction she should face when she spawns (x=1 is Right, x=-1 is Left).")]
+    public Vector2 spawnFacing = Vector2.right;
+
     [Header("Scene Connections")]
     public HallwayClosetInteractable closetScript;
 
@@ -18,11 +25,6 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
 
     [Header("Audio")]
     public AudioClip jumpscareClip; // NEW: Jumpscare sound
-
-    // REMOVED: Dialogue fields as requested for strict adherence to "remove all dialogue" 
-    // except the specific pre-spawn closet line which is handled in ClosetHideSequence.
-    // Wait, user request #1 for this turn says: "bring back the 'YOU NEED TO GET OUT!'... and lisa 'Holy- I need to hide!'"
-    // I will restore them based on the latest instruction.
 
     [Header("Narrative")]
     [TextArea] public string emilyShout = "YOU NEED TO GET OUT!";
@@ -51,20 +53,19 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
         // 1. Spawn Emily (Frozen)
         if (emilyPrefab != null && spawnPoint != null)
         {
-            // Instantiate directly at the spawnPoint.position, overriding any prefab defaults
+            // Instantiate directly at the spawnPoint.position
             _instance = Instantiate(emilyPrefab, spawnPoint.position, Quaternion.identity);
 
             // Explicitly override position again just to be safe
             _instance.transform.position = spawnPoint.position;
 
-            // FORCE RIGHT FACING
-            // Assuming default sprite faces right, positive X scale means facing right.
-            Vector3 scale = _instance.transform.localScale;
-            scale.x = Mathf.Abs(scale.x);
-            _instance.transform.localScale = scale;
-
             _instance.gameObject.SetActive(true);
-            _instance.enabled = false; // AI off initially
+
+            // FORCE FACING: Set animator parameters immediately
+            _instance.ForceFacing(spawnFacing);
+
+            // Disable AI update loop initially
+            _instance.enabled = false;
         }
 
         // 2. Play Jumpscare
@@ -93,7 +94,7 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
             playerRb.AddForce(pushDir * pushForce, ForceMode2D.Impulse);
         }
 
-        // 5. Dialogue Sequence (RESTORED)
+        // 5. Dialogue Sequence
         if (DialogueSystemV2.Instance != null)
         {
             // Emily Shouts
@@ -111,8 +112,8 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
             yield return new WaitForSeconds(2.0f);
         }
 
-        // 6. Wait 1 Second (Requested Delay)
-        yield return new WaitForSeconds(1.0f);
+        // 6. Wait (Requested Delay)
+        yield return new WaitForSeconds(resumeDelay);
 
         // 7. Restore Player State
         if (playerRb != null)
@@ -124,10 +125,12 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
             playerController.enabled = true;
         }
 
-        // 8. Resume Emily
+        // 8. Resume Emily & Apply Configured State
         if (_instance != null)
         {
             _instance.enabled = true;
+            _instance.SetStateExternal(spawnState);
+            Debug.Log($"[EMILY SPAWN] Resumed in state: {spawnState}");
         }
 
         Debug.Log("[EMILY SPAWN] Sequence Complete.");

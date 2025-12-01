@@ -22,7 +22,8 @@ public class MixingBowlInteractable : KitchenBaseInteractable
         "salt"
     };
 
-    protected override void Interact()
+    // FIX: Changed from 'protected' to 'public'
+    public override void Interact()
     {
         if (KitchenRoomController.Instance == null) return;
 

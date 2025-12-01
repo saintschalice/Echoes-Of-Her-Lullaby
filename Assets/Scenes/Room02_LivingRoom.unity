@@ -878,7 +878,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5cb51d5bcb1fc994585cf96c7f22d57f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 567a9aa2e510b0547aca443cf231192a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1070,7 +1070,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -50}
+  m_AnchoredPosition: {x: 0, y: -100}
   m_SizeDelta: {x: 859.4749, y: 82.877}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &377217160
@@ -1183,7 +1183,6 @@ GameObject:
   - component: {fileID: 413753366}
   - component: {fileID: 413753365}
   - component: {fileID: 413753364}
-  - component: {fileID: 413753361}
   - component: {fileID: 413753367}
   - component: {fileID: 413753368}
   m_Layer: 0
@@ -1193,18 +1192,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &413753361
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 413753360}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2296260f18201b4984a6414d09dad21, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DiaryCombinationHandler
 --- !u!114 &413753364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1244,6 +1231,8 @@ MonoBehaviour:
   lullabyFragment: {fileID: 8300000, guid: 1e8420f3aadd3564dac91f5b9ea86955, type: 3}
   bookshelfShakeSound: {fileID: 8300000, guid: 987531a1e2fb18b49bc85921a3332b30, type: 3}
   keyRevealSound: {fileID: 8300000, guid: 2f4c65ea1c5e9da438ea6e66ee47638e, type: 3}
+  tvTurnOffSound: {fileID: 8300000, guid: 54966a8739312f34fa983e4f6467b2a7, type: 3}
+  toyBoxUnlockSound: {fileID: 8300000, guid: 7feb924835950af479b310dc77eb0397, type: 3}
   tvAudioSource: {fileID: 0}
   ghostTVAudio: {fileID: 8300000, guid: 87cd1327d7ed3f94590209e2e8e8eae5, type: 3}
   ghostAudioDelay: 10
@@ -1283,11 +1272,11 @@ MonoBehaviour:
   diaryPage3Id: diary_page_3
   windingKeyId: winding_key
   musicBoxCompleteId: music_box_complete
-  diaryExamined: 1
-  snugglesExamined: 1
-  quizArmed: 1
-  quizSolved: 1
-  windingKeyGiven: 1
+  diaryExamined: 0
+  snugglesExamined: 0
+  quizArmed: 0
+  quizSolved: 0
+  windingKeyGiven: 0
 --- !u!114 &413753368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1409,7 +1398,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5cb51d5bcb1fc994585cf96c7f22d57f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 567a9aa2e510b0547aca443cf231192a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1781,7 +1770,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5cb51d5bcb1fc994585cf96c7f22d57f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 567a9aa2e510b0547aca443cf231192a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4845,7 +4834,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.3}
+  m_Offset: {x: 0, y: -0.2}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -4855,7 +4844,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 5, y: 1.7}
+  m_Size: {x: 5, y: 2}
   m_EdgeRadius: 0
 --- !u!114 &939663430
 MonoBehaviour:
@@ -4955,7 +4944,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1000, y: 500}
+  m_SizeDelta: {x: 1000, y: 600}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1016785536
 MonoBehaviour:
@@ -5002,7 +4991,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 567a9aa2e510b0547aca443cf231192a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -5123,7 +5112,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5cb51d5bcb1fc994585cf96c7f22d57f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 567a9aa2e510b0547aca443cf231192a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

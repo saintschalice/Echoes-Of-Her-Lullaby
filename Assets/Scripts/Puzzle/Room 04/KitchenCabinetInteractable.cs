@@ -13,7 +13,8 @@ public class KitchenCabinetInteractable : KitchenBaseInteractable
     [TextArea]
     public string foundDialogue;
 
-    protected override void Interact()
+    // FIX: Changed from 'protected' to 'public'
+    public override void Interact()
     {
         // 1. Check if collected
         if (isCollected)

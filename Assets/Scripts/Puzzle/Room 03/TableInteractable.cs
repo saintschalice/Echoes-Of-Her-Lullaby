@@ -56,6 +56,9 @@ public class TableInteractable : MonoBehaviour, IInteractable
         Debug.Log($"[TableInteractable] Picked up diary page: {diaryPageId}");
     }
 
+    // =================================================================================
+    // FIX: Ensure public void Interact() exists for the button
+    // =================================================================================
     public void Interact()
     {
         if (!hasBeenPickedUp)

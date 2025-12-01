@@ -18,6 +18,9 @@ public class PlayerInputRouter : MonoBehaviour, InputSystem_Actions.IPlayerActio
     private InputSystem_Actions inputActions;
 
     public event Action InteractPerformed;
+    public event Action<Vector2> MoveVectorChanged;
+
+    private Vector2 cachedMoveInput = Vector2.zero;
 
     private void Awake()
     {
@@ -90,10 +93,29 @@ public class PlayerInputRouter : MonoBehaviour, InputSystem_Actions.IPlayerActio
         InteractPerformed?.Invoke();
     }
 
+    /// <summary>
+    /// Returns the last move vector received from the input system.
+    /// </summary>
+    public Vector2 LastMoveVector => cachedMoveInput;
+
     public InputSystem_Actions PlayerActions => inputActions;
 
     #region IPlayerActions implementation
-    public void OnMove(InputAction.CallbackContext context) { }
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        Vector2 value = context.ReadValue<Vector2>();
+
+        if (context.canceled)
+        {
+            value = Vector2.zero;
+        }
+
+        if (cachedMoveInput != value)
+        {
+            cachedMoveInput = value;
+            MoveVectorChanged?.Invoke(cachedMoveInput);
+        }
+    }
     public void OnLook(InputAction.CallbackContext context) { }
     public void OnAttack(InputAction.CallbackContext context) { }
     public void OnInteract(InputAction.CallbackContext context)

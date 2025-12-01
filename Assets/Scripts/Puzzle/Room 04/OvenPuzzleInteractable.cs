@@ -2,7 +2,8 @@ using UnityEngine;
 
 public class OvenPuzzleInteractable : KitchenBaseInteractable
 {
-    protected override void Interact()
+    // FIX: Changed from 'protected' to 'public'
+    public override void Interact()
     {
         // 1. Check Controller
         if (KitchenRoomController.Instance == null) return;

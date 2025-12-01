@@ -98,6 +98,15 @@ public class CutsceneTrigger : MonoBehaviour, IInteractable
         hasPlayed = false;
     }
 
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        PlayCutsceneOnce();
+    }
+    // =================================================================================
+
     public void OnInteract(PlayerContext context)
     {
         PlayCutsceneOnce();

@@ -49,7 +49,10 @@ public class BridgePlacement : KitchenBaseInteractable
         }
     }
 
-    protected override void Interact()
+    // =================================================================================
+    // FIX: Changed from 'protected' to 'public' to match the updated Base class.
+    // =================================================================================
+    public override void Interact()
     {
         SyncState();
 

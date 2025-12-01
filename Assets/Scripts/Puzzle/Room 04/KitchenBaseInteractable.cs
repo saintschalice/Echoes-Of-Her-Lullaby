@@ -50,8 +50,10 @@ public abstract class KitchenBaseInteractable : MonoBehaviour, IInteractable
         DisableVisuals();
     }
 
-    // Child classes implement specific logic here
-    protected abstract void Interact();
+    // =================================================================================
+    // FIX: Changed from 'protected' to 'public' so the Button/Tracker can call it.
+    // =================================================================================
+    public abstract void Interact();
 
     public void OnInteract(PlayerContext context)
     {

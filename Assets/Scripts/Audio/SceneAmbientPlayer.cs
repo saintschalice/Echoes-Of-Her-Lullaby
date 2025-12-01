@@ -5,17 +5,28 @@ using System.Collections;
 /// <summary>
 /// Placed in a Scene to trigger the ambient sound when the scene loads.
 /// Will wait for any "PlayOnStart" cutscenes to finish before playing.
+/// Also resumes ambient sound after any mid-game cutscene finishes.
 /// </summary>
 public class SceneAmbientPlayer : MonoBehaviour
 {
     [Tooltip("The ScriptableObject holding the ambient sound data for this scene.")]
     public SceneAmbientConfig sceneAmbientConfig;
 
-    private bool hasSubscribed = false; // Flag to prevent event errors
+    void OnEnable()
+    {
+        // Subscribe to global cutscene event so we can restore ambient sound 
+        // whenever ANY cutscene finishes (intro or mid-game).
+        CutsceneManager.OnAnyCutsceneComplete += OnCutsceneEnded;
+    }
+
+    void OnDisable()
+    {
+        CutsceneManager.OnAnyCutsceneComplete -= OnCutsceneEnded;
+    }
 
     void Start()
     {
-        // Start the master coroutine to check for cutscenes
+        // Start the master coroutine to check for cutscenes at boot
         StartCoroutine(CheckForCutsceneAndPlay());
     }
 
@@ -27,6 +38,8 @@ public class SceneAmbientPlayer : MonoBehaviour
             yield return null;
         }
 
+        bool isCutsceneBusy = false;
+
         // STEP 2: Check for CutsceneManager *without* looping.
         // If it's not in the scene (e.g., testing a scene), we don't wait.
         if (CutsceneManager.Instance != null)
@@ -36,34 +49,25 @@ public class SceneAmbientPlayer : MonoBehaviour
             // Check if a cutscene is either 1) already playing, or 2) a trigger is set to play on start
             if (CutsceneManager.Instance.IsPlaying() || (trigger != null && trigger.playOnStart))
             {
-                // A cutscene is active or will be. We must wait.
-                // Subscribe to the static event that fires when *any* cutscene finishes.
-                CutsceneManager.OnAnyCutsceneComplete += PlayAmbientAfterCutscene;
-                hasSubscribed = true;
-
-                // Exit coroutine; the event will call PlayAmbientAfterCutscene
-                yield break;
+                isCutsceneBusy = true;
             }
         }
 
-        // STEP 3: If no CutsceneManager was found, or if no cutscene was playing,
-        // play the ambient sound immediately.
-        StartCoroutine(PlayAmbientLogic());
+        // STEP 3: If no cutscene is blocking us, play immediately.
+        // If a cutscene IS blocking, we do nothing here. The OnAnyCutsceneComplete event 
+        // (handled by OnCutsceneEnded) will trigger the ambient sound when it finishes.
+        if (!isCutsceneBusy)
+        {
+            StartCoroutine(PlayAmbientLogic());
+        }
     }
 
     /// <summary>
-    /// This method is called by the CutsceneManager.OnAnyCutsceneComplete event
+    /// Event handler for when any cutscene finishes.
     /// </summary>
-    void PlayAmbientAfterCutscene()
+    void OnCutsceneEnded()
     {
-        // Unsubscribe from the event immediately to prevent future calls
-        if (hasSubscribed)
-        {
-            CutsceneManager.OnAnyCutsceneComplete -= PlayAmbientAfterCutscene;
-            hasSubscribed = false;
-        }
-
-        // Now that the cutscene is over, play the ambient sound
+        // Restore the ambient sound for this scene
         StartCoroutine(PlayAmbientLogic());
     }
 
@@ -72,14 +76,19 @@ public class SceneAmbientPlayer : MonoBehaviour
     /// </summary>
     IEnumerator PlayAmbientLogic()
     {
-        // We already know AudioManager.Instance is not null from the first check.
+        // We already know AudioManager.Instance is not null from the first check/event.
         if (sceneAmbientConfig == null)
         {
             Debug.LogWarning("[SceneAmbientPlayer] No SceneAmbientConfig assigned.", this);
             yield break;
         }
 
+        // Ensure we don't try to play if audio manager is missing (safety)
+        if (AudioManager.Instance == null) yield break;
+
         // A. Logic for the dedicated MUSIC source (usually only for the first scene).
+        // If music is playing (e.g. from a cutscene that transitioned into this scene with music),
+        // we might want to crossfade it to ambient.
         if (AudioManager.Instance.musicSource.isPlaying)
         {
             AudioManager.Instance.PlayMusic(
@@ -96,18 +105,6 @@ public class SceneAmbientPlayer : MonoBehaviour
                 true,
                 sceneAmbientConfig.fadeTime
             );
-        }
-    }
-
-    /// <summary>
-    /// Clean up the event subscription if this object is destroyed
-    /// </summary>
-    void OnDestroy()
-    {
-        if (hasSubscribed && CutsceneManager.Instance != null)
-        {
-            CutsceneManager.OnAnyCutsceneComplete -= PlayAmbientAfterCutscene;
-            hasSubscribed = false;
         }
     }
 }

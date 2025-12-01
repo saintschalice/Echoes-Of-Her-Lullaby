@@ -10,7 +10,8 @@ public class CookieJarInteractable : KitchenBaseInteractable
     public string doughItemId = "bowl_cookie_mix";
     public string rewardItemId = "floorboard_bridge";
 
-    protected override void Interact()
+    // FIX: Changed from 'protected' to 'public'
+    public override void Interact()
     {
         if (KitchenRoomController.Instance == null) return;
 

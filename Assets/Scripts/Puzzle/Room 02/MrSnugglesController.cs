@@ -184,6 +184,15 @@ public class MrSnugglesController : MonoBehaviour, IInteractable
         DialogueSystemV2.Instance?.StartDialogue(text, "Lisa");
     }
 
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        OnExamine();
+    }
+    // =================================================================================
+
     public void OnInteract(PlayerContext context)
     {
         OnExamine();

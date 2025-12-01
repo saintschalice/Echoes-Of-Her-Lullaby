@@ -25,6 +25,9 @@ public sealed class EmilyGhost : MonoBehaviour
     State _cur = State.Patrol;
     float _stateT;
 
+    // NEW FLAG: Prevents the "Catch" logic from running infinite times
+    bool _hasCaughtPlayer = false;
+
     EmilyPerception _perception;
     EmilyMovement _move;
     EmilyAudio _audio;
@@ -67,6 +70,7 @@ public sealed class EmilyGhost : MonoBehaviour
     void OnEnable()
     {
         Debug.Log("[EMILY] Enabled");
+        _hasCaughtPlayer = false; // Reset catch state
         SetState(State.Patrol); // start wandering immediately
     }
 
@@ -79,6 +83,10 @@ public sealed class EmilyGhost : MonoBehaviour
 
     void Update()
     {
+        // CRITICAL FIX: If we already caught the player, stop updating logic immediately.
+        // This prevents the infinite loop of "Catch Triggered" messages while the game is frozen.
+        if (_hasCaughtPlayer) return;
+
         float dt = Time.deltaTime;
         _stateT += dt;
 
@@ -87,6 +95,8 @@ public sealed class EmilyGhost : MonoBehaviour
             case State.Patrol:
                 if (_perception.PlayerVisible) SetState(State.Hunt);
                 else if (_perception.HeardNoise) SetState(State.Investigate);
+                // FIX: If we reached the random point, pick a new one!
+                else if (_move.Reached) _move.Wander();
                 break;
 
             case State.Investigate:
@@ -120,6 +130,8 @@ public sealed class EmilyGhost : MonoBehaviour
         {
             Debug.Log("[EMILY] CATCH TRIGGERED");
 
+            _hasCaughtPlayer = true; // MARK AS CAUGHT
+
             // Stop movement completely
             _move.StopMovement();
 
@@ -143,7 +155,6 @@ public sealed class EmilyGhost : MonoBehaviour
         {
             _anim.SetFloat("InputX", vel.x);
             _anim.SetFloat("InputY", vel.y);
-
         }
     }
 
@@ -194,5 +205,17 @@ public sealed class EmilyGhost : MonoBehaviour
     {
         Debug.Log($"[EMILY] External State Override -> {next}");
         SetState(next);
+    }
+
+    // NEW: Force the Animator to show a specific direction (even if not moving)
+    public void ForceFacing(Vector2 dir)
+    {
+        if (_anim != null)
+        {
+            _anim.SetFloat("InputX", dir.x);
+            _anim.SetFloat("InputY", dir.y);
+            // Ensure walk cycle is off so we stand still in that direction
+            _anim.SetBool("isWalking", false);
+        }
     }
 }

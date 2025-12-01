@@ -59,6 +59,31 @@ public class MailboxInteraction : MonoBehaviour, IInteractable
         mailTaken = hasBeenOpened;
     }
 
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker
+    // =================================================================================
+    public void Interact()
+    {
+        Debug.Log("Mailbox Interact() called!"); // DEBUG: Check console to see if this prints
+
+        // The Tracker handles the distance check, so we can execute the logic directly.
+        if (waitingForDialogueClose || waitingForResponse)
+        {
+            Debug.Log("Mailbox busy waiting for dialogue/response.");
+            return;
+        }
+
+        if (!hasBeenOpened)
+        {
+            AskToLookInside();
+        }
+        else
+        {
+            // Optional: Feedback if already opened
+            ShowDialogue("I've already checked the mail.");
+        }
+    }
+    // =================================================================================
 
     public void OnInteract(PlayerContext context)
     {

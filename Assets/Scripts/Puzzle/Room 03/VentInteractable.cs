@@ -17,11 +17,12 @@ public class VentInteractable : MonoBehaviour, IInteractable
         if (interactPrompt != null) interactPrompt.SetActive(false);
     }
 
-    public void OnInteract(PlayerContext context)
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
     {
-        player = context.Transform;
-
-        if (!IsInRange(player) || (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()))
+        if (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
             return;
 
         if (ventSound != null && AudioManager.Instance != null)
@@ -31,6 +32,16 @@ public class VentInteractable : MonoBehaviour, IInteractable
 
         Debug.Log("Exiting to Kitchen...");
         SceneManager.LoadScene(nextSceneName);
+    }
+
+    public void OnInteract(PlayerContext context)
+    {
+        player = context.Transform;
+
+        if (!IsInRange(player))
+            return;
+
+        Interact();
     }
 
     public void OnFocus(PlayerContext context)

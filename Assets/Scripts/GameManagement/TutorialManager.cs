@@ -14,7 +14,8 @@ public class TutorialManager : MonoBehaviour
 
     [Header("Tutorial Steps")]
     public GameObject joystickHighlight;
-    public GameObject mailboxHighlight;
+    public GameObject interactionButtonHighlight; // NEW: Highlight for the interaction button
+    public GameObject mailboxHighlight; // Optional: Highlight for the object itself
     public GameObject inventoryButtonHighlight;
 
     [Header("References")]
@@ -30,9 +31,11 @@ public class TutorialManager : MonoBehaviour
     private AudioSource audioSource;
     private bool tutorialActive = false;
     private bool tutorialCompleted = false;
-    private bool cutsceneFinished = false; // NEW: Track if cutscene is done
+    private bool cutsceneFinished = false;
 
+    // State Tracking
     private bool hasMovedJoystick = false;
+    private bool hasEnteredSensor = false; // NEW
     private bool hasExaminedMailbox = false;
     private bool hasTakenMail = false;
     private bool hasOpenedInventory = false;
@@ -53,21 +56,18 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // NEW: Subscribe to cutscene completion event
         if (waitForCutscene)
         {
             CutsceneManager.OnAnyCutsceneComplete += OnCutsceneFinished;
-            Debug.Log("[Tutorial] Waiting for cutscene to complete before starting tutorial");
         }
         else
         {
-            cutsceneFinished = true; // No need to wait
+            cutsceneFinished = true;
         }
     }
 
     void Start()
     {
-        // FIND REFERENCES AT RUNTIME
         FindReferences();
 
         audioSource = GetComponent<AudioSource>();
@@ -92,88 +92,42 @@ public class TutorialManager : MonoBehaviour
 
     void OnDestroy()
     {
-        // NEW: Unsubscribe from event
         if (waitForCutscene)
         {
             CutsceneManager.OnAnyCutsceneComplete -= OnCutsceneFinished;
         }
     }
 
-    // NEW: Called when cutscene completes
     void OnCutsceneFinished()
     {
         cutsceneFinished = true;
-        Debug.Log("[Tutorial] Cutscene finished, starting tutorial now");
-
-        // Start tutorial if we were waiting
         if (!tutorialCompleted)
         {
             StartCoroutine(StartTutorialSequence());
         }
     }
 
-    // NEW: Find all required references at runtime
     void FindReferences()
     {
-        // Find DialogueSystemV2
         if (dialogueSystem == null)
-        {
-            dialogueSystem = DialogueSystemV2.Instance;
+            dialogueSystem = DialogueSystemV2.Instance ?? FindFirstObjectByType<DialogueSystemV2>();
 
-            if (dialogueSystem == null)
-            {
-                dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
-            }
-
-            if (dialogueSystem == null)
-            {
-                Debug.LogError("[Tutorial] DialogueSystemV2 not found!");
-            }
-            else
-            {
-                Debug.Log("[Tutorial] DialogueSystemV2 found successfully!");
-            }
-        }
-
-        // Find Tutorial Panel
         if (tutorialPanel == null)
         {
             tutorialPanel = GameObject.Find("TutorialPanel");
-
+            // Fallback search in MainCanvas
             if (tutorialPanel == null)
             {
-                GameObject mainCanvas = GameObject.Find("MainCanvas");
-                if (mainCanvas != null)
-                {
-                    Transform panelTransform = mainCanvas.transform.Find("TutorialPanel");
-                    if (panelTransform != null)
-                    {
-                        tutorialPanel = panelTransform.gameObject;
-                    }
-                }
-            }
-
-            if (tutorialPanel == null)
-            {
-                Debug.LogError("[Tutorial] TutorialPanel not found!");
-            }
-            else
-            {
-                Debug.Log("[Tutorial] TutorialPanel found successfully!");
+                Transform t = GameObject.Find("MainCanvas")?.transform.Find("TutorialPanel");
+                if (t != null) tutorialPanel = t.gameObject;
             }
         }
 
-        // Find tutorial text if not set
         if (tutorialText == null && tutorialPanel != null)
-        {
             tutorialText = tutorialPanel.GetComponentInChildren<TextMeshProUGUI>();
-        }
 
-        // Find continue button if not set
         if (continueButton == null && tutorialPanel != null)
-        {
             continueButton = tutorialPanel.GetComponentInChildren<Button>();
-        }
     }
 
     void CheckTutorialStatus()
@@ -183,38 +137,102 @@ public class TutorialManager : MonoBehaviour
             tutorialCompleted = SaveSystem.Instance.WasObjectExamined(TUTORIAL_COMPLETED_ID);
         }
 
-        // NEW: Only start tutorial if cutscene is finished (or not waiting for one)
         if (!tutorialCompleted && cutsceneFinished)
         {
             StartCoroutine(StartTutorialSequence());
         }
     }
 
+    // 1. Start Sequence: Movement
     IEnumerator StartTutorialSequence()
     {
-        // NEW: Double-check cutscene is done
         if (waitForCutscene && !cutsceneFinished)
         {
-            Debug.Log("[Tutorial] Waiting for cutscene...");
             yield return new WaitUntil(() => cutsceneFinished);
         }
 
         yield return new WaitForSeconds(1f);
 
         ShowTutorialStep(
-            "Use the D-pad to move around.\nTap objects to examine them.",
+            "Use the D-pad to move around.",
             joystickHighlight
-        );
-
-        yield return new WaitUntil(() => hasMovedJoystick);
-        yield return new WaitForSeconds(0.5f);
-
-        ShowTutorialStep(
-            "Great! Now approach the mailbox and tap on it to examine it.",
-            mailboxHighlight
         );
     }
 
+    // 2. Called by Player Movement Input
+    public void OnPlayerMoved()
+    {
+        if (!hasMovedJoystick && !tutorialCompleted)
+        {
+            hasMovedJoystick = true;
+            HideTutorialStep();
+            // We now wait for them to hit the sensor
+        }
+    }
+
+    // 3. NEW: Triggered by TutorialAreaSensor
+    public void TriggerInteractionTutorial()
+    {
+        if (tutorialCompleted || hasEnteredSensor) return;
+
+        hasEnteredSensor = true;
+
+        // Show specific instruction for the interaction button
+        ShowTutorialStep(
+            "Press this button to interact with objects.",
+            interactionButtonHighlight // The circle highlight for the button
+        );
+    }
+
+    // 4. Called by MailboxInteraction when examined/interacted
+    public void OnMailboxExamined()
+    {
+        // If they interacted, we hide the "Press Button" tutorial
+        if (!hasExaminedMailbox && !tutorialCompleted)
+        {
+            hasExaminedMailbox = true;
+            HideTutorialStep();
+        }
+    }
+
+    // 5. Called by MailboxInteraction when mail is added
+    public void OnMailTaken()
+    {
+        if (!hasTakenMail && !tutorialCompleted)
+        {
+            hasTakenMail = true;
+            StartCoroutine(ShowInventoryTutorial());
+        }
+    }
+
+    // 6. Shows prompt to open inventory
+    IEnumerator ShowInventoryTutorial()
+    {
+        // Small delay to allow the "Item Added" dialogue to finish or settle
+        yield return new WaitForSeconds(0.5f);
+
+        // Combined instructions here
+        ShowTutorialStep(
+            "Mail added to inventory!\n\nTap the inventory button to view your items.\n\nTap once for the item description. Tap twice to interact with the item.",
+            inventoryButtonHighlight
+        );
+    }
+
+    // 7. Called by InventoryUI (or InventoryManager) when opened
+    public void OnInventoryOpened()
+    {
+        if (!hasOpenedInventory && !tutorialCompleted)
+        {
+            hasOpenedInventory = true;
+
+            // We hide the tutorial step immediately when inventory opens
+            // because the instructions were already shown in the previous step.
+            HideTutorialStep();
+            CompleteTutorial();
+        }
+    }
+
+    // Helper to show step
     void ShowTutorialStep(string message, GameObject highlight = null)
     {
         tutorialActive = true;
@@ -226,6 +244,7 @@ public class TutorialManager : MonoBehaviour
             tutorialText.text = message;
 
         HideAllHighlights();
+
         if (highlight != null)
             highlight.SetActive(true);
 
@@ -234,6 +253,7 @@ public class TutorialManager : MonoBehaviour
             audioSource.PlayOneShot(tutorialSound);
         }
 
+        // Pause time for the tutorial box so they don't miss it
         Time.timeScale = 0f;
 
         Debug.Log($"[Tutorial] {message}");
@@ -248,68 +268,25 @@ public class TutorialManager : MonoBehaviour
 
         HideAllHighlights();
         Time.timeScale = 1f;
+
+        // If we just finished the inventory explanation, mark as complete
+        if (hasOpenedInventory && !tutorialCompleted)
+        {
+            CompleteTutorial();
+        }
     }
 
     void HideAllHighlights()
     {
-        if (joystickHighlight != null)
-            joystickHighlight.SetActive(false);
-        if (mailboxHighlight != null)
-            mailboxHighlight.SetActive(false);
-        if (inventoryButtonHighlight != null)
-            inventoryButtonHighlight.SetActive(false);
+        if (joystickHighlight != null) joystickHighlight.SetActive(false);
+        if (mailboxHighlight != null) mailboxHighlight.SetActive(false);
+        if (inventoryButtonHighlight != null) inventoryButtonHighlight.SetActive(false);
+        if (interactionButtonHighlight != null) interactionButtonHighlight.SetActive(false);
     }
 
     void OnContinueClicked()
     {
         HideTutorialStep();
-    }
-
-    public void OnPlayerMoved()
-    {
-        if (!hasMovedJoystick && !tutorialCompleted)
-        {
-            hasMovedJoystick = true;
-            HideTutorialStep();
-        }
-    }
-
-    public void OnMailboxExamined()
-    {
-        if (!hasExaminedMailbox && !tutorialCompleted)
-        {
-            hasExaminedMailbox = true;
-            HideTutorialStep();
-        }
-    }
-
-    public void OnMailTaken()
-    {
-        if (!hasTakenMail && !tutorialCompleted)
-        {
-            hasTakenMail = true;
-            StartCoroutine(ShowInventoryTutorial());
-        }
-    }
-
-    IEnumerator ShowInventoryTutorial()
-    {
-        yield return new WaitForSeconds(1f);
-
-        ShowTutorialStep(
-            "Mail added to inventory!\n\nTap the inventory button to view your items and read the letter.",
-            inventoryButtonHighlight
-        );
-    }
-
-    public void OnInventoryOpened()
-    {
-        if (!hasOpenedInventory && !tutorialCompleted)
-        {
-            hasOpenedInventory = true;
-            HideTutorialStep();
-            CompleteTutorial();
-        }
     }
 
     void CompleteTutorial()

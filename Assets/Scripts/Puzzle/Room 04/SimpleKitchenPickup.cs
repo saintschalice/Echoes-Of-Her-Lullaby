@@ -15,7 +15,10 @@ public class SimpleKitchenPickup : KitchenBaseInteractable
     [Tooltip("If true, adds item to inventory and destroys this object. If false, just plays dialogue.")]
     public bool shouldPickupItem = true;
 
-    protected override void Interact()
+    // =================================================================================
+    // FIX: Changed from 'protected' to 'public' so the Button/Tracker can call it.
+    // =================================================================================
+    public override void Interact()
     {
         // Always show the dialogue first
         ShowDialogue(pickupDialogue);

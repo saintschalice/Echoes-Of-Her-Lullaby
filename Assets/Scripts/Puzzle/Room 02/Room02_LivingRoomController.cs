@@ -28,6 +28,8 @@ public class Room02_LivingRoomController : MonoBehaviour
     public AudioClip lullabyFragment;
     public AudioClip bookshelfShakeSound;
     public AudioClip keyRevealSound; // plays when CoffeeTable_Key is revealed
+    public AudioClip tvTurnOffSound; // NEW: Played when TV turns off
+    public AudioClip toyBoxUnlockSound; // NEW: Played when toy box unlocks
 
     [Header("TV Ghost Audio")]
     public AudioSource tvAudioSource;
@@ -146,7 +148,8 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (lullabyPlayed && rockingChairAnimator != null)
         {
             rockingChairAnimator.SetBool("isRocking", true);
-            AudioManager.Instance?.PlayAmbient(rockingChairSound, loop: true);
+            // CHANGED: Use PlayLoopingSFX instead of PlayAmbient so it doesn't override room music
+            AudioManager.Instance?.PlayLoopingSFX(rockingChairSound, "rocking_chair");
         }
 
         CheckPuzzleCompletion();
@@ -230,11 +233,38 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         bool tvIntroDone = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_INTRO_DONE);
 
+        // --- GHOST AUDIO CASE ---
         if (ghostAudioRunning && ghostTVAudio != null)
         {
+            // 1. Stop the ghost audio
+            // FIX: Stop the local source specifically
+            if (tvAudioSource != null && tvAudioSource.isPlaying)
+            {
+                tvAudioSource.Stop();
+            }
+
+            // Safety: Stop any global one-shots if they were used
             AudioManager.Instance?.StopAllSFX();
+
             ghostAudioRunning = false;
 
+            // 2. Play Turn Off Sound
+            if (tvTurnOffSound != null)
+            {
+                AudioManager.Instance?.PlaySFX(tvTurnOffSound);
+            }
+
+            // 3. Trigger Animation
+            if (tvAnimator != null)
+            {
+                tvAnimator.SetTrigger("TurnOff");
+            }
+
+            // 4. Update State
+            tvTurnedOff = true;
+            SaveRoomState("tvTurnedOff", true);
+
+            // 5. Handle Flags
             if (!hasPlayedGhostAudio)
             {
                 SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_PLAYED);
@@ -242,17 +272,20 @@ public class Room02_LivingRoomController : MonoBehaviour
                 hasPlayedGhostAudio = true;
             }
 
+            // 6. Dialogue
             DialogueSystemV2.Instance?.StartDialogue("I should turn that off.", "Lisa");
             Debug.Log("[LivingRoom] Lisa manually stopped ghost TV audio.");
             return;
         }
 
+        // --- ALREADY OFF CASE ---
         if (tvTurnedOff)
         {
             DialogueSystemV2.Instance?.StartDialogue("The TV is already off.", "Lisa");
             return;
         }
 
+        // --- EMILY / INTRO CASE ---
         if (emilyDialogueSound != null)
             AudioManager.Instance?.PlayDialogue(emilyDialogueSound);
 
@@ -275,6 +308,12 @@ public class Room02_LivingRoomController : MonoBehaviour
         AudioManager.Instance?.StopLoopingSFX("tv_static");
 
         if (tvAnimator != null) tvAnimator.SetTrigger("TurnOff");
+
+        // Play dedicated turn off sound
+        if (tvTurnOffSound != null)
+        {
+            AudioManager.Instance?.PlaySFX(tvTurnOffSound);
+        }
 
         tvTurnedOff = true;
         SaveRoomState("tvTurnedOff", true);
@@ -304,7 +343,25 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         ghostAudioRunning = true;
 
-        AudioManager.Instance?.PlaySFX(ghostTVAudio);
+        // Resume TV static animation while ghost audio plays
+        if (tvAnimator != null)
+        {
+            tvAnimator.SetTrigger("PlayStatic");
+        }
+
+        // FIX: Use the local AudioSource on the TV GameObject.
+        // This ensures the sound is attached to the TV object.
+        // When the Room02 scene unloads, the TV object is destroyed, and this audio stops automatically.
+        if (tvAudioSource != null)
+        {
+            tvAudioSource.clip = ghostTVAudio;
+            tvAudioSource.Play();
+        }
+        else
+        {
+            // Fallback to global manager if local source missing (though less safe for bleeding)
+            AudioManager.Instance?.PlaySFX(ghostTVAudio);
+        }
 
         hasPlayedGhostAudio = true;
         SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_PLAYED);
@@ -313,9 +370,10 @@ public class Room02_LivingRoomController : MonoBehaviour
         bool hasShownDialogue = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_GHOST_DIALOGUE);
         if (!hasShownDialogue)
         {
-            if (playerController != null) playerController.enabled = false;
+            // Wait 3 seconds before showing Lisa's reaction
+            yield return new WaitForSeconds(3.0f);
 
-            yield return new WaitForSeconds(0.5f);
+            if (playerController != null) playerController.enabled = false;
 
             DialogueSystemV2.Instance?.StartDialogue("It's the TV again... what's wrong with it? I turned it off already.", "Lisa");
 
@@ -329,7 +387,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         }
 
         if (ghostTVAudio != null)
-            yield return new WaitForSeconds(ghostTVAudio.length);
+            yield return new WaitForSeconds(ghostTVAudio.length - 3.0f);
 
         ghostAudioRunning = false;
     }
@@ -347,15 +405,22 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (lullabyPlayed && rockingChairAnimator != null)
         {
             rockingChairAnimator.SetBool("isRocking", true);
-            if (rockingChairSound != null)
-                AudioManager.Instance?.PlayAmbient(rockingChairSound, loop: true);
+            // CHANGED: Use PlayLoopingSFX here as well
+            AudioManager.Instance?.PlayLoopingSFX(rockingChairSound, "rocking_chair");
         }
     }
 
     void OnDisable()
     {
-        if (rockingChairSound != null)
-            AudioManager.Instance?.StopAmbient();
+        // FIX: Explicitly stop specific room loops so they don't bleed into next scene
+        AudioManager.Instance?.StopLoopingSFX("tv_static");
+        AudioManager.Instance?.StopLoopingSFX("rocking_chair");
+
+        // FIX: Ensure local TV audio source stops if scene changes while it's playing
+        if (tvAudioSource != null)
+        {
+            tvAudioSource.Stop();
+        }
     }
 
     public void OnFrameExamine()
@@ -411,7 +476,7 @@ public class Room02_LivingRoomController : MonoBehaviour
     IEnumerator JumpPlayerBack(Transform player)
     {
         Vector3 startPos = player.position;
-        Vector3 targetPos = startPos + Vector3.down * jumpBackDistance;
+        Vector3 targetPos = startPos + Vector3.left * jumpBackDistance;
 
         float elapsed = 0f;
 
@@ -466,7 +531,10 @@ public class Room02_LivingRoomController : MonoBehaviour
             return;
         }
 
-        DialogueSystemV2.Instance?.StartDialogue("The small key fits! The toy box is now open.", "Lisa");
+        if (toyBoxUnlockSound != null)
+            AudioManager.Instance?.PlaySFX(toyBoxUnlockSound);
+
+        DialogueSystemV2.Instance?.StartDialogue("Yes, it fit!", "Lisa");
         StartCoroutine(ShowToyBoxContents());
     }
 
@@ -554,6 +622,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_2_ID);
         yield return new WaitForSeconds(0.3f);
 
+        yield return new WaitForSeconds(0.5f);
         DialogueSystemV2.Instance?.StartDialogue("Diary Pages 1 and 2 added to inventory.", "Lisa");
     }
 
@@ -612,6 +681,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_4_ID);
         yield return new WaitForSeconds(0.3f);
 
+        yield return new WaitForSeconds(0.5f);
         DialogueSystemV2.Instance?.StartDialogue("Diary Pages 3 and 4 added to inventory.", "Lisa");
     }
 
@@ -685,6 +755,18 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         // Reveal the key and play sound immediately
         RevealCoffeeTableKeyAndSound();
+
+        // Restore scene ambient audio
+        SceneAmbientPlayer ambientPlayer = FindFirstObjectByType<SceneAmbientPlayer>();
+        if (ambientPlayer != null && ambientPlayer.sceneAmbientConfig != null)
+        {
+            Debug.Log("[Room02] Restoring scene ambient audio...");
+            AudioManager.Instance?.PlayAmbient(
+                ambientPlayer.sceneAmbientConfig.ambientClip,
+                true,
+                2.0f // Smooth fade in
+            );
+        }
 
         // Trigger the reaction dialogue
         DialogueSystemV2.Instance?.StartDialogue("What... was that?", "Lisa");
@@ -762,7 +844,8 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (rockingChairAnimator != null)
             rockingChairAnimator.SetBool("isRocking", true);
 
-        AudioManager.Instance?.PlayAmbient(rockingChairSound, loop: true);
+        // CHANGED: Use PlayLoopingSFX so it doesn't kill the room ambient
+        AudioManager.Instance?.PlayLoopingSFX(rockingChairSound, "rocking_chair");
     }
 
     void OnDrawGizmosSelected()

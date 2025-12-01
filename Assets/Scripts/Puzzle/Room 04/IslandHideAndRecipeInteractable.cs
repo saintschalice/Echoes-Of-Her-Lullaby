@@ -79,28 +79,22 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour, IInteractable
         }
     }
 
-    public void OnInteract(PlayerContext context)
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
     {
+        // 1. Ensure references are set up (since we might not have called OnInteract context)
         if (playerController == null)
         {
-            GameObject p = context.PlayerObject ?? GameObject.FindGameObjectWithTag("Player");
-            if (p != null)
+            playerController = FindFirstObjectByType<JoystickPlayerController>();
+            if (playerController != null)
             {
-                playerController = p.GetComponent<JoystickPlayerController>();
-                playerRenderers = p.GetComponentsInChildren<SpriteRenderer>();
+                playerRenderers = playerController.GetComponentsInChildren<SpriteRenderer>();
             }
         }
 
-        if (playerController == null) return;
-
-        float dist = Vector2.Distance(transform.position, playerController.transform.position);
-        if (dist > interactionRadius)
-        {
-            if (DialogueSystemV2.Instance != null && !DialogueSystemV2.Instance.IsDialogueActive())
-                DialogueSystemV2.Instance.StartDialogue("It's too far to reach.", "Lisa");
-            return;
-        }
-
+        // 2. Conditions
         bool emilyHasAppeared = false;
         bool introRunning = false;
 
@@ -123,6 +117,32 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour, IInteractable
 
         if (isHiding) ExitHiding();
         else StartCoroutine(EnterHidingSequence());
+    }
+    // =================================================================================
+
+    public void OnInteract(PlayerContext context)
+    {
+        if (playerController == null)
+        {
+            GameObject p = context.PlayerObject ?? GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+            {
+                playerController = p.GetComponent<JoystickPlayerController>();
+                playerRenderers = p.GetComponentsInChildren<SpriteRenderer>();
+            }
+        }
+
+        if (playerController == null) return;
+
+        float dist = Vector2.Distance(transform.position, playerController.transform.position);
+        if (dist > interactionRadius)
+        {
+            if (DialogueSystemV2.Instance != null && !DialogueSystemV2.Instance.IsDialogueActive())
+                DialogueSystemV2.Instance.StartDialogue("It's too far to reach.", "Lisa");
+            return;
+        }
+
+        Interact();
     }
 
     public void OnFocus(PlayerContext context) { }

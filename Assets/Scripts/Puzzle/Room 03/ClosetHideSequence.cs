@@ -2,10 +2,13 @@
 using System.Collections;
 
 [RequireComponent(typeof(Collider2D))]
-public class ClosetHideSequence : MonoBehaviour
+public class ClosetHideSequence : MonoBehaviour, IInteractable
 {
     [Header("References")]
     public Animator closetAnimator;
+
+    [Header("Interaction Settings")]
+    public float interactionRadius = 2.0f;
 
     [Header("Hiding Visuals")]
     public float hideZoomSize = 3.5f;
@@ -30,6 +33,8 @@ public class ClosetHideSequence : MonoBehaviour
     [TextArea] public string exitWhisper = "Not ready... never ready... too much pain...";
 
     // State
+    // Made public getter to match Island pattern if needed
+    public bool IsHiding => isHiding;
     private bool isHiding = false;
 
     // Internal References
@@ -79,58 +84,64 @@ public class ClosetHideSequence : MonoBehaviour
         if (isHiding) ResetHidingStateInstant();
     }
 
-    void OnMouseDown()
+    // =================================================================================
+    // INTERACTABLE IMPLEMENTATION (Matches IslandHideAndRecipeInteractable)
+    // =================================================================================
+
+    public void Interact()
     {
-        // Ensure we have player refs
-        if (playerController == null) FindPlayerReferences();
-        if (playerController == null) return;
-
-        // Check distance
-        float dist = Vector2.Distance(transform.position, playerController.transform.position);
-        if (dist > 2.5f && !isHiding)
+        // 1. Ensure references are set up
+        if (playerController == null)
         {
-            return;
-        }
-
-        // -----------------------------------------------------
-        // 1. EMILY PRESENCE CHECK
-        // -----------------------------------------------------
-        // Check if Emily exists in the scene (active or inactive)
-        EmilyGhost emily = FindFirstObjectByType<EmilyGhost>(FindObjectsInactive.Include);
-
-        if (emily == null)
-        {
-            // PRE-EMILY DIALOGUE (The ONLY dialogue allowed)
-            if (DialogueSystemV2.Instance != null && !DialogueSystemV2.Instance.IsDialogueActive())
+            playerController = FindFirstObjectByType<JoystickPlayerController>();
+            if (playerController != null)
             {
-                DialogueSystemV2.Instance.StartDialogue("This is a big closet... I could fit inside here.", "Lisa");
+                playerRenderers = playerController.GetComponentsInChildren<SpriteRenderer>();
             }
-            return;
         }
 
-        // -----------------------------------------------------
-        // 2. HIDING LOGIC (Emily is present)
-        // -----------------------------------------------------
-        if (activeSequence != null) return; // Wait for transitions
+        if (activeSequence != null) return;
 
-        if (isHiding)
-        {
-            ExitHiding();
-        }
-        else
-        {
-            StartCoroutine(EnterHidingSequence());
-        }
+        // Toggle Hiding State
+        if (isHiding) ExitHiding();
+        else StartCoroutine(EnterHidingSequence());
     }
 
-    // --- PUBLIC METHODS FOR EXTERNAL SCRIPTS (FIXES THE ERROR) ---
+    public void OnInteract(PlayerContext context)
+    {
+        if (playerController == null)
+        {
+            GameObject p = context.PlayerObject ?? GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+            {
+                playerController = p.GetComponent<JoystickPlayerController>();
+                playerRenderers = p.GetComponentsInChildren<SpriteRenderer>();
+            }
+        }
 
+        if (playerController == null) return;
+
+        float dist = Vector2.Distance(transform.position, playerController.transform.position);
+        if (dist > interactionRadius)
+        {
+            return;
+        }
+
+        Interact();
+    }
+
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
+
+    // =================================================================================
+
+    // --- PUBLIC METHODS FOR EXTERNAL SCRIPTS ---
+
+    // Acts as a TOGGLE: Call once to Hide, call again to Exit.
     public void HideInCloset()
     {
-        if (!isHiding && activeSequence == null)
-        {
-            StartCoroutine(EnterHidingSequence());
-        }
+        Interact();
     }
 
     public void GetOutOfCloset()
@@ -229,6 +240,7 @@ public class ClosetHideSequence : MonoBehaviour
     private void ResetHidingStateInstant()
     {
         isHiding = false;
+
         if (mainCamera != null) mainCamera.orthographicSize = originalOrthoSize;
         if (audioSource != null) audioSource.Stop();
 

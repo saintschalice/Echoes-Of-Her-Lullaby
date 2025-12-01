@@ -40,6 +40,15 @@ public class MusicBoxController : MonoBehaviour, IInteractable
         StartCoroutine(BeginCutsceneSequence());
     }
 
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        OnExamine();
+    }
+    // =================================================================================
+
     public void OnInteract(PlayerContext context)
     {
         OnExamine();

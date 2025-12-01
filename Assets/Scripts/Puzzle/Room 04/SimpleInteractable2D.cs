@@ -35,12 +35,13 @@ public class SimpleInteractable2D : MonoBehaviour, IInteractable
 
     /// <summary>
     /// Checks distance and performs interaction.
+    /// This IS the method called by the OnScreenInteractButton (via Reflection).
     /// </summary>
     public virtual void Interact()
     {
         if (!interactable) return;
 
-        // 1. Find Player
+        // 1. Find Player to double-check distance (Safety check)
         Vector3 playerPos = Vector3.zero;
         if (JoystickPlayerController.Instance != null)
         {
