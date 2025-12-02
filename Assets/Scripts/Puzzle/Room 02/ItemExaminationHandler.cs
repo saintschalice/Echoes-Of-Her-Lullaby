@@ -6,6 +6,10 @@ public class ItemExaminationHandler : MonoBehaviour
     private Room02_LivingRoomController roomController;
     private MrSnugglesController snugglesController;
 
+    [Header("Cutscene Audio")]
+    [Tooltip("Assign the 44-second lullaby audio clip here.")]
+    [SerializeField] private AudioClip fullLullabyAudio;
+
     // flags
     private const string FLAG_UNDERSTOOD = "understood_snuggles_clue";
 
@@ -221,11 +225,35 @@ public class ItemExaminationHandler : MonoBehaviour
         FadeScreen fadeScreen = FadeScreen.Instance ?? FindFirstObjectByType<FadeScreen>(FindObjectsInactive.Include);
         GameObject dialoguePanel = DialogueSystemV2.Instance?.dialoguePanel;
 
-        if (roomController != null && roomController.lullabyFragment != null)
-            AudioManager.Instance?.PlayMusic(roomController.lullabyFragment, loop: false, fadeTime: 0.5f);
+        // --- AUDIO HANDLING ---
+        // Stop all other audio sources to ensure isolation for the cutscene
+        // Using the methods found in AudioManager.cs
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopAllDialogue();
+            AudioManager.Instance.StopAllSFX();
 
-        yield return new WaitForSeconds(0.5f);
+            // Stop ambient with a quick fade out
+            AudioManager.Instance.StopAmbient(0.1f);
 
+            // Access LoopingSoundManager directly as seen in AudioManager.cs extensions
+            LoopingSoundManager.Instance?.StopAllLoopingSounds();
+        }
+
+        // 1. Play Lullaby Audio (Prioritize inspector clip, fallback to roomController)
+        AudioClip clipToPlay = fullLullabyAudio;
+        if (clipToPlay == null && roomController != null)
+        {
+            clipToPlay = roomController.lullabyFragment;
+        }
+
+        if (clipToPlay != null)
+        {
+            // PlayMusic usually replaces the BGM channel, effectively "stopping" the previous music.
+            AudioManager.Instance?.PlayMusic(clipToPlay, loop: false, fadeTime: 0.5f);
+        }
+
+        // 2. Setup UI and Fades
         if (dialoguePanel != null)
         {
             Canvas parentCanvas = dialoguePanel.GetComponentInParent<Canvas>();
@@ -259,28 +287,54 @@ public class ItemExaminationHandler : MonoBehaviour
             }
         }
 
-        DialogueSystemV2.Instance?.StartDialogue(new DialogueLine[]
-        {
-            new DialogueLine { text = "A memory surfaces from the darkness...", speakerName = "Lisa" },
-            new DialogueLine { text = "Young Lisa hugs her teddy bear tightly as a gentle voice sings a lullaby", speakerName = "Lisa" },
-            new DialogueLine { text = "♪ Hush now, my darling, don't you cry... ♪", speakerName = "???" },
-            new DialogueLine { text = "The memory fades, but the melody lingers...", speakerName = "Lisa" }
-        });
-
-        yield return new WaitForSeconds(0.5f);
-
-        if (fadeScreen != null)
-            fadeScreen.FadeOut(2f);
-
+        // 3. Disable Controls
         GameObject joystick = GameObject.Find("Joystick");
         GameObject inventoryUIObj = GameObject.Find("InventoryUI");
         if (joystick != null) joystick.SetActive(false);
         if (inventoryUIObj != null) inventoryUIObj.SetActive(false);
 
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-            yield return null;
+        // Fade out to black for the memory
+        if (fadeScreen != null)
+            fadeScreen.FadeOut(2f);
 
-        yield return new WaitForSeconds(0.5f);
+        // 4. Timed Dialogue Sequence
+        // Wait until 11.169s - "Hush now, my darling"
+        yield return new WaitForSeconds(11.169f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ Hush now, my darling... ♪", "???");
+
+        // Wait until 15.983s - "Don't you cry"
+        yield return new WaitForSeconds(15.983f - 11.169f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ ...don't you cry... ♪", "???");
+
+        // Wait until 18.756s - "I'm right here, sweetheart"
+        yield return new WaitForSeconds(18.756f - 15.983f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ I'm right here, sweetheart... ♪", "???");
+
+        // Wait until 24.931s - "Lullaby"
+        yield return new WaitForSeconds(24.931f - 18.756f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ ...lullaby... ♪", "???");
+
+        // Wait until 28.359s - "Close your eyes"
+        yield return new WaitForSeconds(28.359f - 24.931f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ Close your eyes... ♪", "???");
+
+        // Wait until 30.600s - "My precious one"
+        yield return new WaitForSeconds(30.6f - 28.359f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ ...my precious one... ♪", "???");
+
+        // Wait until 33.727s - "Rest now, angel"
+        yield return new WaitForSeconds(33.727f - 30.6f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ Rest now, angel... ♪", "???");
+
+        // Wait until 38.844s - "Day is done"
+        yield return new WaitForSeconds(38.844f - 33.727f);
+        DialogueSystemV2.Instance?.StartDialogue("♪ ...day is done. ♪", "???");
+
+        // Wait remainder of song until 44 seconds
+        yield return new WaitForSeconds(44f - 38.844f);
+
+        // 5. Cleanup and Restore
+        DialogueSystemV2.Instance?.EndDialogue();
 
         if (joystick != null) joystick.SetActive(true);
         if (inventoryUIObj != null) inventoryUIObj.SetActive(true);
@@ -313,13 +367,12 @@ public class ItemExaminationHandler : MonoBehaviour
             }
         }
 
-        // --- NEW LINE ADDED HERE ---
-        // This is crucial: it notifies the RoomController that the lullaby memory/cutscene is complete.
+        // Notify RoomController cutscene is done.
+        // NOTE: This call should trigger the RoomController to restart the room's Ambience and Background Music.
         if (roomController != null)
         {
             roomController.OnMusicBoxCutsceneEnded();
         }
-        // --- END NEW LINE ---
 
         roomController?.OnLullabyPlayed();
     }

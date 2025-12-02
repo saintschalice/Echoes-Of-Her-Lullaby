@@ -1204,6 +1204,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 803809505a640c4408e0712ad5b77ac0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemExaminationHandler
+  fullLullabyAudio: {fileID: 8300000, guid: 31bc8c4ab519e6f48bbe9e2a9bf9a640, type: 3}
 --- !u!114 &413753365
 MonoBehaviour:
   m_ObjectHideFlags: 0

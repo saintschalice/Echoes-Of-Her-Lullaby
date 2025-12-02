@@ -1294,7 +1294,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -7.95, y: 4.41}
+  m_AnchoredPosition: {x: -7.7, y: 4.39}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &719478548
@@ -1356,7 +1356,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
   objectId: cabinet_flour
-  interactionRadius: 0.7
+  interactionRadius: 0.9
   visualRenderer: {fileID: 0}
   ingredientItemId: flour
   foundDialogue: '"Found the flour."'
@@ -1528,7 +1528,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleKitchenPickup
   objectId: pickup_salt
-  interactionRadius: 0.7
+  interactionRadius: 1
   visualRenderer: {fileID: 754286122}
   itemId: salt
   pickupDialogue: '"Some salt left on the counter."'
@@ -5141,7 +5141,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -4.763, y: 5.156}
+  m_AnchoredPosition: {x: -4.763, y: 5.09}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &1714008294
@@ -5203,7 +5203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
   objectId: cabinet_vanilla
-  interactionRadius: 0.7
+  interactionRadius: 1
   visualRenderer: {fileID: 0}
   ingredientItemId: vanilla
   foundDialogue: '"Found the vanilla."'
@@ -5553,7 +5553,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -8.21, y: 0.32}
+  m_AnchoredPosition: {x: -8.08, y: 0.32}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &1741958470
@@ -5615,7 +5615,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FridgeInteractable
   objectId: kitchen_fridge
-  interactionRadius: 0.8
+  interactionRadius: 1.5
   visualRenderer: {fileID: 0}
   eggItemId: egg
   chocolateItemId: chocolate
@@ -10357,7 +10357,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -6.6, y: 5.144}
+  m_AnchoredPosition: {x: -6.551, y: 5.019}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &1907774863
@@ -10419,7 +10419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenCabinetInteractable
   objectId: cabinet_sugar
-  interactionRadius: 0.7
+  interactionRadius: 0.9
   visualRenderer: {fileID: 0}
   ingredientItemId: sugar
   foundDialogue: '"Found the sugar."'
@@ -10622,7 +10622,7 @@ Transform:
   m_GameObject: {fileID: 2077772122}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.19, y: 0.85, z: 0}
+  m_LocalPosition: {x: -1.92, y: 0.92, z: 0}
   m_LocalScale: {x: 14, y: 10, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
