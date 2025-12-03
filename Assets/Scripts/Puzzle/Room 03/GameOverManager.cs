@@ -9,10 +9,15 @@ using System.Linq;
 /// <summary>
 /// Manages game over state when Emily catches Lisa.
 /// Handles two-stage UI with visual fading and proper audio isolation.
+/// Ensures transitions are solid black to prevent seeing the frozen game world.
 /// </summary>
 public class GameOverManager : MonoBehaviour
 {
     public static GameOverManager Instance { get; private set; }
+
+    [Header("UI Structure")]
+    [Tooltip("A standalone black Image/Panel that sits behind ALL Game Over UI but in front of the game. This ensures no 'gaps' in visibility.")]
+    public CanvasGroup blackBackgroundFader;
 
     [Header("UI Panels")]
     [Tooltip("Panel 1: Shows 'GAME OVER' text only")]
@@ -26,15 +31,15 @@ public class GameOverManager : MonoBehaviour
     public Button continueToOptionsButton;
 
     [Header("Options Panel Buttons")]
-    public Button retryButton;    // Previously Restart
+    public Button retryButton;
     public Button mainMenuButton;
-    public Button exitButton;     // New Exit button
+    public Button exitButton;
 
     [Header("Audio")]
     public AudioClip deathSound;
 
     [Header("Transition Settings")]
-    public float gameOverFadeInDuration = 1.5f; // Time for "GAME OVER" to fade in
+    public float gameOverFadeInDuration = 1.5f; // Time for black BG + Text to fade in
     public float uiCrossFadeDuration = 0.5f;    // Time to switch from Message to Options
     public float sceneTransitionDuration = 1.0f; // Time for Retry/Menu fade out
 
@@ -57,7 +62,6 @@ public class GameOverManager : MonoBehaviour
         }
         else
         {
-            // CRITICAL FIX: Update references when scene reloads
             Instance.UpdateUIReferences(this);
             Destroy(gameObject);
             return;
@@ -70,6 +74,14 @@ public class GameOverManager : MonoBehaviour
     {
         if (gameOverMessagePanel != null) gameOverMessagePanel.SetActive(false);
         if (gameOverOptionsPanel != null) gameOverOptionsPanel.SetActive(false);
+
+        // Initialize background to transparent and hidden
+        if (blackBackgroundFader != null)
+        {
+            blackBackgroundFader.alpha = 0f;
+            blackBackgroundFader.gameObject.SetActive(false);
+            blackBackgroundFader.blocksRaycasts = true; // Block input while active
+        }
 
         // Fix text raycasts blocking buttons
         if (gameOverMessagePanel != null)
@@ -90,6 +102,7 @@ public class GameOverManager : MonoBehaviour
         this.retryButton = newManager.retryButton;
         this.mainMenuButton = newManager.mainMenuButton;
         this.exitButton = newManager.exitButton;
+        this.blackBackgroundFader = newManager.blackBackgroundFader; // Update background ref
 
         InitializeManager();
     }
@@ -156,18 +169,16 @@ public class GameOverManager : MonoBehaviour
         // 1. Freeze Logic
         Time.timeScale = 0f;
 
-        // 2. Audio Management (Disable ALL except Death/Catch)
+        // 2. Audio Management
         if (deathSound != null)
-            AudioManager.Instance?.PlaySFX(deathSound); // Play death sound
+            AudioManager.Instance?.PlaySFX(deathSound);
 
-        // Cut environmental audio immediately
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.StopAmbient(0f);
             AudioManager.Instance.StopMusic(0f);
         }
 
-        // Stop Emily's looping audio (Hunt/Chase) manually
         var emilyAudio = FindFirstObjectByType<EmilyAudio>();
         if (emilyAudio != null)
         {
@@ -179,31 +190,36 @@ public class GameOverManager : MonoBehaviour
         DisablePlayerControls();
 
         // 4. Visual Fade In
+        // FIRST: Activate the Black Background
+        if (blackBackgroundFader != null)
+        {
+            blackBackgroundFader.gameObject.SetActive(true);
+            blackBackgroundFader.alpha = 0f;
+        }
+
         if (gameOverMessagePanel != null)
         {
             gameOverMessagePanel.SetActive(true);
-
-            // Ensure raycasts are off for text
-            var allTexts = gameOverMessagePanel.GetComponentsInChildren<TextMeshProUGUI>(true);
-            foreach (var t in allTexts) t.raycastTarget = false;
-
             if (gameOverText != null) gameOverText.text = message;
 
-            // Fade in using CanvasGroup (adding one if needed)
-            CanvasGroup cg = gameOverMessagePanel.GetComponent<CanvasGroup>();
-            if (cg == null) cg = gameOverMessagePanel.AddComponent<CanvasGroup>();
+            CanvasGroup msgCg = gameOverMessagePanel.GetComponent<CanvasGroup>();
+            if (msgCg == null) msgCg = gameOverMessagePanel.AddComponent<CanvasGroup>();
+            msgCg.alpha = 0f;
 
-            cg.alpha = 0f; // Start invisible
-
-            // Fade loop using unscaled time (since timeScale is 0)
+            // Fade in both Background and Message simultaneously
             float timer = 0f;
             while (timer < gameOverFadeInDuration)
             {
                 timer += Time.unscaledDeltaTime;
-                cg.alpha = Mathf.Lerp(0f, 1f, timer / gameOverFadeInDuration);
+                float progress = timer / gameOverFadeInDuration;
+
+                if (blackBackgroundFader != null) blackBackgroundFader.alpha = Mathf.Lerp(0f, 1f, progress);
+                msgCg.alpha = Mathf.Lerp(0f, 1f, progress);
+
                 yield return null;
             }
-            cg.alpha = 1f;
+            if (blackBackgroundFader != null) blackBackgroundFader.alpha = 1f;
+            msgCg.alpha = 1f;
         }
 
         // 5. Input Delay
@@ -221,6 +237,9 @@ public class GameOverManager : MonoBehaviour
 
     private IEnumerator SwitchToOptionsSequence()
     {
+        // IMPORTANT: We do NOT fade out the blackBackgroundFader here.
+        // It must stay opaque so the game world remains hidden.
+
         // 1. Fade OUT Message Panel
         if (gameOverMessagePanel != null && gameOverMessagePanel.activeSelf)
         {
@@ -247,7 +266,7 @@ public class GameOverManager : MonoBehaviour
             if (optCg == null) optCg = gameOverOptionsPanel.AddComponent<CanvasGroup>();
 
             optCg.alpha = 0f;
-            optCg.interactable = false; // Disable buttons during fade
+            optCg.interactable = false;
 
             float timer = 0f;
             while (timer < uiCrossFadeDuration)
@@ -277,7 +296,6 @@ public class GameOverManager : MonoBehaviour
     // -----------------------------------------------------------
     public void RestartLevel()
     {
-        // Must unfreeze time so ScreenFader can animate
         Time.timeScale = 1f;
         string currentRoomName = SceneManager.GetActiveScene().name;
         StartCoroutine(RestartRoutine(currentRoomName));
@@ -285,27 +303,42 @@ public class GameOverManager : MonoBehaviour
 
     private IEnumerator RestartRoutine(string roomName)
     {
-        // 1. Fade Out Screen (Black overlay)
-        // We do NOT fade out the UI via transparency anymore, to prevent seeing the frozen scene.
-        // ScreenFader must render ON TOP of the UI for this to work perfectly (Set Sort Order > UI).
+        // Issue Fix: "Retry just makes game visible".
+        // Cause: UI was hiding before screen was fully black, or ScreenFader was under UI.
+        // Solution: We fade the UI buttons OUT, revealing the persistent blackBackgroundFader.
+        // This ensures the screen remains black.
+
+        // 1. Fade out the OPTIONS UI, but keep the BLACK BACKGROUND.
+        if (gameOverOptionsPanel != null)
+        {
+            CanvasGroup optCg = gameOverOptionsPanel.GetComponent<CanvasGroup>();
+            // If component missing, add it, but normally it's added in ShowOptionsPanel
+            if (optCg != null)
+            {
+                optCg.interactable = false;
+                float timer = 0f;
+                float startAlpha = optCg.alpha;
+                // Quick fade out of buttons
+                while (timer < 0.5f)
+                {
+                    timer += Time.deltaTime;
+                    optCg.alpha = Mathf.Lerp(startAlpha, 0f, timer / 0.5f);
+                    yield return null;
+                }
+                optCg.alpha = 0f;
+                gameOverOptionsPanel.SetActive(false);
+            }
+        }
+
+        // 2. Attempt ScreenFader as backup/overlay
         if (ScreenFader.Instance != null)
         {
-            bool fadeComplete = false;
-            ScreenFader.Instance.FadeOut(sceneTransitionDuration, () => fadeComplete = true);
-            while (!fadeComplete) yield return null;
-        }
-        else
-        {
-            yield return new WaitForSeconds(sceneTransitionDuration);
+            ScreenFader.Instance.FadeOut(sceneTransitionDuration, null);
         }
 
-        // 2. DELAY while screen is black (requested)
-        // This ensures the user sees black, not the scene resetting.
-        yield return new WaitForSeconds(1.0f);
-
-        // 3. Hide UI now that screen is fully black
-        if (gameOverOptionsPanel != null) gameOverOptionsPanel.SetActive(false);
-        if (gameOverMessagePanel != null) gameOverMessagePanel.SetActive(false);
+        // 3. Wait duration to ensure "Black" feeling
+        // At this point, blackBackgroundFader should still be active and at alpha 1.
+        yield return new WaitForSeconds(sceneTransitionDuration);
 
         // 4. Setup Logic for soft restart
         isSoftRestarting = true;
@@ -316,7 +349,6 @@ public class GameOverManager : MonoBehaviour
             GameSaveData data = SaveSystem.Instance.GetCurrentSaveData();
             if (data != null)
             {
-                // Find default spawn
                 Vector3 spawnPos = Vector3.zero;
                 bool foundSpawn = false;
                 RoomSpawnPoint[] spawns = FindObjectsByType<RoomSpawnPoint>(FindObjectsSortMode.None);
@@ -335,6 +367,15 @@ public class GameOverManager : MonoBehaviour
                 {
                     data.roomStates[roomName] = new RoomState();
                 }
+
+                // --- FIX: Reset Emily Intro Trigger ---
+                // We remove the specific trigger ID from the save data so the cutscene logic in EmilySpawnTrigger.cs
+                // sees it as "not triggered" and runs the sequence (push/panic/dialogue) again.
+                if (data.triggeredDialogues.Contains("EmilySpawn_Intro"))
+                {
+                    data.triggeredDialogues.Remove("EmilySpawn_Intro");
+                }
+
                 data.currentScene = roomName;
             }
         }
@@ -342,13 +383,27 @@ public class GameOverManager : MonoBehaviour
         // 5. Load Scene
         SceneManager.LoadScene(roomName);
 
-        // UI Reset
+        // UI Reset happens in OnSceneLoaded or here? 
+        // We reset UI here, but KEEP black background until scene load handles it?
+        // Actually, ResetUI() hides everything. 
+        // If we hide BlackBackground here, we might flash frame 0 of new scene.
+        // The OnSceneLoaded logic will handle scene setup.
+        // We'll let ResetUI run after load starts or in InitializeManager.
         ResetUI();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Time.timeScale = 1f;
+
+        // Reset UI visibility cleanly
+        if (gameOverMessagePanel != null) gameOverMessagePanel.SetActive(false);
+        if (gameOverOptionsPanel != null) gameOverOptionsPanel.SetActive(false);
+        if (blackBackgroundFader != null)
+        {
+            blackBackgroundFader.alpha = 0f;
+            blackBackgroundFader.gameObject.SetActive(false);
+        }
 
         if (isSoftRestarting && scene.name == targetRestartRoom)
         {
@@ -405,9 +460,6 @@ public class GameOverManager : MonoBehaviour
         }
     }
 
-    // -----------------------------------------------------------
-    // MAIN MENU LOGIC
-    // -----------------------------------------------------------
     public void ReturnToMainMenu()
     {
         StartCoroutine(ReturnToMainMenuRoutine());
@@ -415,65 +467,53 @@ public class GameOverManager : MonoBehaviour
 
     private IEnumerator ReturnToMainMenuRoutine()
     {
-        // 1. Unfreeze time so ScreenFader works
         Time.timeScale = 1f;
 
-        // 2. Fade Out Audio
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.StopAmbient(sceneTransitionDuration);
             AudioManager.Instance.StopMusic(sceneTransitionDuration);
         }
 
-        // 3. Fade Out Screen (To Black)
+        // Similar to Restart: Fade options out, leave black background
+        if (gameOverOptionsPanel != null)
+        {
+            CanvasGroup optCg = gameOverOptionsPanel.GetComponent<CanvasGroup>();
+            if (optCg != null)
+            {
+                float timer = 0f;
+                float startAlpha = optCg.alpha;
+                while (timer < 0.5f)
+                {
+                    timer += Time.deltaTime;
+                    optCg.alpha = Mathf.Lerp(startAlpha, 0f, timer / 0.5f);
+                    yield return null;
+                }
+                optCg.alpha = 0f;
+                gameOverOptionsPanel.SetActive(false);
+            }
+        }
+
         if (ScreenFader.Instance != null)
         {
-            bool fadeComplete = false;
-            ScreenFader.Instance.FadeOut(sceneTransitionDuration, () => fadeComplete = true);
-            while (!fadeComplete) yield return null;
-        }
-        else
-        {
-            yield return new WaitForSeconds(sceneTransitionDuration);
+            ScreenFader.Instance.FadeOut(sceneTransitionDuration, null);
         }
 
-        // 4. Hide Game Over UI (now hidden by black screen)
-        if (gameOverOptionsPanel != null) gameOverOptionsPanel.SetActive(false);
-        if (gameOverMessagePanel != null) gameOverMessagePanel.SetActive(false);
+        yield return new WaitForSeconds(sceneTransitionDuration);
 
-        // 5. Load
         ResetUI();
         SceneManager.LoadScene("MainMenu");
-    }
-
-    // Helper to fade out a UI panel (used during scene transitions)
-    // NOTE: Not currently used for transitions to avoid transparency issues, 
-    // but kept helper just in case you want to fade purely UI elements later.
-    private IEnumerator FadeOutUI(GameObject panel)
-    {
-        if (panel == null || !panel.activeSelf) yield break;
-
-        CanvasGroup cg = panel.GetComponent<CanvasGroup>();
-        if (cg == null) cg = panel.AddComponent<CanvasGroup>();
-
-        float timer = 0f;
-        float startAlpha = cg.alpha;
-
-        // Use standard deltaTime since timeScale is 1 during transitions
-        while (timer < sceneTransitionDuration)
-        {
-            timer += Time.deltaTime;
-            cg.alpha = Mathf.Lerp(startAlpha, 0f, timer / sceneTransitionDuration);
-            yield return null;
-        }
-        cg.alpha = 0f;
-        panel.SetActive(false);
     }
 
     private void ResetUI()
     {
         if (gameOverMessagePanel != null) gameOverMessagePanel.SetActive(false);
         if (gameOverOptionsPanel != null) gameOverOptionsPanel.SetActive(false);
+        if (blackBackgroundFader != null)
+        {
+            blackBackgroundFader.alpha = 0f;
+            blackBackgroundFader.gameObject.SetActive(false);
+        }
     }
 
     public void ExitGame()

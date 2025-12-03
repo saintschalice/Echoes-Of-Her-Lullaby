@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Globalization;
 
 public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
 {
@@ -10,6 +11,7 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
     [Header("Lock Settings")]
     public bool startsLocked = true;
     public string requiredItemId = "house_key";
+    public string requiredItemName = ""; // NEW: Pretty name for the item (e.g. "House Key")
     public bool consumeKeyOnUse = false; // Should key disappear after use?
     public bool unlockPermanently = true; // Save unlocked state?
 
@@ -75,9 +77,6 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
         }
     }
 
-    // =================================================================================
-    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
-    // =================================================================================
     public void Interact()
     {
         // Tracker handles range, so we just check state
@@ -85,7 +84,6 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
 
         AttemptOpenDoor();
     }
-    // =================================================================================
 
     public void OnInteract(PlayerContext context)
     {
@@ -203,9 +201,29 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
             audioSource.PlayOneShot(lockedDoorSound);
         }
 
+        // --- FIX: Logic to display pretty name instead of ID ---
+        string displayName;
+
+        if (!string.IsNullOrEmpty(requiredItemName))
+        {
+            // Use the manual override from Inspector
+            displayName = requiredItemName;
+        }
+        else if (!string.IsNullOrEmpty(requiredItemId))
+        {
+            // Fallback: Format the ID (e.g., "silver_key" -> "Silver Key")
+            displayName = requiredItemId.Replace("_", " ");
+            displayName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(displayName);
+        }
+        else
+        {
+            displayName = "key";
+        }
+
         string message = string.IsNullOrEmpty(requiredItemId)
             ? "The door is locked."
-            : $"The door is locked. I need to find a {requiredItemId}.";
+            : $"It's locked. I need the {displayName} to unlock it.";
+        // -----------------------------------------------------
 
         ShowDialogue(message);
     }

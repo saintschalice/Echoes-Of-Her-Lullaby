@@ -24,11 +24,15 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
     public float resumeDelay = 0.5f;   // Time to wait before Emily attacks
 
     [Header("Audio")]
-    public AudioClip jumpscareClip; // NEW: Jumpscare sound
+    public AudioClip jumpscareClip;
 
     [Header("Narrative")]
     [TextArea] public string emilyShout = "YOU NEED TO GET OUT!";
     [TextArea] public string lisaPanic = "<i>Holy-</i> I need to hide!";
+
+    [Header("Persistence")]
+    [Tooltip("Unique ID to ensure dialogue doesn't play twice on Retry.")]
+    public string triggerID = "EmilySpawn_Intro";
 
     private EmilyGhost _instance;
     private BoxCollider2D _triggerCollider;
@@ -67,13 +71,12 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
             // Disable AI update loop initially
             _instance.enabled = false;
 
-            // NEW FIX: Also disable the Movement component so FixedUpdate doesn't try to run 
-            // while she is frozen (prevents "IsStopped" crash).
+            // Disable Movement component so FixedUpdate doesn't run while frozen
             if (_instance.GetComponent<EmilyMovement>() != null)
                 _instance.GetComponent<EmilyMovement>().enabled = false;
         }
 
-        // 2. Play Jumpscare
+        // 2. Play Jumpscare (Always play this for impact, or wrap in check if preferred)
         if (jumpscareClip != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySFX(jumpscareClip);
@@ -82,7 +85,7 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
         // 3. Unlock Closet (Legacy support if script exists)
         if (closetScript != null) closetScript.UnlockForHiding();
 
-        // 4. Push Mechanic
+        // 4. Push Mechanic (Always push to reset player position/momentum)
         Rigidbody2D playerRb = playerObj.GetComponent<Rigidbody2D>();
         JoystickPlayerController playerController = playerObj.GetComponent<JoystickPlayerController>();
         float originalDrag = 0f;
@@ -92,16 +95,47 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
             originalDrag = playerRb.linearDamping;
             playerRb.linearDamping = shoveFriction;
 
-            if (playerController != null) playerController.enabled = false;
+            if (playerController != null)
+            {
+                // --- FIX START: FORCE STOP ANIMATION ---
+                // Before we disable the controller, we MUST manually reset the animator.
+                // Otherwise, if the player was holding 'Walk', the parameter stays true forever 
+                // because the controller script stops running its Update() loop.
+                Animator playerAnim = playerObj.GetComponent<Animator>();
+                if (playerAnim != null)
+                {
+                    // Reset standard movement parameters to ensure she looks idle/stunned
+                    // (Using safe checks in case your parameters are named differently)
+                    playerAnim.SetFloat("Speed", 0f);
+                    playerAnim.SetBool("IsMoving", false);
+
+                    // Optional: If you use x/y for blend trees, you might want to keep the last direction
+                    // or reset them. Usually Speed=0 is enough to trigger the Idle state.
+                }
+                // --- FIX END ---
+
+                playerController.enabled = false;
+            }
 
             Vector2 pushDir = (playerObj.transform.position - spawnPoint.position).normalized;
             if (pushDir == Vector2.zero) pushDir = Vector2.down;
             playerRb.AddForce(pushDir * pushForce, ForceMode2D.Impulse);
         }
 
-        // 5. Dialogue Sequence
-        if (DialogueSystemV2.Instance != null)
+        // CHECK: Have we seen this dialogue before?
+        bool skipDialogue = false;
+        if (SaveSystem.Instance != null && SaveSystem.Instance.WasDialogueTriggered(triggerID))
         {
+            skipDialogue = true;
+        }
+
+        // 5. Dialogue Sequence
+        if (!skipDialogue && DialogueSystemV2.Instance != null)
+        {
+            // Mark as seen immediately so retries know to skip it
+            if (SaveSystem.Instance != null)
+                SaveSystem.Instance.TriggerDialogue(triggerID);
+
             // Emily Shouts
             yield return new WaitForSeconds(0.2f); // Short pause to register the push
             DialogueSystemV2.Instance.StartDialogue(emilyShout, "???");
@@ -113,8 +147,8 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
         }
         else
         {
-            // Fallback delay if no dialogue system
-            yield return new WaitForSeconds(2.0f);
+            // If skipping or no system, use a very short delay just to let the Push finish
+            yield return new WaitForSeconds(skipDialogue ? 0.5f : 2.0f);
         }
 
         // 6. Wait (Requested Delay)

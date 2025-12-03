@@ -602,6 +602,7 @@ MonoBehaviour:
   doorID: Door_LivingRoom_To_Hallway
   startsLocked: 1
   requiredItemId: hallway_door_key
+  requiredItemName: 
   consumeKeyOnUse: 1
   unlockPermanently: 1
   targetSpawnPointID: Hallway
@@ -653,7 +654,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -5.5200195, y: 1.5}
+  m_AnchoredPosition: {x: -5.5, y: 1.29}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &178078048
@@ -3548,7 +3549,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -5.5200195, y: 1.3}
+  m_AnchoredPosition: {x: -5.5, y: 1.3}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &633210658
@@ -7548,6 +7549,7 @@ MonoBehaviour:
   doorID: Door_LivingRoom_To_Foyer
   startsLocked: 0
   requiredItemId: 
+  requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 1
   targetSpawnPointID: FromLivingRoom

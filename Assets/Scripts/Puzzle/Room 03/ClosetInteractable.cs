@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class HallwayClosetInteractable : MonoBehaviour, IInteractable
 {
@@ -14,15 +16,15 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
     [Header("Dialogue")]
     [TextArea] public string examineDialogue = "This is really big... I could probably fit inside.";
     [TextArea] public string lockedDialogue = "It won't open. It's stuck.";
-    [TextArea] public string firstDialogue = "There are scratches inside... someone was trying to get out."; // Kept if needed for later, though not currently used in logic below
+    [TextArea] public string firstDialogue = "There are scratches inside... someone was trying to get out.";
 
     [Header("Settings")]
     public float interactionRange = 2f;
 
-    // State tracking (Matching MailboxInteraction style)
+    // State tracking
     private bool playerInRange = false;
     private bool waitingForDialogueClose = false;
-    private bool canHide = false; // Default to false until Emily spawns
+    private bool canHide = false;
     private bool hasExaminedOnce = false;
 
     private DialogueSystemV2 dialogueSystem;
@@ -30,29 +32,56 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
     // Audio tracking
     private float lockedSoundCooldown = 0f;
 
+    // Button Locking References (NEW)
+    private OnScreenInteractButton cachedButton;
+    private Button cachedUnityButton;
+    private UnityAction onHiddenInteractAction;
+
+    void Awake()
+    {
+        // Cache the delegate to safely add/remove listeners
+        onHiddenInteractAction = new UnityAction(OnHiddenInteract);
+    }
+
     void Start()
     {
         dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
+        RefreshButtonReference();
+    }
+
+    void RefreshButtonReference()
+    {
+        if (cachedButton == null)
+        {
+            cachedButton = FindFirstObjectByType<OnScreenInteractButton>();
+            if (cachedButton != null)
+            {
+                cachedUnityButton = cachedButton.GetComponent<Button>();
+            }
+        }
+    }
+
+    void OnDisable()
+    {
+        // Safety: Ensure button is unlocked if this object is disabled
+        SetButtonLock(false);
     }
 
     void Update()
     {
-        // Cooldown for the rattle sound so it doesn't play every frame if spammed
         if (lockedSoundCooldown > 0) lockedSoundCooldown -= Time.deltaTime;
 
-        // State Machine: Watch for dialogue to close (Just like MailboxInteraction)
         if (waitingForDialogueClose)
         {
             if (dialogueSystem != null && !dialogueSystem.IsDialogueActive())
             {
                 waitingForDialogueClose = false;
-                // Interaction cycle complete.
             }
         }
     }
 
     // =================================================================================
-    // PRIMARY INTERACTION ENTRY POINT (Called by OnScreenInteractButton)
+    // PRIMARY INTERACTION ENTRY POINT
     // =================================================================================
     public void Interact()
     {
@@ -70,10 +99,25 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
         // 3. Logic: Chase Sequence vs. Locked State
         if (canHide)
         {
-            // The chase is on! Hide immediately.
             if (hideSequence != null)
             {
-                hideSequence.HideInCloset();
+                RefreshButtonReference();
+
+                if (hideSequence.IsHiding)
+                {
+                    // --- EXITING ---
+                    // Called if normal Interaction somehow hits this (unlikely when hidden, but good fallback)
+                    ExecuteExitLogic();
+                }
+                else
+                {
+                    // --- ENTERING ---
+                    // 1. Lock the button FIRST so it doesn't flicker/disable when Player disables
+                    SetButtonLock(true);
+
+                    // 2. Start Hiding
+                    hideSequence.HideInCloset();
+                }
             }
             else
             {
@@ -87,20 +131,58 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
         }
     }
 
+    // New: Listener called directly by the button when we are hiding
+    private void OnHiddenInteract()
+    {
+        // FORCE EXIT: Bypass Interact() guards (like dialogue checks) 
+        // because we are in a special "Hiding" state where the only action is to leave.
+        if (hideSequence != null && hideSequence.IsHiding)
+        {
+            ExecuteExitLogic();
+        }
+    }
+
+    private void ExecuteExitLogic()
+    {
+        if (hideSequence != null)
+        {
+            hideSequence.GetOutOfCloset();
+        }
+
+        // Unlock the button immediately so it returns to normal behavior
+        SetButtonLock(false);
+    }
+
+    // New: Helper to lock/unlock the UI button
+    private void SetButtonLock(bool locked)
+    {
+        if (cachedButton != null && cachedUnityButton != null)
+        {
+            cachedButton.SetInteractionLock(locked);
+
+            // Clean up listener first to avoid duplicates
+            cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
+
+            if (locked)
+            {
+                cachedUnityButton.onClick.AddListener(onHiddenInteractAction);
+            }
+        }
+    }
+
     // =================================================================================
     // INTERFACE METHODS (IInteractable)
     // =================================================================================
 
     public void OnInteract(PlayerContext context)
     {
-        // STRICTLY EMPTY: 
-        // We do not want touching/clicking the closet directly to do anything.
-        // The interaction must come via the OnScreenInteractButton calling Interact() above.
+        // Typically empty if you call Interact() directly from the button,
+        // but if your system calls OnInteract(), we forward it:
+        Interact();
     }
 
     public void OnFocus(PlayerContext context)
     {
-        // Only update range for internal logic or debug, but DO NOT show prompts.
         playerInRange = IsInRange(context.Transform);
     }
 
@@ -115,12 +197,10 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
 
     private void PerformExamineLogic()
     {
-        // Set flag so we don't interact again until dialogue finishes
         waitingForDialogueClose = true;
 
         if (!hasExaminedOnce)
         {
-            // 1. First time examination
             if (dialogueSystem != null)
             {
                 dialogueSystem.StartDialogue(examineDialogue, "Lisa");
@@ -129,21 +209,17 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
         }
         else
         {
-            // 2. Subsequent times: It's locked
-            // Play Sound
             if (lockedSound != null && lockedSoundCooldown <= 0)
             {
                 AudioManager.Instance?.PlaySFX(lockedSound, transform.position);
-                lockedSoundCooldown = 1.0f; // Prevent sound spam
+                lockedSoundCooldown = 1.0f;
             }
 
-            // Optional: Animation
             if (closetAnimator != null)
             {
                 closetAnimator.SetTrigger("Rattle");
             }
 
-            // Show Dialogue
             if (dialogueSystem != null)
             {
                 dialogueSystem.StartDialogue(lockedDialogue, "Lisa");
@@ -151,7 +227,6 @@ public class HallwayClosetInteractable : MonoBehaviour, IInteractable
         }
     }
 
-    // Called by Emily Spawn Trigger / Game Event
     public void UnlockForHiding()
     {
         canHide = true;

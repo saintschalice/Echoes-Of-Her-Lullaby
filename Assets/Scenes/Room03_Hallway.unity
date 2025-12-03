@@ -495,6 +495,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ClosetHideSequence
   closetAnimator: {fileID: 340224949}
+  interactionRadius: 2
   hideZoomSize: 3.5
   zoomDuration: 0.5
   shakeMagnitude: 0.0005
@@ -736,6 +737,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmilySpawnTrigger
   emilyPrefab: {fileID: 5862906431052648368, guid: 03df2e4908104da4188c7392eb963e88, type: 3}
   spawnPoint: {fileID: 1993897724}
+  spawnState: 2
+  spawnFacing: {x: 1, y: 0}
   closetScript: {fileID: 340224948}
   pushForce: 15
   shoveFriction: 10
@@ -743,6 +746,7 @@ MonoBehaviour:
   jumpscareClip: {fileID: 8300000, guid: 218e6040e060b7946b3b50ebb3c8b0c4, type: 3}
   emilyShout: YOU NEED TO GET OUT!
   lisaPanic: Holy- I need to hide!
+  triggerID: EmilySpawn_Intro
 --- !u!1 &552231209
 GameObject:
   m_ObjectHideFlags: 0
@@ -901,6 +905,7 @@ MonoBehaviour:
   doorID: Door_Hallway_To_LivingRoom
   startsLocked: 0
   requiredItemId: 
+  requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 1
   targetSpawnPointID: FromHallway
@@ -7299,7 +7304,8 @@ MonoBehaviour:
   targetSceneName: Room04_Kitchen
   doorID: Door_Hallway_To_Kitchen
   startsLocked: 1
-  requiredItemId: key.
+  requiredItemId: kitchen_key
+  requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 0
   targetSpawnPointID: Main
@@ -7470,6 +7476,7 @@ MonoBehaviour:
   doorID: Door_Hallway_To_Kitchen
   startsLocked: 0
   requiredItemId: 
+  requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 1
   targetSpawnPointID: Main

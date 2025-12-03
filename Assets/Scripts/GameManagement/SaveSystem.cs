@@ -266,15 +266,24 @@ public class SaveSystem : MonoBehaviour
             return;
         }
 
+        // Important: UpdatePlayerData is called before we get the display name
+        UpdatePlayerData();
+        UpdateSettingsData();
+
         string roomDisplayName = SaveUIManager.GetRoomDisplayName(currentSaveData.currentScene);
-        string autoSaveName = roomDisplayName;
+
+        // If saveName argument is empty, use the room name
+        if (string.IsNullOrEmpty(saveName))
+        {
+            currentSaveData.saveName = roomDisplayName;
+        }
+        else
+        {
+            currentSaveData.saveName = saveName;
+        }
 
         currentSaveData.saveSlot = slot;
         currentSaveData.saveDate = DateTime.Now.ToString("yyyy-MM-dd");
-        currentSaveData.saveName = autoSaveName;
-
-        UpdatePlayerData();
-        UpdateSettingsData();
 
         try
         {
@@ -387,8 +396,6 @@ public class SaveSystem : MonoBehaviour
         {
             return null;
         }
-
-
     }
 
     void UpdatePlayerData()
@@ -400,7 +407,13 @@ public class SaveSystem : MonoBehaviour
             currentSaveData.playerPosition = player.position;
         }
 
-        currentSaveData.currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        // FIX: Don't overwrite currentScene with GetActiveScene().name blindly.
+        // We want to trust OnRoomEntered to set the specific room name.
+        // Only set it if it's currently empty.
+        if (string.IsNullOrEmpty(currentSaveData.currentScene))
+        {
+            currentSaveData.currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        }
     }
 
     void UpdateSettingsData()

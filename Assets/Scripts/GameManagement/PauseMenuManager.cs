@@ -252,6 +252,24 @@ public class PauseMenuManager : MonoBehaviour
             }
             else
             {
+                // --- EXCLUSIVITY RULE UPDATE START ---
+                // If opening Pause Menu, ensure Inventory and Save Panels are closed first.
+
+                // 1. Close Inventory if open
+                if (InventoryUI.Instance != null && InventoryUI.Instance.IsOpen)
+                {
+                    InventoryUI.Instance.CloseInventory();
+                }
+
+                // 2. Close Save UI if open (and tell it NOT to trigger any "return to pause" logic)
+                if (SaveUIManager.Instance != null && SaveUIManager.Instance.saveLoadPanel != null && SaveUIManager.Instance.saveLoadPanel.activeSelf)
+                {
+                    // Pass 'false' if using the updated SaveUIManager to prevent re-opening pause menu logic
+                    // If you are using the old SaveUIManager, remove the 'false' argument.
+                    SaveUIManager.Instance.CloseSaveLoadPanel(false);
+                }
+                // --- EXCLUSIVITY RULE UPDATE END ---
+
                 PauseGame();
             }
         }
@@ -345,6 +363,12 @@ public class PauseMenuManager : MonoBehaviour
 
     public void PauseGame()
     {
+        // --- EXCLUSIVITY RULE: Force close inventory if it's open ---
+        if (InventoryUI.Instance != null)
+        {
+            InventoryUI.Instance.ForceCloseInventory();
+        }
+
         isPaused = true;
         pauseMenuPanel.SetActive(true);
         Time.timeScale = 0f;
@@ -353,17 +377,17 @@ public class PauseMenuManager : MonoBehaviour
         if (joystickUI != null)
             joystickUI.SetActive(false);
 
-        InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
-        if (inventoryUI != null)
-        {
-            inventoryUI.ForceCloseInventory();
-        }
-
         Debug.Log("[PauseMenu] Game paused");
     }
 
     public void ResumeGame()
     {
+        // --- EXCLUSIVITY RULE: Ensure Save UI is closed ---
+        if (SaveUIManager.Instance != null && SaveUIManager.Instance.saveLoadPanel != null && SaveUIManager.Instance.saveLoadPanel.activeSelf)
+        {
+            SaveUIManager.Instance.CloseSaveLoadPanel(false);
+        }
+
         isPaused = false;
         isInSettings = false;
         pauseMenuPanel.SetActive(false);
@@ -524,6 +548,8 @@ public class PauseMenuManager : MonoBehaviour
         if (GameSessionManager.Instance != null)
         {
             Debug.Log("[PauseMenu] Using GameSessionManager for cleanup");
+            // WARNING: If GameSessionManager destroys AudioManager, music will still stop.
+            // Ensure GameSessionManager also excludes AudioManager if you want music to persist.
             GameSessionManager.CleanupNow();
             return;
         }
@@ -539,8 +565,8 @@ public class PauseMenuManager : MonoBehaviour
 
         GameObject[] dontDestroyObjects = dontDestroyScene.GetRootGameObjects();
 
-        // List of objects to keep (don't destroy ScreenFader)
-        string[] objectsToKeep = { "ScreenFader" };
+        // List of objects to keep (don't destroy ScreenFader OR AudioManager)
+        string[] objectsToKeep = { "ScreenFader", "AudioManager", "LoopingSoundManager" };
 
         foreach (GameObject obj in dontDestroyObjects)
         {

@@ -829,7 +829,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 554ee97aed5e3f942bf2907a9f4cd47d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -1426,7 +1426,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 5930a955ea736f342bcbf90a77be1b74, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -1454,7 +1454,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -1.72, y: 5.25}
+  m_AnchoredPosition: {x: -1.72, y: 5.144}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
 --- !u!61 &754286124
@@ -1872,7 +1872,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02f6dc435c8ee8d4bb8f54d6c21e12db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IslandHideAndRecipeInteractable
-  interactionBoxSize: {x: 3.6, y: 2.6}
+  interactionBoxSize: {x: 4, y: 3}
   interactionOffset: {x: 0, y: -0.25}
   recipeItemId: recipe_book_kitchen
   hideZoomSize: 3.5
@@ -4580,7 +4580,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 3c6d354cdf97c8046b0f8c8e91db8edb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5031,7 +5031,8 @@ MonoBehaviour:
   targetSceneName: Room03_Hallway
   doorID: Door_Kitchen_Dining_To_Hallway
   startsLocked: 1
-  requiredItemId: 
+  requiredItemId: kitchen_key
+  requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 0
   targetSpawnPointID: FromKitchen
@@ -10486,7 +10487,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 8b00926e62ab50844acada3e5925657a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

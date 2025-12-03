@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events; // Required for UnityAction
 using System.Collections;
 
 [RequireComponent(typeof(Collider2D))]
@@ -33,7 +35,6 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
     [TextArea] public string exitWhisper = "Not ready... never ready... too much pain...";
 
     // State
-    // Made public getter to match Island pattern if needed
     public bool IsHiding => isHiding;
     private bool isHiding = false;
 
@@ -49,6 +50,17 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
     private Coroutine activeSequence;
     private Coroutine shakeCoroutine;
     private Coroutine audioFadeCoroutine;
+
+    // --- BUTTON LOGIC (Copied from IslandHideAndRecipeInteractable) ---
+    private OnScreenInteractButton cachedButton;
+    private Button cachedUnityButton;
+    private UnityAction onHiddenInteractAction;
+
+    private void Awake()
+    {
+        // Cache the delegate once to ensure identity equality for Add/Remove Listener
+        onHiddenInteractAction = new UnityAction(OnHiddenInteract);
+    }
 
     void Start()
     {
@@ -67,6 +79,9 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
 
         // 3. Find Player (Cache references)
         FindPlayerReferences();
+
+        // 4. Find Button
+        RefreshButtonReference();
     }
 
     void FindPlayerReferences()
@@ -79,13 +94,25 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
         }
     }
 
+    void RefreshButtonReference()
+    {
+        if (cachedButton == null)
+        {
+            cachedButton = FindFirstObjectByType<OnScreenInteractButton>();
+            if (cachedButton != null)
+            {
+                cachedUnityButton = cachedButton.GetComponent<Button>();
+            }
+        }
+    }
+
     void OnDisable()
     {
         if (isHiding) ResetHidingStateInstant();
     }
 
     // =================================================================================
-    // INTERACTABLE IMPLEMENTATION (Matches IslandHideAndRecipeInteractable)
+    // INTERACTABLE IMPLEMENTATION
     // =================================================================================
 
     public void Interact()
@@ -93,18 +120,22 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
         // 1. Ensure references are set up
         if (playerController == null)
         {
-            playerController = FindFirstObjectByType<JoystickPlayerController>();
-            if (playerController != null)
-            {
-                playerRenderers = playerController.GetComponentsInChildren<SpriteRenderer>();
-            }
+            FindPlayerReferences();
         }
 
         if (activeSequence != null) return;
 
+        RefreshButtonReference();
+
         // Toggle Hiding State
-        if (isHiding) ExitHiding();
-        else StartCoroutine(EnterHidingSequence());
+        if (isHiding)
+        {
+            ExitHiding();
+        }
+        else
+        {
+            StartCoroutine(EnterHidingSequence());
+        }
     }
 
     public void OnInteract(PlayerContext context)
@@ -141,11 +172,14 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
     // Acts as a TOGGLE: Call once to Hide, call again to Exit.
     public void HideInCloset()
     {
+        // Ensure we don't start double sequences
+        if (activeSequence != null) return;
         Interact();
     }
 
     public void GetOutOfCloset()
     {
+        if (activeSequence != null) return;
         ExitHiding();
     }
 
@@ -154,6 +188,22 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
     IEnumerator EnterHidingSequence()
     {
         isHiding = true;
+
+        // --- BUTTON LOCK (Island Style) ---
+        if (cachedButton != null && cachedUnityButton != null)
+        {
+            cachedButton.SetInteractionLock(true);
+            try
+            {
+                cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
+                cachedUnityButton.onClick.AddListener(onHiddenInteractAction);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Closet] Error adding listener: {e.Message}");
+            }
+        }
+        // ----------------------------------
 
         // 1. Capture Camera Anchor
         if (mainCamera != null) originalCameraPos = mainCamera.transform.position;
@@ -190,7 +240,18 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
     {
         if (!isHiding) return;
         if (activeSequence != null) StopCoroutine(activeSequence);
+
+        // Ensure activeSequence is cleared
+        activeSequence = null;
+
         StartCoroutine(ExitHidingRoutine());
+    }
+
+    // Triggered by the OnScreenInteractButton when locked
+    private void OnHiddenInteract()
+    {
+        if (activeSequence != null) return; // Prevent spamming while animating
+        if (isHiding) ExitHiding();
     }
 
     IEnumerator ExitHidingRoutine()
@@ -230,6 +291,21 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
             playerController.enabled = true;
         }
 
+        // --- BUTTON UNLOCK (Island Style) ---
+        if (cachedButton != null && cachedUnityButton != null)
+        {
+            try
+            {
+                cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
+                cachedButton.SetInteractionLock(false);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Closet] Error removing listener: {e.Message}");
+            }
+        }
+        // ------------------------------------
+
         yield return activeSequence;
         activeSequence = null;
 
@@ -240,6 +316,13 @@ public class ClosetHideSequence : MonoBehaviour, IInteractable
     private void ResetHidingStateInstant()
     {
         isHiding = false;
+
+        // Cleanup Button
+        if (cachedButton != null && cachedUnityButton != null)
+        {
+            cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
+            cachedButton.SetInteractionLock(false);
+        }
 
         if (mainCamera != null) mainCamera.orthographicSize = originalOrthoSize;
         if (audioSource != null) audioSource.Stop();
