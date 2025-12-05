@@ -61,6 +61,7 @@ public class DialogueSystemV2 : MonoBehaviour
 
     public static DialogueSystemV2 Instance { get; private set; }
     private InventoryUI cachedInventoryUI;
+    private Coroutine enableControlsCoroutine;
 
     void Awake()
     {
@@ -237,6 +238,13 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             Debug.LogWarning("No dialogue lines provided!");
             return;
+        }
+
+        // Cancel pending control enablement if a new dialogue starts immediately
+        if (enableControlsCoroutine != null)
+        {
+            StopCoroutine(enableControlsCoroutine);
+            enableControlsCoroutine = null;
         }
 
         InventoryManager.Instance?.NotifyActionStarted();
@@ -463,9 +471,6 @@ public class DialogueSystemV2 : MonoBehaviour
         indicator.localScale = originalScale;
     }
 
-    /// <summary>
-    /// NEW: Play typing sound through AudioManager (categorized as Dialogue)
-    /// </summary>
     void PlayTypingSound(SpeakerData speaker)
     {
         if (speaker == null || speaker.typingSounds == null || speaker.typingSounds.Length == 0)
@@ -523,23 +528,13 @@ public class DialogueSystemV2 : MonoBehaviour
             tapToContinueIndicator.SetActive(false);
         }
 
-        if (joystickUI != null)
-        {
-            joystickUI.SetActive(true);
-        }
-
-        if (playerController != null)
-        {
-            playerController.enabled = true;
-        }
-
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
         currentDialogue.Clear();
         currentLineIndex = 0;
 
-        // ADD THESE LINES - Notify UIStateManager AFTER cleaning up
+        // Notify UIStateManager AFTER cleaning up
         if (UIStateManager.Instance != null)
         {
             UIStateManager.Instance.DialogueComplete();
@@ -547,6 +542,31 @@ public class DialogueSystemV2 : MonoBehaviour
 
         OnDialogueEnded?.Invoke();
         InventoryManager.Instance?.NotifyActionEnded();
+
+        // Delay the re-enabling of controls.
+        // If a chained dialogue starts within 0.1s, StartDialogue will cancel this coroutine.
+        if (enableControlsCoroutine != null) StopCoroutine(enableControlsCoroutine);
+        enableControlsCoroutine = StartCoroutine(EnableControlsAfterDelay());
+    }
+
+    IEnumerator EnableControlsAfterDelay()
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        // Double check dialogue isn't active (redundant if stopped correctly, but safe)
+        if (!isDialogueActive)
+        {
+            if (joystickUI != null)
+            {
+                joystickUI.SetActive(true);
+            }
+
+            if (playerController != null)
+            {
+                playerController.enabled = true;
+            }
+        }
+        enableControlsCoroutine = null;
     }
 
     public bool IsDialogueActive()

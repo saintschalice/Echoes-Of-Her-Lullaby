@@ -160,6 +160,7 @@ GameObject:
   - component: {fileID: 5862906431052648368}
   - component: {fileID: 3276783980782230005}
   - component: {fileID: 6366252935566448824}
+  - component: {fileID: 7827808048509881129}
   m_Layer: 12
   m_Name: EmilyGhost
   m_TagString: Untagged
@@ -279,7 +280,7 @@ AudioSource:
   m_GameObject: {fileID: 7409944623990111159}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 2465441502368821945, guid: bf09e14411d39734ab9fb54db7e2c507, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -397,7 +398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d4c6b26a73b0eb46928d89ecde4477d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EmilyPerception
-  visionRange: 6
+  visionRange: 3
   visionAngle: 60
   aiForward: {fileID: 7288953433528400076}
   hearingRadius: 8
@@ -415,7 +416,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmilyAudio
   catchClip: {fileID: 8300000, guid: 448cc68300f7d7a4abd3c39cf126f15a, type: 3}
   huntClip: {fileID: 8300000, guid: 828a336dcab0caa4095e072417bbd09f, type: 3}
-  searchClip: {fileID: 0}
-  investigateClip: {fileID: 0}
+  searchClip: {fileID: 8300000, guid: 1fb250929a3ba0248ae8e6987dc0ac4e, type: 3}
+  investigateClip: {fileID: 8300000, guid: 78b2be030e15f3442b2f3df708daffff, type: 3}
   patrolClip: {fileID: 8300000, guid: ed635f4066c92ee4cb754fea36517fd7, type: 3}
-  cooldownClip: {fileID: 0}
+  cooldownClip: {fileID: 8300000, guid: 4942303a14cd54343958b9b8dd8ad456, type: 3}
+  fadeDuration: 0.5
+--- !u!114 &7827808048509881129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7409944623990111159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a1c89a17b361f64289c583cd6b0e012, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyMovement

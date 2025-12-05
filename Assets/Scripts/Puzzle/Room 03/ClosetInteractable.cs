@@ -1,92 +1,247 @@
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
 
-public class HallwayClosetInteractable : MonoBehaviour
+public class HallwayClosetInteractable : MonoBehaviour, IInteractable
 {
     [Header("References")]
     public Animator closetAnimator;
-    public ClosetHideSequence hideSequence; // reference to hiding script
+    public ClosetHideSequence hideSequence;
 
     [Header("Audio")]
-    public AudioClip scratchSound;
+    public AudioClip lockedSound; // Assign a "rattle" or "locked" sound here
     public AudioClip doorCreakSound;
+    public AudioClip scratchSound;
 
     [Header("Dialogue")]
-    [TextArea]
-    public string firstDialogue = "There are scratches inside... someone was trying to get out.";
+    [TextArea] public string examineDialogue = "This is really big... I could probably fit inside.";
+    [TextArea] public string lockedDialogue = "It won't open. It's stuck.";
+    [TextArea] public string firstDialogue = "There are scratches inside... someone was trying to get out.";
 
     [Header("Settings")]
     public float interactionRange = 2f;
-    public GameObject interactPrompt;
 
-    private Transform player;
-    private bool firstExamined = false;
+    // State tracking
+    private bool playerInRange = false;
+    private bool waitingForDialogueClose = false;
     private bool canHide = false;
+    private bool hasExaminedOnce = false;
+
+    private DialogueSystemV2 dialogueSystem;
+
+    // Audio tracking
+    private float lockedSoundCooldown = 0f;
+
+    // Button Locking References (NEW)
+    private OnScreenInteractButton cachedButton;
+    private Button cachedUnityButton;
+    private UnityAction onHiddenInteractAction;
+
+    void Awake()
+    {
+        // Cache the delegate to safely add/remove listeners
+        onHiddenInteractAction = new UnityAction(OnHiddenInteract);
+    }
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (interactPrompt != null)
-            interactPrompt.SetActive(false);
+        dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
+        RefreshButtonReference();
+    }
+
+    void RefreshButtonReference()
+    {
+        if (cachedButton == null)
+        {
+            cachedButton = FindFirstObjectByType<OnScreenInteractButton>();
+            if (cachedButton != null)
+            {
+                cachedUnityButton = cachedButton.GetComponent<Button>();
+            }
+        }
+    }
+
+    void OnDisable()
+    {
+        // Safety: Ensure button is unlocked if this object is disabled
+        SetButtonLock(false);
     }
 
     void Update()
     {
-        if (player == null) return;
+        if (lockedSoundCooldown > 0) lockedSoundCooldown -= Time.deltaTime;
 
-        float distance = Vector2.Distance(transform.position, player.position);
-        bool inRange = distance <= interactionRange;
-
-        if (interactPrompt != null)
-            interactPrompt.SetActive(inRange && !DialogueSystemV2.Instance.IsDialogueActive());
-
-        // Touch interaction
-        if (inRange && Input.GetMouseButtonDown(0))
+        if (waitingForDialogueClose)
         {
-            Vector2 touchPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(touchPos, Vector2.zero);
-
-            if (hit.collider != null && hit.collider.gameObject == gameObject)
-                HandleClosetInteraction();
+            if (dialogueSystem != null && !dialogueSystem.IsDialogueActive())
+            {
+                waitingForDialogueClose = false;
+            }
         }
     }
 
-    void HandleClosetInteraction()
+    // =================================================================================
+    // PRIMARY INTERACTION ENTRY POINT
+    // =================================================================================
+    public void Interact()
     {
-        if (!firstExamined)
+        // 1. Guard: Busy waiting for dialogue?
+        if (waitingForDialogueClose)
         {
-            StartCoroutine(FirstExamineRoutine());
+            Debug.Log("Closet busy: waiting for dialogue to close.");
+            return;
         }
-        else if (canHide)
+
+        // 2. Guard: Dialogue system active elsewhere?
+        if (dialogueSystem != null && dialogueSystem.IsDialogueActive())
+            return;
+
+        // 3. Logic: Chase Sequence vs. Locked State
+        if (canHide)
         {
-            hideSequence?.HideInCloset();
+            if (hideSequence != null)
+            {
+                RefreshButtonReference();
+
+                if (hideSequence.IsHiding)
+                {
+                    // --- EXITING ---
+                    // Called if normal Interaction somehow hits this (unlikely when hidden, but good fallback)
+                    ExecuteExitLogic();
+                }
+                else
+                {
+                    // --- ENTERING ---
+                    // 1. Lock the button FIRST so it doesn't flicker/disable when Player disables
+                    SetButtonLock(true);
+
+                    // 2. Start Hiding
+                    hideSequence.HideInCloset();
+                }
+            }
+            else
+            {
+                Debug.LogError("Closet unlocked but HideSequence reference is missing!");
+            }
+        }
+        else
+        {
+            // Normal exploration state
+            PerformExamineLogic();
         }
     }
 
-    System.Collections.IEnumerator FirstExamineRoutine()
+    // New: Listener called directly by the button when we are hiding
+    private void OnHiddenInteract()
     {
-        firstExamined = true;
+        // FORCE EXIT: Bypass Interact() guards (like dialogue checks) 
+        // because we are in a special "Hiding" state where the only action is to leave.
+        if (hideSequence != null && hideSequence.IsHiding)
+        {
+            ExecuteExitLogic();
+        }
+    }
 
-        // Open
-        closetAnimator?.SetTrigger("Open");
-        if (doorCreakSound) AudioManager.Instance?.PlaySFX(doorCreakSound);
-        yield return new WaitForSeconds(0.5f);
+    private void ExecuteExitLogic()
+    {
+        if (hideSequence != null)
+        {
+            hideSequence.GetOutOfCloset();
+        }
 
-        // Dialogue
-        DialogueSystemV2.Instance?.StartDialogue(firstDialogue, "Lisa");
-        while (DialogueSystemV2.Instance.IsDialogueActive())
-            yield return null;
+        // Unlock the button immediately so it returns to normal behavior
+        SetButtonLock(false);
+    }
 
-        // Scratching sound
-        if (scratchSound) AudioManager.Instance?.PlaySFX(scratchSound);
-        yield return new WaitForSeconds(1.5f);
+    // New: Helper to lock/unlock the UI button
+    private void SetButtonLock(bool locked)
+    {
+        if (cachedButton != null && cachedUnityButton != null)
+        {
+            cachedButton.SetInteractionLock(locked);
 
-        // Close again
-        closetAnimator?.SetTrigger("Close");
-        if (doorCreakSound) AudioManager.Instance?.PlaySFX(doorCreakSound);
+            // Clean up listener first to avoid duplicates
+            cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
 
-        // Enable hiding only after Emily has appeared
-        yield return new WaitForSeconds(0.5f);
+            if (locked)
+            {
+                cachedUnityButton.onClick.AddListener(onHiddenInteractAction);
+            }
+        }
+    }
+
+    // =================================================================================
+    // INTERFACE METHODS (IInteractable)
+    // =================================================================================
+
+    public void OnInteract(PlayerContext context)
+    {
+        // Typically empty if you call Interact() directly from the button,
+        // but if your system calls OnInteract(), we forward it:
+        Interact();
+    }
+
+    public void OnFocus(PlayerContext context)
+    {
+        playerInRange = IsInRange(context.Transform);
+    }
+
+    public void OnBlur(PlayerContext context)
+    {
+        playerInRange = false;
+    }
+
+    // =================================================================================
+    // INTERNAL LOGIC
+    // =================================================================================
+
+    private void PerformExamineLogic()
+    {
+        waitingForDialogueClose = true;
+
+        if (!hasExaminedOnce)
+        {
+            if (dialogueSystem != null)
+            {
+                dialogueSystem.StartDialogue(examineDialogue, "Lisa");
+            }
+            hasExaminedOnce = true;
+        }
+        else
+        {
+            if (lockedSound != null && lockedSoundCooldown <= 0)
+            {
+                AudioManager.Instance?.PlaySFX(lockedSound, transform.position);
+                lockedSoundCooldown = 1.0f;
+            }
+
+            if (closetAnimator != null)
+            {
+                closetAnimator.SetTrigger("Rattle");
+            }
+
+            if (dialogueSystem != null)
+            {
+                dialogueSystem.StartDialogue(lockedDialogue, "Lisa");
+            }
+        }
+    }
+
+    public void UnlockForHiding()
+    {
         canHide = true;
-        Debug.Log("[HallwayClosetInteractable] Closet examined, can now be used for hiding.");
+        Debug.Log("[Closet] Unlocked for hiding sequence.");
+    }
+
+    bool IsInRange(Transform target)
+    {
+        if (target == null) return false;
+        return Vector2.Distance(transform.position, target.position) <= interactionRange;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactionRange);
     }
 }

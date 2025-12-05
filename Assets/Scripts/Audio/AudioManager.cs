@@ -165,8 +165,10 @@ public class AudioManager : MonoBehaviour
     public void PlayMusic(AudioClip clip, bool loop = true, float fadeTime = 1f)
     {
         if (clip == null) return;
+
+        // FIX: Pass the loop parameter to CrossfadeMusic
         if (musicSource.isPlaying)
-            StartCoroutine(CrossfadeMusic(clip, fadeTime));
+            StartCoroutine(CrossfadeMusic(clip, loop, fadeTime));
         else
         {
             musicSource.clip = clip;
@@ -182,12 +184,16 @@ public class AudioManager : MonoBehaviour
         StartCoroutine(FadeOutAndStop(musicSource, fadeTime));
     }
 
-    System.Collections.IEnumerator CrossfadeMusic(AudioClip newClip, float fadeTime)
+    // FIX: Added 'loop' parameter to ensure the new clip gets the correct loop setting
+    System.Collections.IEnumerator CrossfadeMusic(AudioClip newClip, bool loop, float fadeTime)
     {
         float half = fadeTime / 2f;
         yield return StartCoroutine(FadeAudioSource(musicSource, 0f, half));
+
         musicSource.clip = newClip;
+        musicSource.loop = loop; // FIX: Apply the loop setting here
         musicSource.Play();
+
         yield return StartCoroutine(FadeAudioSource(musicSource, musicVolume, half));
     }
     #endregion

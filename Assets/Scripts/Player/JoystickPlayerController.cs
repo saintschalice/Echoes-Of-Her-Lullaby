@@ -32,9 +32,14 @@ public class JoystickPlayerController : MonoBehaviour
     [Header("Joystick Reference")]
     public VirtualJoystick joystick;
 
+    public event Action InteractPerformed;
+
+    private PlayerInputRouter inputRouter;
+    private Vector2 moveInputFromRouter = Vector2.zero;
+
     // Variables to store input and state
-    private Vector2 moveDirection = Vector2.zero; // Stores input from Update()
-    private Vector2 lastDirection = Vector2.down; // Used for idle animation direction
+    private Vector2 moveDirection = Vector2.zero;
+    private Vector2 lastDirection = Vector2.down;
 
     void Awake()
     {
@@ -48,6 +53,25 @@ public class JoystickPlayerController : MonoBehaviour
         instanceChanged?.Invoke(this);
     }
 
+    private void OnEnable()
+    {
+        SubscribeToJoystick(joystick);
+
+        PlayerInputRouter.OnInstanceChanged += HandleInputRouterChanged;
+        HandleInputRouterChanged(PlayerInputRouter.Instance);
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromJoystick();
+        PlayerInputRouter.OnInstanceChanged -= HandleInputRouterChanged;
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= OnInteractTriggered;
+            inputRouter.MoveVectorChanged -= OnMoveVectorChanged;
+        }
+    }
+
     void OnDestroy()
     {
         if (Instance == this)
@@ -55,6 +79,8 @@ public class JoystickPlayerController : MonoBehaviour
             Instance = null;
             instanceChanged?.Invoke(null);
         }
+
+        UnsubscribeFromJoystick();
     }
 
     void Start()
@@ -68,11 +94,9 @@ public class JoystickPlayerController : MonoBehaviour
         if (joystick == null)
             joystick = FindFirstObjectByType<VirtualJoystick>();
 
-        // Run your custom spawn logic
-        SpawnAtSavedPoint();
+        SubscribeToJoystick(joystick);
 
-        // **IMPORTANT INSPECTOR CHECK:** // 1. Ensure Rigidbody2D Collision Detection is set to 'Continuous'.
-        // 2. Ensure Rigidbody2D Interpolate is set to 'Interpolate'.
+        SpawnAtSavedPoint();
     }
 
     void LateUpdate()
@@ -85,6 +109,7 @@ public class JoystickPlayerController : MonoBehaviour
     void SpawnAtSavedPoint()
     {
         string spawnName = "DefaultSpawn";
+        // Ensure GameManager exists before checking it to prevent potential null refs here too
         if (GameManager.Instance != null)
         {
             spawnName = GameManager.Instance.currentSpawnPointName;
@@ -96,51 +121,116 @@ public class JoystickPlayerController : MonoBehaviour
             if (sp.spawnPointName == spawnName)
             {
                 transform.position = sp.transform.position;
-                Debug.Log($"[Player] Spawned at: {spawnName}");
                 return;
             }
         }
 
-        // Fallback
         if (spawnPoints.Length > 0)
         {
             transform.position = spawnPoints[0].transform.position;
-            Debug.Log("[Player] Spawned at fallback spawn point");
         }
     }
 
-    // Runs once per frame (Variable framerate). Used for input and visual logic.
     void Update()
     {
-        // **1. Handle Input (Store the direction for FixedUpdate)**
-        moveDirection = joystick.Direction();
+        // 1. Safety Check: Try to find joystick if missing
+        if (joystick == null)
+        {
+            SubscribeToJoystick(FindFirstObjectByType<VirtualJoystick>());
+        }
 
-        // **2. Handle Visuals**
+        // 2. Handle Input
+        // We use the null conditional operator (?) to safely access Direction
+        Vector2 joystickDirection = (joystick != null) ? joystick.Direction() : Vector2.zero;
+
+        moveDirection = joystickDirection != Vector2.zero ? joystickDirection : moveInputFromRouter;
+
+        // 3. Handle Visuals
         HandleAnimation();
     }
 
-    // Runs at a fixed interval. Used for all physics logic.
     void FixedUpdate()
     {
-        // **3. Handle Physics Movement**
         HandleMovement();
+    }
+
+    private void SubscribeToJoystick(VirtualJoystick target)
+    {
+        if (target == joystick && target != null)
+            return;
+
+        UnsubscribeFromJoystick();
+        joystick = target;
+
+        if (joystick != null)
+        {
+            joystick.InteractPressed += OnInteractTriggered;
+        }
+
+        RefreshRouterSubscription();
+    }
+
+    private void UnsubscribeFromJoystick()
+    {
+        if (joystick != null)
+        {
+            joystick.InteractPressed -= OnInteractTriggered;
+        }
+
+        joystick = null;
+        RefreshRouterSubscription();
+    }
+
+    private void HandleInputRouterChanged(PlayerInputRouter router)
+    {
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= OnInteractTriggered;
+            inputRouter.MoveVectorChanged -= OnMoveVectorChanged;
+        }
+
+        inputRouter = router;
+
+        RefreshRouterSubscription();
+
+        if (inputRouter != null)
+        {
+            moveInputFromRouter = inputRouter.LastMoveVector;
+        }
+    }
+
+    private void OnInteractTriggered()
+    {
+        InteractPerformed?.Invoke();
+    }
+
+    private void RefreshRouterSubscription()
+    {
+        if (inputRouter == null)
+            return;
+
+        inputRouter.InteractPerformed -= OnInteractTriggered;
+        inputRouter.MoveVectorChanged -= OnMoveVectorChanged;
+
+        inputRouter.InteractPerformed += OnInteractTriggered;
+        inputRouter.MoveVectorChanged += OnMoveVectorChanged;
+    }
+
+    private void OnMoveVectorChanged(Vector2 moveInput)
+    {
+        moveInputFromRouter = moveInput;
     }
 
     void HandleMovement()
     {
-        // This is now in FixedUpdate, using the 'moveDirection' stored in Update().
         if (usePhysics && rb != null)
         {
-            // Set the linear velocity. This is the correct, non-obsolete way for a physics body.
             rb.linearVelocity = moveDirection * moveSpeed;
-           // Debug.Log($"[PlayerController] Setting linearVelocity: {rb.linearVelocity}");
         }
         else
         {
-            // Non-physics movement, using Time.fixedDeltaTime for consistency in FixedUpdate
             Vector3 movement = new Vector3(moveDirection.x, moveDirection.y, 0) * moveSpeed * Time.fixedDeltaTime;
             transform.Translate(movement);
-           // Debug.Log($"[PlayerController] Translating: {movement}");
         }
     }
 

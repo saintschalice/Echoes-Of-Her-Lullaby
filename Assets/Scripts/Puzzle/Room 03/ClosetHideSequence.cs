@@ -1,174 +1,411 @@
-﻿using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events; // Required for UnityAction
 using System.Collections;
 
-public class ClosetHideSequence : MonoBehaviour
+[RequireComponent(typeof(Collider2D))]
+public class ClosetHideSequence : MonoBehaviour, IInteractable
 {
     [Header("References")]
     public Animator closetAnimator;
-    public CanvasGroup fadeCanvas;
-    public Button exitButton;
-    public AudioClip muffledLoop;
-    public float safeDistance = 8f;
-    public Vector2 exitOffset = new Vector2(0f, -1.5f);
 
-    private Transform player;
-    private Collider2D playerCollider;
-    private string originalTag;
+    [Header("Interaction Settings")]
+    public float interactionRadius = 2.0f;
+
+    [Header("Hiding Visuals")]
+    public float hideZoomSize = 3.5f;
+    public float zoomDuration = 0.5f;
+
+    [Tooltip("Very subtle shake magnitude in world units. Reduced for Hallway.")]
+    public float shakeMagnitude = 0.0003f; // REDUCED INTENSITY
+
+    [Tooltip("How quickly the camera follows the shake offset (0–1).")]
+    [Range(0f, 1f)] public float shakeSmoothing = 0.15f;
+
+    [Tooltip("How fast the shake moves (frequency).")]
+    public float shakeFrequency = 0.75f;
+
+    [Header("Audio")]
+    public AudioClip muffledLoop; // Heartbeat or ambience
+    [Range(0f, 1f)] public float audioVolume = 1.0f;
+    public float audioFadeDuration = 0.5f;
+
+    [Header("Exit Settings")]
+    public Vector2 exitOffset = new Vector2(0f, -1.5f);
+    [TextArea] public string exitWhisper = "Not ready... never ready... too much pain...";
+
+    // State
+    public bool IsHiding => isHiding;
     private bool isHiding = false;
-    private bool canHide = false;
+
+    // Internal References
+    private Camera mainCamera;
+    private JoystickPlayerController playerController;
+    private SpriteRenderer[] playerRenderers;
+    private int originalPlayerLayer;
+    private float originalOrthoSize;
+    private Vector3 originalCameraPos;
+
+    private AudioSource audioSource;
+    private Coroutine activeSequence;
+    private Coroutine shakeCoroutine;
+    private Coroutine audioFadeCoroutine;
+
+    // --- BUTTON LOGIC (Copied from IslandHideAndRecipeInteractable) ---
+    private OnScreenInteractButton cachedButton;
+    private Button cachedUnityButton;
+    private UnityAction onHiddenInteractAction;
+
+    private void Awake()
+    {
+        // Cache the delegate once to ensure identity equality for Add/Remove Listener
+        onHiddenInteractAction = new UnityAction(OnHiddenInteract);
+    }
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (player != null)
-            playerCollider = player.GetComponent<Collider2D>();
+        // 1. Setup Camera
+        mainCamera = Camera.main;
+        if (mainCamera != null)
+            originalOrthoSize = mainCamera.orthographicSize;
 
-        if (fadeCanvas != null)
-        {
-            fadeCanvas.alpha = 0;
-            fadeCanvas.interactable = false;
-            fadeCanvas.blocksRaycasts = false;
-        }
+        // 2. Setup Audio
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.clip = muffledLoop;
+        audioSource.loop = true;
+        audioSource.playOnAwake = false;
+        audioSource.volume = 0f;
+        audioSource.spatialBlend = 0f; // 2D Sound
 
-        if (exitButton != null)
+        // 3. Find Player (Cache references)
+        FindPlayerReferences();
+
+        // 4. Find Button
+        RefreshButtonReference();
+    }
+
+    void FindPlayerReferences()
+    {
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null)
         {
-            exitButton.gameObject.SetActive(false);
-            exitButton.onClick.RemoveAllListeners();
-            exitButton.onClick.AddListener(GetOutOfCloset);
+            playerController = p.GetComponent<JoystickPlayerController>();
+            playerRenderers = p.GetComponentsInChildren<SpriteRenderer>();
         }
     }
 
-    IEnumerator CheckEmilyStatusRoutine()
+    void RefreshButtonReference()
     {
-        float checkInterval = 0.5f; // Only check 2 times per second
-
-        while (true)
+        if (cachedButton == null)
         {
-            var emily = FindFirstObjectByType<EmilyGhost>();
-            canHide = (emily != null && emily.isActiveAndEnabled);
-
-            yield return new WaitForSeconds(checkInterval);
+            cachedButton = FindFirstObjectByType<OnScreenInteractButton>();
+            if (cachedButton != null)
+            {
+                cachedUnityButton = cachedButton.GetComponent<Button>();
+            }
         }
     }
 
-    public void HideInCloset()
+    void OnDisable()
     {
-        if (isHiding) return;
+        if (isHiding) ResetHidingStateInstant();
+    }
 
-        if (!canHide)
+    // =================================================================================
+    // INTERACTABLE IMPLEMENTATION
+    // =================================================================================
+
+    public void Interact()
+    {
+        // 1. Ensure references are set up
+        if (playerController == null)
         {
-            DialogueSystemV2.Instance?.StartDialogue("There's no reason to hide right now...", "Lisa");
+            FindPlayerReferences();
+        }
+
+        if (activeSequence != null) return;
+
+        RefreshButtonReference();
+
+        // Toggle Hiding State
+        if (isHiding)
+        {
+            ExitHiding();
+        }
+        else
+        {
+            StartCoroutine(EnterHidingSequence());
+        }
+    }
+
+    public void OnInteract(PlayerContext context)
+    {
+        if (playerController == null)
+        {
+            GameObject p = context.PlayerObject ?? GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+            {
+                playerController = p.GetComponent<JoystickPlayerController>();
+                playerRenderers = p.GetComponentsInChildren<SpriteRenderer>();
+            }
+        }
+
+        if (playerController == null) return;
+
+        float dist = Vector2.Distance(transform.position, playerController.transform.position);
+        if (dist > interactionRadius)
+        {
             return;
         }
 
-        StartCoroutine(HideRoutine());
+        Interact();
     }
 
-    IEnumerator HideRoutine()
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
+
+    // =================================================================================
+
+    // --- PUBLIC METHODS FOR EXTERNAL SCRIPTS ---
+
+    // Acts as a TOGGLE: Call once to Hide, call again to Exit.
+    public void HideInCloset()
     {
-        isHiding = true;
-
-        // Disable player controls
-        var controller = player.GetComponent<JoystickPlayerController>();
-        if (controller) controller.enabled = false;
-
-        // Make Lisa invisible to Emily
-        if (player != null)
-        {
-            originalTag = player.tag;
-            player.tag = "Untagged"; // Emily ignores her now
-        }
-        if (playerCollider != null)
-            playerCollider.enabled = false;
-
-        closetAnimator?.SetTrigger("Hide");
-        yield return new WaitForSeconds(0.3f);
-
-        yield return StartCoroutine(Fade(1f, 1f));
-        if (fadeCanvas != null)
-        {
-            fadeCanvas.interactable = true;
-            fadeCanvas.blocksRaycasts = true;
-        }
-
-        // Muffled ambient
-        if (muffledLoop != null)
-            LoopingSoundManager.Instance.PlayLoopingSound(muffledLoop, "closet_muffle", 0.6f);
-
-        if (exitButton != null)
-            exitButton.gameObject.SetActive(true);
-
-        // Wait until Emily is far enough
-        while (true)
-        {
-            var emily = FindFirstObjectByType<EmilyGhost>();
-            if (emily == null) break;
-
-            float dist = Vector2.Distance(emily.transform.position, player.position);
-            if (dist >= safeDistance)
-                break;
-
-            yield return null;
-        }
+        // Ensure we don't start double sequences
+        if (activeSequence != null) return;
+        Interact();
     }
 
     public void GetOutOfCloset()
     {
+        if (activeSequence != null) return;
+        ExitHiding();
+    }
+
+    // -------------------------------------------------------------
+
+    IEnumerator EnterHidingSequence()
+    {
+        isHiding = true;
+
+        // --- BUTTON LOCK (Island Style) ---
+        if (cachedButton != null && cachedUnityButton != null)
+        {
+            cachedButton.SetInteractionLock(true);
+            try
+            {
+                cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
+                cachedUnityButton.onClick.AddListener(onHiddenInteractAction);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Closet] Error adding listener: {e.Message}");
+            }
+        }
+        // ----------------------------------
+
+        // 1. Capture Camera Anchor
+        if (mainCamera != null) originalCameraPos = mainCamera.transform.position;
+
+        // 2. Disable Player
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+            Rigidbody2D rb = playerController.GetComponent<Rigidbody2D>();
+            if (rb != null) rb.linearVelocity = Vector2.zero;
+
+            // Visuals
+            if (playerRenderers != null)
+                foreach (var sr in playerRenderers) sr.enabled = false;
+
+            // Layer (Invisible to Enemy Raycasts)
+            originalPlayerLayer = playerController.gameObject.layer;
+            playerController.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        }
+
+        // 3. Visuals (Animator)
+        if (closetAnimator != null) closetAnimator.SetTrigger("Hide");
+
+        // 4. Camera & Audio Effects
+        activeSequence = StartCoroutine(CameraZoom(hideZoomSize));
+        shakeCoroutine = StartCoroutine(CameraShakeRoutine());
+        FadeAudio(true);
+
+        yield return activeSequence;
+        activeSequence = null;
+    }
+
+    private void ExitHiding()
+    {
         if (!isHiding) return;
-        StartCoroutine(ExitRoutine());
+        if (activeSequence != null) StopCoroutine(activeSequence);
+
+        // Ensure activeSequence is cleared
+        activeSequence = null;
+
+        StartCoroutine(ExitHidingRoutine());
     }
 
-    IEnumerator ExitRoutine()
+    // Triggered by the OnScreenInteractButton when locked
+    private void OnHiddenInteract()
     {
-        if (exitButton != null)
-            exitButton.gameObject.SetActive(false);
+        if (activeSequence != null) return; // Prevent spamming while animating
+        if (isHiding) ExitHiding();
+    }
 
-        LoopingSoundManager.Instance.StopLoopingSound("closet_muffle");
-        yield return StartCoroutine(Fade(0f, 1f));
-
-        if (fadeCanvas != null)
-        {
-            fadeCanvas.interactable = false;
-            fadeCanvas.blocksRaycasts = false;
-        }
-
-        // Re-enable Lisa visibility and controls
-        if (player != null)
-            player.tag = originalTag;
-        if (playerCollider != null)
-            playerCollider.enabled = true;
-
-        var controller = player.GetComponent<JoystickPlayerController>();
-        if (controller) controller.enabled = true;
-
-        // Move Lisa to exit position
-        if (player != null)
-        {
-            Vector3 newPos = transform.position + (Vector3)exitOffset;
-            player.position = newPos;
-        }
-
-        // Exit animation
-        closetAnimator?.SetTrigger("Open");
-        yield return new WaitForSeconds(0.5f);
-        closetAnimator?.SetTrigger("Close");
-
+    IEnumerator ExitHidingRoutine()
+    {
         isHiding = false;
+
+        // 1. Reset Effects
+        if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+        // Snap back to anchor to prevent drift
+        if (mainCamera != null) mainCamera.transform.position = originalCameraPos;
+        FadeAudio(false);
+
+        // 2. Zoom Out
+        activeSequence = StartCoroutine(CameraZoom(originalOrthoSize));
+
+        // 3. Animator
+        if (closetAnimator != null)
+        {
+            closetAnimator.SetTrigger("Open");
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        // 4. Re-enable Player
+        if (playerController != null)
+        {
+            // Position Offset
+            playerController.transform.position = transform.position + (Vector3)exitOffset;
+
+            // Restore Layer
+            playerController.gameObject.layer = originalPlayerLayer;
+
+            // Restore Visuals
+            if (playerRenderers != null)
+                foreach (var sr in playerRenderers) sr.enabled = true;
+
+            // Restore Input
+            playerController.enabled = true;
+        }
+
+        // --- BUTTON UNLOCK (Island Style) ---
+        if (cachedButton != null && cachedUnityButton != null)
+        {
+            try
+            {
+                cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
+                cachedButton.SetInteractionLock(false);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[Closet] Error removing listener: {e.Message}");
+            }
+        }
+        // ------------------------------------
+
+        yield return activeSequence;
+        activeSequence = null;
+
+        // 5. Close Door Animation
+        if (closetAnimator != null) closetAnimator.SetTrigger("Close");
     }
 
-    IEnumerator Fade(float target, float duration)
+    private void ResetHidingStateInstant()
     {
-        if (fadeCanvas == null) yield break;
-        float start = fadeCanvas.alpha;
-        float t = 0f;
-        while (t < 1f)
+        isHiding = false;
+
+        // Cleanup Button
+        if (cachedButton != null && cachedUnityButton != null)
         {
-            t += Time.deltaTime / duration;
-            fadeCanvas.alpha = Mathf.Lerp(start, target, t);
+            cachedUnityButton.onClick.RemoveListener(onHiddenInteractAction);
+            cachedButton.SetInteractionLock(false);
+        }
+
+        if (mainCamera != null) mainCamera.orthographicSize = originalOrthoSize;
+        if (audioSource != null) audioSource.Stop();
+
+        if (playerController != null)
+        {
+            playerController.enabled = true;
+            playerController.gameObject.layer = originalPlayerLayer;
+            if (playerRenderers != null) foreach (var sr in playerRenderers) sr.enabled = true;
+        }
+    }
+
+    IEnumerator CameraZoom(float targetSize)
+    {
+        if (mainCamera == null) yield break;
+        float startSize = mainCamera.orthographicSize;
+        float elapsed = 0f;
+        while (elapsed < zoomDuration)
+        {
+            elapsed += Time.deltaTime;
+            mainCamera.orthographicSize = Mathf.Lerp(startSize, targetSize, elapsed / zoomDuration);
             yield return null;
         }
-        fadeCanvas.alpha = target;
+        mainCamera.orthographicSize = targetSize;
+    }
+
+    IEnumerator CameraShakeRoutine()
+    {
+        if (mainCamera == null) yield break;
+
+        float time = 0f;
+        mainCamera.transform.position = originalCameraPos;
+
+        while (isHiding)
+        {
+            time += Time.deltaTime * shakeFrequency;
+
+            // Smooth Perlin Noise Shake
+            float noiseX = (Mathf.PerlinNoise(time, 0f) - 0.5f) * 2f;
+            float noiseY = (Mathf.PerlinNoise(0f, time) - 0.5f) * 2f;
+
+            Vector3 targetOffset = new Vector3(
+                noiseX * shakeMagnitude,
+                noiseY * shakeMagnitude,
+                0f
+            );
+
+            Vector3 targetPos = originalCameraPos + targetOffset;
+
+            mainCamera.transform.position = Vector3.Lerp(
+                mainCamera.transform.position,
+                targetPos,
+                shakeSmoothing
+            );
+
+            yield return null;
+        }
+
+        if (mainCamera != null) mainCamera.transform.position = originalCameraPos;
+    }
+
+    void FadeAudio(bool fadeIn)
+    {
+        if (audioFadeCoroutine != null) StopCoroutine(audioFadeCoroutine);
+        audioFadeCoroutine = StartCoroutine(FadeAudioRoutine(fadeIn));
+    }
+
+    IEnumerator FadeAudioRoutine(bool fadeIn)
+    {
+        if (audioSource == null) yield break;
+        float target = fadeIn ? audioVolume : 0f;
+        float start = audioSource.volume;
+
+        if (fadeIn && !audioSource.isPlaying) audioSource.Play();
+
+        float elapsed = 0f;
+        while (elapsed < audioFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            audioSource.volume = Mathf.Lerp(start, target, elapsed / audioFadeDuration);
+            yield return null;
+        }
+        audioSource.volume = target;
+        if (!fadeIn) audioSource.Stop();
     }
 }

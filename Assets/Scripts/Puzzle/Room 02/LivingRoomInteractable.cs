@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class LivingRoomInteractable : MonoBehaviour
+public class LivingRoomInteractable : MonoBehaviour, IInteractable
 {
     public enum InteractableType
     {
@@ -37,33 +37,65 @@ public class LivingRoomInteractable : MonoBehaviour
         }
     }
 
-    void Update()
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
     {
-        if (player == null) return;
+        // Safety check if dialogue is open
+        if (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            return;
 
-        float distance = Vector2.Distance(transform.position, player.position);
-        playerInRange = distance <= interactionRange;
-
-        if (interactPrompt != null)
+        if (roomController == null)
         {
-            interactPrompt.SetActive(playerInRange && !DialogueSystemV2.Instance.IsDialogueActive());
+            roomController = FindFirstObjectByType<Room02_LivingRoomController>();
+            if (roomController == null) return;
         }
 
-        // Touch-based interaction
-        if (playerInRange && Input.GetMouseButtonDown(0))
-        {
-            Vector2 touchPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(touchPos, Vector2.zero);
+        // Logic copied from OnInteract, but without the manual Distance check 
+        // because the InteractionTracker already confirmed we are close enough.
 
-            if (hit.collider != null && hit.collider.gameObject == gameObject)
-            {
-                Interact();
-            }
+        switch (type)
+        {
+            case InteractableType.TV:
+                roomController.OnTVInteract();
+                break;
+            case InteractableType.Frame:
+                roomController.OnFrameExamine();
+                break;
+            case InteractableType.Bookshelf:
+                DialogueSystemV2.Instance?.StartDialogue("Just a bookshelf with old, dusty books.", "Lisa");
+                break;
+            case InteractableType.Bookshelf2:
+                roomController.OnBookshelf2Interact();
+                break;
+            case InteractableType.ToyBox:
+                roomController.OnToyBoxInteract();
+                break;
+            case InteractableType.Couch:
+                roomController.OnCouchInteract();
+                break;
+            case InteractableType.LooseFloorboard:
+                roomController.OnLooseFloorboardInteract();
+                break;
+            case InteractableType.SmallKey:
+                roomController.OnSmallKeyInteract();
+                break;
+            case InteractableType.CoffeeTableKey:
+                roomController.OnCoffeeTableKeyInteract();
+                break;
         }
     }
+    // =================================================================================
 
-    void Interact()
+    public void OnInteract(PlayerContext context)
     {
+        player = context.Transform;
+        playerInRange = IsInRange(player);
+
+        if (!playerInRange || (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()))
+            return;
+
         if (roomController == null) return;
 
         switch (type)
@@ -96,6 +128,33 @@ public class LivingRoomInteractable : MonoBehaviour
                 roomController.OnCoffeeTableKeyInteract();
                 break;
         }
+    }
+
+    public void OnFocus(PlayerContext context)
+    {
+        player = context.Transform;
+        playerInRange = IsInRange(player);
+
+        if (interactPrompt != null)
+        {
+            bool canShow = playerInRange && (DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive());
+            interactPrompt.SetActive(canShow);
+        }
+    }
+
+    public void OnBlur(PlayerContext context)
+    {
+        playerInRange = false;
+        if (interactPrompt != null)
+        {
+            interactPrompt.SetActive(false);
+        }
+    }
+
+    bool IsInRange(Transform target)
+    {
+        if (target == null) return false;
+        return Vector2.Distance(transform.position, target.position) <= interactionRange;
     }
 
     void OnDrawGizmosSelected()

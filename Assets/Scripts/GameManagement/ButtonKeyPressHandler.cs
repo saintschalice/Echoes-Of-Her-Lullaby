@@ -5,11 +5,25 @@ using UnityEngine.UI;
 public class ButtonKeyPressHandler : MonoBehaviour
 {
     private Button button;
+    private PlayerInputRouter inputRouter;
 
-    void Start()
+    void OnEnable()
     {
         // Get the Button component attached to this GameObject.
         button = GetComponent<Button>();
+
+        PlayerInputRouter.OnInstanceChanged += HandleInputRouterChanged;
+        HandleInputRouterChanged(PlayerInputRouter.Instance);
+    }
+
+    void OnDisable()
+    {
+        PlayerInputRouter.OnInstanceChanged -= HandleInputRouterChanged;
+
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= HandleInteractPerformed;
+        }
     }
 
     void Update()
@@ -20,5 +34,25 @@ public class ButtonKeyPressHandler : MonoBehaviour
             // Programmatically trigger the button's OnClick() event.
             button.onClick.Invoke();
         }
+    }
+
+    private void HandleInputRouterChanged(PlayerInputRouter router)
+    {
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= HandleInteractPerformed;
+        }
+
+        inputRouter = router;
+
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed += HandleInteractPerformed;
+        }
+    }
+
+    private void HandleInteractPerformed()
+    {
+        button?.onClick?.Invoke();
     }
 }

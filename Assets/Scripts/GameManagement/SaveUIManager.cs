@@ -148,7 +148,8 @@ public class SaveUIManager : MonoBehaviour
             // In MainMenu, don't use closePanelButton (use backToMainMenuButton instead)
             if (!isInMainMenu)
             {
-                closePanelButton.onClick.AddListener(CloseSaveLoadPanel);
+                // UPDATED: Use lambda to pass 'true' to CloseSaveLoadPanel
+                closePanelButton.onClick.AddListener(() => CloseSaveLoadPanel(true));
             }
         }
 
@@ -307,17 +308,21 @@ public class SaveUIManager : MonoBehaviour
             Time.timeScale = 0f;
         }
 
+        // --- EXCLUSIVITY RULE UPDATE ---
+        // Force Inventory to close when Save UI opens
         InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
         if (inventoryUI != null)
         {
             inventoryUI.ForceCloseInventory();
         }
+        // -------------------------------
 
         RefreshSlots();
         Debug.Log("[SaveUI] Save/Load panel opened");
     }
 
-    public void CloseSaveLoadPanel()
+    // UPDATED: Added restorePauseMenu parameter
+    public void CloseSaveLoadPanel(bool restorePauseMenu = true)
     {
         if (saveLoadPanel != null)
             saveLoadPanel.SetActive(false);
@@ -326,7 +331,7 @@ public class SaveUIManager : MonoBehaviour
         {
             Time.timeScale = 1f;
         }
-        else
+        else if (restorePauseMenu) // Only restore pause menu if requested
         {
             if (PauseMenuManager.Instance != null)
             {
@@ -334,7 +339,9 @@ public class SaveUIManager : MonoBehaviour
             }
         }
 
+        // Reset the flag unless we are just hiding it momentarily (logic choice: usually reset here)
         wasOpenedFromPauseMenu = false;
+
         Debug.Log("[SaveUI] Save/Load panel closed");
     }
 
@@ -366,7 +373,7 @@ public class SaveUIManager : MonoBehaviour
                 else if (SaveSystem.Instance != null)
                 {
                     SaveSystem.Instance.LoadGame(slotIndex);
-                    CloseSaveLoadPanel();
+                    CloseSaveLoadPanel(true); // Default behavior
                     if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
                     {
                         PauseMenuManager.Instance.ResumeGame();
@@ -387,7 +394,7 @@ public class SaveUIManager : MonoBehaviour
             else if (SaveSystem.Instance != null)
             {
                 SaveSystem.Instance.LoadGame(slotIndex);
-                CloseSaveLoadPanel();
+                CloseSaveLoadPanel(true); // Default behavior
                 if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
                 {
                     PauseMenuManager.Instance.ResumeGame();
@@ -448,7 +455,7 @@ public class SaveUIManager : MonoBehaviour
         else if (SaveSystem.Instance != null)
         {
             SaveSystem.Instance.CreateNewGame();
-            CloseSaveLoadPanel();
+            CloseSaveLoadPanel(true); // Default behavior
 
             if (wasOpenedFromPauseMenu && PauseMenuManager.Instance != null)
             {
@@ -494,7 +501,7 @@ public class SaveUIManager : MonoBehaviour
         {
             if (saveLoadPanel != null && saveLoadPanel.activeSelf)
             {
-                CloseSaveLoadPanel();
+                CloseSaveLoadPanel(true); // Default behavior
             }
             else
             {

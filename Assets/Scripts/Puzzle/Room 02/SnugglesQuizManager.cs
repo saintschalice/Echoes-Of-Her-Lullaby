@@ -1,51 +1,35 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class SnugglesQuizManager : MonoBehaviour
 {
     public static SnugglesQuizManager Instance { get; private set; }
 
-    [Header("Quiz State")]
-    private bool hasOpenedDiaryOnce = false;
-    private bool hasExaminedTeddy = false;
-    private bool hasReopenedDiaryAfterExamine = false;
-    private bool hasAnsweredCorrectly = false;
-
-    [Header("Quiz UI")]
+    [Header("References")]
+    public MrSnugglesController snuggles;
     public GameObject quizPanel;
     public TextMeshProUGUI questionText;
     public Button option1Button;
     public Button option2Button;
-    public Button option3Button;
+    public Button option3Button; // correct
     public Button option4Button;
+
+    [Header("Button Labels")]
     public TextMeshProUGUI option1Text;
     public TextMeshProUGUI option2Text;
     public TextMeshProUGUI option3Text;
     public TextMeshProUGUI option4Text;
 
-    [Header("Feedback")]
-    public GameObject feedbackPanel;
-    public TextMeshProUGUI feedbackText;
-    public Button feedbackOkButton;
+    // Public getter so DiaryReaderUI can check if we are busy even before the panel opens
+    public bool IsEventPendingOrActive => IsPanelVisible() || pendingQuiz || waitingRetry;
 
-    [Header("Quiz Content")]
-    public string quizQuestion = "Where in the diary was Snuggles mentioned?";
-    public string option1Label = "Page 1 - The Beginning";
-    public string option2Label = "Page 2 - The Garden";
-    public string option3Label = "Page 3 - Lisa's Room"; // CORRECT
-    public string option4Label = "Page 4 - The Attic";
-    public string correctFeedback = "Correct! You remember now. There's something inside Snuggles.";
-    public string wrongFeedback = "That's not right... Maybe I should read the diary again.";
-
-    [Header("Items")]
-    [Tooltip("Item ID for Mr. Snuggles teddy bear")]
-    public string snugglesItemId = "mr_snuggles";
-
-    [Tooltip("Item ID for the winding key")]
-    public string windingKeyItemId = "winding_key";
-
-    private const int CORRECT_ANSWER = 3; // Option 3 is correct
+    [Header("Debug")]
+    [SerializeField] private bool pendingQuiz;
+    [SerializeField] private bool waitingRetry;
+    private JoystickPlayerController playerController;
+    private CanvasGroup panelCanvasGroup;
 
     void Awake()
     {
@@ -58,345 +42,241 @@ public class SnugglesQuizManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+        // INITIALIZATION & VISIBILITY FIX
+        if (quizPanel != null)
+        {
+            // Get or Add CanvasGroup to handle visibility without disabling the GameObject
+            panelCanvasGroup = quizPanel.GetComponent<CanvasGroup>();
+            if (panelCanvasGroup == null)
+            {
+                panelCanvasGroup = quizPanel.AddComponent<CanvasGroup>();
+            }
+
+            // Force hide at start
+            HidePanel();
+        }
+
+        // Find text components if not assigned
+        if (option1Text == null && option1Button != null)
+            option1Text = option1Button.GetComponentInChildren<TextMeshProUGUI>();
+        if (option2Text == null && option2Button != null)
+            option2Text = option2Button.GetComponentInChildren<TextMeshProUGUI>();
+        if (option3Text == null && option3Button != null)
+            option3Text = option3Button.GetComponentInChildren<TextMeshProUGUI>();
+        if (option4Text == null && option4Button != null)
+            option4Text = option4Button.GetComponentInChildren<TextMeshProUGUI>();
     }
 
     void Start()
     {
-        SetupUI();
-        LoadState();
-    }
+        // SAFETY RESET: Ensure pending flags are false on boot to prevent instant triggers
+        // unless explicitly armed by the Controller later.
+        pendingQuiz = false;
+        waitingRetry = false;
+        HidePanel();
 
-    void OnEnable()
-    {
+        playerController = FindFirstObjectByType<JoystickPlayerController>();
+
+        // Ensure subscription happens
+        DiaryReaderUI.OnDiaryClosed -= OnDiaryClosed;
         DiaryReaderUI.OnDiaryClosed += OnDiaryClosed;
+        Debug.Log("[DEBUG_TRACE] SnugglesQuizManager initialized and subscribed.");
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         DiaryReaderUI.OnDiaryClosed -= OnDiaryClosed;
     }
 
-    void SetupUI()
+    public void ArmQuizOnNextDiaryClose()
     {
-        if (quizPanel != null) quizPanel.SetActive(false);
-        if (feedbackPanel != null) feedbackPanel.SetActive(false);
-
-        if (option1Button != null)
-            option1Button.onClick.AddListener(() => SubmitAnswer(1));
-        if (option2Button != null)
-            option2Button.onClick.AddListener(() => SubmitAnswer(2));
-        if (option3Button != null)
-            option3Button.onClick.AddListener(() => SubmitAnswer(3));
-        if (option4Button != null)
-            option4Button.onClick.AddListener(() => SubmitAnswer(4));
-
-        if (feedbackOkButton != null)
-            feedbackOkButton.onClick.AddListener(CloseFeedback);
-
-        if (option1Text != null) option1Text.text = option1Label;
-        if (option2Text != null) option2Text.text = option2Label;
-        if (option3Text != null) option3Text.text = option3Label;
-        if (option4Text != null) option4Text.text = option4Label;
-    }
-
-    #region Public API
-
-    /// <summary>
-    /// Call this when the player examines the teddy bear from inventory
-    /// </summary>
-    public void OnTeddyBearExamined()
-    {
-        Debug.Log($"[SnugglesQuiz] Teddy examined. State: openedDiary={hasOpenedDiaryOnce}, examined={hasExaminedTeddy}, answered={hasAnsweredCorrectly}");
-
-        // Case 1: Quiz solved - give the key NOW
-        if (hasAnsweredCorrectly)
+        if (snuggles == null)
         {
-            UnlockWindingKey();
+            Debug.LogWarning("[DEBUG_TRACE] [SnugglesQuiz] MrSnugglesController reference is null!");
             return;
         }
 
-        // Case 2: Haven't opened diary yet
-        if (!hasOpenedDiaryOnce)
+        // Allow re-arming if it's just pending (idempotent)
+        if (pendingQuiz)
         {
-            ShowDialogue("It's an old teddy bear. I should explore more first.");
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Quiz already armed. Ignoring duplicate request.");
             return;
         }
 
-        // Case 3: First examination after reading diary
-        if (!hasExaminedTeddy)
+        if (waitingRetry)
         {
-            hasExaminedTeddy = true;
-            SaveState();
-            ShowDialogue("I think I read about him somewhere in the diary entries...");
-
-            Debug.Log("[SnugglesQuiz] First examine - opening diary");
-            AutoOpenDiary();
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Waiting for retry. Ignoring Arm request.");
             return;
         }
 
-        // Case 4: Already examined, remind to check diary
-        ShowDialogue("I should check the diary again to remember where Snuggles was mentioned.");
-
-        Debug.Log("[SnugglesQuiz] Re-examine - opening diary");
-        AutoOpenDiary();
+        pendingQuiz = true;
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] >>> QUIZ ARMED! It will trigger on next diary close.");
     }
-
-    /// <summary>
-    /// Closes inventory and opens diary immediately
-    /// </summary>
-    void AutoOpenDiary()
-    {
-        // Close inventory first
-        if (InventoryManager.Instance != null)
-        {
-            InventoryManager.Instance.CloseInventoryUI();
-            Debug.Log("[SnugglesQuiz] Inventory closed");
-        }
-
-        // Open diary
-        if (DiaryReaderUI.Instance != null)
-        {
-            DiaryReaderUI.Instance.ShowDiary();
-            Debug.Log("[SnugglesQuiz] Diary opened");
-        }
-        else
-        {
-            Debug.LogError("[SnugglesQuiz] DiaryReaderUI.Instance is null! Cannot open diary.");
-        }
-    }
-
-    System.Collections.IEnumerator OpenDiaryAfterDelay()
-    {
-        // Wait a bit for dialogue to show
-        yield return new WaitForSeconds(0.5f);
-
-        // Close inventory
-        if (InventoryManager.Instance != null)
-        {
-            InventoryManager.Instance.CloseInventoryUI();
-        }
-
-        // Open diary
-        if (DiaryReaderUI.Instance != null && !DiaryReaderUI.Instance.IsReaderOpen())
-        {
-            DiaryReaderUI.Instance.ShowDiary();
-        }
-    }
-
-    #endregion
-
-    #region Quiz Flow
 
     void OnDiaryClosed()
     {
-        Debug.Log($"[SnugglesQuiz] Diary closed. State: openedOnce={hasOpenedDiaryOnce}, examined={hasExaminedTeddy}, answered={hasAnsweredCorrectly}");
+        Debug.Log($"[DEBUG_TRACE] [SnugglesQuiz] OnDiaryClosed. Pending={pendingQuiz}, Retry={waitingRetry}");
 
-        // Track diary opened
-        if (!hasOpenedDiaryOnce)
+        // If waiting for retry after wrong answer, show quiz again
+        if (waitingRetry)
         {
-            hasOpenedDiaryOnce = true;
-            SaveState();
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Triggering Retry sequence.");
+            waitingRetry = false;
+            StartCoroutine(ShowQuizAfterDelay());
+            return;
         }
 
-        // Show quiz if conditions met
-        if (hasExaminedTeddy && !hasAnsweredCorrectly)
+        // If quiz is armed (first time), show it
+        if (pendingQuiz)
         {
-            hasReopenedDiaryAfterExamine = true;
-            ShowQuiz();
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Triggering Armed Quiz sequence.");
+            StartCoroutine(ShowQuizAfterDelay());
         }
+        else
+        {
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Quiz NOT pending. Doing nothing.");
+        }
+    }
+
+    IEnumerator ShowQuizAfterDelay()
+    {
+        // Wait a frame to ensure diary is fully closed
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(0.15f);
+
+        ShowQuiz();
     }
 
     void ShowQuiz()
     {
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] >>> SHOWING QUIZ NOW");
+        pendingQuiz = false;
+
         if (quizPanel == null)
         {
-            Debug.LogError("[SnugglesQuiz] Quiz panel not assigned!");
+            Debug.LogError("[DEBUG_TRACE] [SnugglesQuiz] Quiz panel is null!");
             return;
         }
 
-        if (questionText != null)
-            questionText.text = quizQuestion;
-
-        quizPanel.SetActive(true);
-        DisablePlayerControls();
-
-        Debug.Log("[SnugglesQuiz] Quiz shown");
-    }
-
-    void SubmitAnswer(int answerNumber)
-    {
-        Debug.Log($"[SnugglesQuiz] Answer submitted: {answerNumber}");
-
-        if (answerNumber == CORRECT_ANSWER)
-        {
-            hasAnsweredCorrectly = true;
-            SaveState();
-            ShowFeedback(correctFeedback, true);
-        }
-        else
-        {
-            ShowFeedback(wrongFeedback, false);
-        }
-
-        if (quizPanel != null)
-            quizPanel.SetActive(false);
-    }
-
-    void ShowFeedback(string message, bool isCorrect)
-    {
-        if (feedbackPanel == null || feedbackText == null)
-        {
-            Debug.LogError("[SnugglesQuiz] Feedback UI not assigned!");
-            EnablePlayerControls();
-            return;
-        }
-
-        feedbackText.text = message;
-        feedbackPanel.SetActive(true);
-
-        Debug.Log($"[SnugglesQuiz] Showing feedback - Correct: {isCorrect}");
-    }
-
-    void CloseFeedback()
-    {
-        if (feedbackPanel != null)
-            feedbackPanel.SetActive(false);
-
-        EnablePlayerControls();
-
-        if (!hasAnsweredCorrectly)
-        {
-            // Wrong answer - reopen diary
-            if (DiaryReaderUI.Instance != null)
-            {
-                DiaryReaderUI.Instance.ShowDiary();
-            }
-        }
-        else
-        {
-            // Correct answer - hint to examine teddy again
-            ShowDialogue("There should be something inside Mr. Snuggles. I should examine him again.");
-        }
-    }
-
-    #endregion
-
-    #region Winding Key
-
-    void UnlockWindingKey()
-    {
-        if (InventoryManager.Instance == null)
-        {
-            Debug.LogError("[SnugglesQuiz] InventoryManager not found!");
-            return;
-        }
-
-        // Check if already has the key
-        if (InventoryManager.Instance.HasItem(windingKeyItemId))
-        {
-            ShowDialogue("I already took the winding key from Mr. Snuggles.");
-            return;
-        }
-
-        // Give the key
-        InventoryManager.Instance.AddItem(windingKeyItemId);
-        ShowDialogue("You found a winding key hidden inside Mr. Snuggles!");
-
-        Debug.Log("[SnugglesQuiz] Winding key added to inventory");
-    }
-
-    #endregion
-
-    #region Player Control
-
-    void DisablePlayerControls()
-    {
-        var playerController = FindFirstObjectByType<JoystickPlayerController>();
+        // Disable player controls
         if (playerController != null)
             playerController.enabled = false;
 
-        var joystick = GameObject.Find("Joystick");
-        if (joystick != null)
-            joystick.SetActive(false);
-    }
-
-    void EnablePlayerControls()
-    {
-        var playerController = FindFirstObjectByType<JoystickPlayerController>();
-        if (playerController != null)
-            playerController.enabled = true;
-
-        var joystick = GameObject.Find("Joystick");
-        if (joystick != null)
-            joystick.SetActive(true);
-    }
-
-    #endregion
-
-    #region Dialogue Helper
-
-    void ShowDialogue(string message)
-    {
-        if (DialogueSystemV2.Instance != null)
+        // Show quiz panel using CanvasGroup or SetActive
+        if (panelCanvasGroup != null)
         {
-            DialogueSystemV2.Instance.StartDialogue(message, "Lisa");
+            panelCanvasGroup.alpha = 1f;
+            panelCanvasGroup.interactable = true;
+            panelCanvasGroup.blocksRaycasts = true;
         }
         else
         {
-            Debug.Log($"[SnugglesQuiz] Dialogue: {message}");
+            quizPanel.SetActive(true);
+        }
+
+        // Set question text
+        if (questionText != null)
+            questionText.text = "What page did Mr. Snuggles get mentioned?";
+
+        // Set button labels
+        if (option1Text != null) option1Text.text = "Page 1";
+        if (option2Text != null) option2Text.text = "Page 2";
+        if (option3Text != null) option3Text.text = "Page 3";
+        if (option4Text != null) option4Text.text = "Page 4";
+
+        // Clear previous listeners
+        option1Button?.onClick.RemoveAllListeners();
+        option2Button?.onClick.RemoveAllListeners();
+        option3Button?.onClick.RemoveAllListeners();
+        option4Button?.onClick.RemoveAllListeners();
+
+        // Add new listeners
+        option1Button?.onClick.AddListener(() => Submit(1));
+        option2Button?.onClick.AddListener(() => Submit(2));
+        option3Button?.onClick.AddListener(() => Submit(3)); // ✅ correct
+        option4Button?.onClick.AddListener(() => Submit(4));
+    }
+
+    void Submit(int choice)
+    {
+        Debug.Log($"[DEBUG_TRACE] [SnugglesQuiz] Player selected option {choice}");
+
+        // Hide quiz panel
+        HidePanel();
+
+        // Re-enable player controls
+        if (playerController != null)
+            playerController.enabled = true;
+
+        if (choice == 3) // Correct answer
+        {
+            StartCoroutine(HandleCorrectAnswer());
+        }
+        else // Wrong answer
+        {
+            StartCoroutine(HandleWrongAnswer());
         }
     }
 
-    #endregion
-
-    #region Save/Load
-
-    void SaveState()
+    private void HidePanel()
     {
-        PlayerPrefs.SetInt("Snuggles_OpenedDiary", hasOpenedDiaryOnce ? 1 : 0);
-        PlayerPrefs.SetInt("Snuggles_ExaminedTeddy", hasExaminedTeddy ? 1 : 0);
-        PlayerPrefs.SetInt("Snuggles_Reopened", hasReopenedDiaryAfterExamine ? 1 : 0);
-        PlayerPrefs.SetInt("Snuggles_Answered", hasAnsweredCorrectly ? 1 : 0);
-        PlayerPrefs.Save();
+        if (panelCanvasGroup != null)
+        {
+            panelCanvasGroup.alpha = 0f;
+            panelCanvasGroup.interactable = false;
+            panelCanvasGroup.blocksRaycasts = false;
+        }
+        else if (quizPanel != null && quizPanel != gameObject)
+        {
+            quizPanel.SetActive(false);
+        }
     }
 
-    void LoadState()
+    private bool IsPanelVisible()
     {
-        hasOpenedDiaryOnce = PlayerPrefs.GetInt("Snuggles_OpenedDiary", 0) == 1;
-        hasExaminedTeddy = PlayerPrefs.GetInt("Snuggles_ExaminedTeddy", 0) == 1;
-        hasReopenedDiaryAfterExamine = PlayerPrefs.GetInt("Snuggles_Reopened", 0) == 1;
-        hasAnsweredCorrectly = PlayerPrefs.GetInt("Snuggles_Answered", 0) == 1;
-
-        Debug.Log($"[SnugglesQuiz] State loaded: openedDiary={hasOpenedDiaryOnce}, examined={hasExaminedTeddy}, answered={hasAnsweredCorrectly}");
+        if (panelCanvasGroup != null) return panelCanvasGroup.alpha > 0;
+        return quizPanel != null && quizPanel.activeSelf;
     }
 
-    public void ResetQuiz()
+    IEnumerator HandleCorrectAnswer()
     {
-        hasOpenedDiaryOnce = false;
-        hasExaminedTeddy = false;
-        hasReopenedDiaryAfterExamine = false;
-        hasAnsweredCorrectly = false;
-        SaveState();
-        Debug.Log("[SnugglesQuiz] Quiz reset");
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Answer Correct.");
+        // Show success dialogue
+        DialogueSystemV2.Instance?.StartDialogue("Got it!", "Lisa");
+
+        // Wait for dialogue to finish
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            yield return null;
+
+        // Mark quiz as solved
+        snuggles?.MarkQuizSolved();
     }
 
-    #endregion
+    IEnumerator HandleWrongAnswer()
+    {
+        Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Answer Wrong. Retrying.");
+        // Show wrong answer dialogue
+        DialogueSystemV2.Instance?.StartDialogue("Wait, that's not correct...", "Lisa");
 
-    #region Public Getters
+        // Wait for dialogue to finish
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            yield return null;
 
-    public bool HasAnsweredCorrectly() => hasAnsweredCorrectly;
-    public bool HasExaminedTeddy() => hasExaminedTeddy;
-    public bool HasOpenedDiary() => hasOpenedDiaryOnce;
+        yield return new WaitForSeconds(0.3f);
 
-    #endregion
+        // Set flag to retry after diary closes again
+        waitingRetry = true;
 
-    #region Context Menu
-
-    [ContextMenu("Test: Examine Teddy")]
-    void TestExamine() => OnTeddyBearExamined();
-
-    [ContextMenu("Test: Reset Quiz")]
-    void TestReset() => ResetQuiz();
-
-    #endregion
+        // Reopen the diary
+        if (DiaryReaderUI.Instance != null)
+        {
+            Debug.Log("[DEBUG_TRACE] [SnugglesQuiz] Reopening diary for retry...");
+            DiaryReaderUI.Instance.ShowDiary();
+        }
+        else
+        {
+            Debug.LogError("[DEBUG_TRACE] [SnugglesQuiz] DiaryReaderUI.Instance is null!");
+        }
+    }
 }

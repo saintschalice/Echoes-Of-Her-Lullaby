@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Globalization;
 
-public class UnifiedDoorInteraction : MonoBehaviour
+public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
 {
     [Header("Door Settings")]
     public string targetSceneName = "Room02_LivingRoom";
@@ -10,6 +11,7 @@ public class UnifiedDoorInteraction : MonoBehaviour
     [Header("Lock Settings")]
     public bool startsLocked = true;
     public string requiredItemId = "house_key";
+    public string requiredItemName = ""; // NEW: Pretty name for the item (e.g. "House Key")
     public bool consumeKeyOnUse = false; // Should key disappear after use?
     public bool unlockPermanently = true; // Save unlocked state?
 
@@ -75,68 +77,51 @@ public class UnifiedDoorInteraction : MonoBehaviour
         }
     }
 
-    void Update()
+    public void Interact()
     {
-        CheckPlayerDistance();
-
-        // Keyboard interaction
-        if (playerInRange && !isTransitioning && Input.GetKeyDown(KeyCode.E))
-        {
-            AttemptOpenDoor();
-        }
-    }
-
-    void OnMouseDown()
-    {
-        Debug.Log($"[UnifiedDoor] Mouse clicked on {doorID}");
-
-        if (!playerInRange)
-        {
-            Debug.Log($"[UnifiedDoor] Player not in range (need to be within {interactionRadius} units)");
-
-            if (dialogueSystem != null)
-            {
-                dialogueSystem.StartDialogue("I need to get closer to the door.", "Lisa");
-            }
-            return;
-        }
-
-        if (isTransitioning)
-        {
-            Debug.Log("[UnifiedDoor] Door transition already in progress");
-            return;
-        }
+        // Tracker handles range, so we just check state
+        if (isTransitioning) return;
 
         AttemptOpenDoor();
     }
 
-    void CheckPlayerDistance()
+    public void OnInteract(PlayerContext context)
     {
-        GameObject player = GameObject.FindGameObjectWithTag(requiredTag);
+        playerInRange = IsPlayerInRange(context.Transform);
 
-        if (player != null)
+        if (!playerInRange)
         {
-            float distance = Vector2.Distance(transform.position, player.transform.position);
-            bool wasInRange = playerInRange;
-            playerInRange = distance <= interactionRadius;
+            ShowDialogue($"I need to get closer to the door.");
+            return;
+        }
 
-            // Update interaction prompt visibility
-            if (wasInRange != playerInRange)
-            {
-                if (interactionPrompt != null)
-                {
-                    interactionPrompt.SetActive(playerInRange && !isTransitioning);
-                }
-            }
-        }
-        else
+        if (isTransitioning) return;
+
+        AttemptOpenDoor();
+    }
+
+    public void OnFocus(PlayerContext context)
+    {
+        playerInRange = IsPlayerInRange(context.Transform);
+        if (interactionPrompt != null)
         {
-            playerInRange = false;
-            if (interactionPrompt != null)
-            {
-                interactionPrompt.SetActive(false);
-            }
+            interactionPrompt.SetActive(playerInRange && !isTransitioning);
         }
+    }
+
+    public void OnBlur(PlayerContext context)
+    {
+        playerInRange = false;
+        if (interactionPrompt != null)
+        {
+            interactionPrompt.SetActive(false);
+        }
+    }
+
+    bool IsPlayerInRange(Transform playerTransform)
+    {
+        if (playerTransform == null) return false;
+        return Vector2.Distance(transform.position, playerTransform.position) <= interactionRadius;
     }
 
     void LoadDoorState()
@@ -216,9 +201,29 @@ public class UnifiedDoorInteraction : MonoBehaviour
             audioSource.PlayOneShot(lockedDoorSound);
         }
 
+        // --- FIX: Logic to display pretty name instead of ID ---
+        string displayName;
+
+        if (!string.IsNullOrEmpty(requiredItemName))
+        {
+            // Use the manual override from Inspector
+            displayName = requiredItemName;
+        }
+        else if (!string.IsNullOrEmpty(requiredItemId))
+        {
+            // Fallback: Format the ID (e.g., "silver_key" -> "Silver Key")
+            displayName = requiredItemId.Replace("_", " ");
+            displayName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(displayName);
+        }
+        else
+        {
+            displayName = "key";
+        }
+
         string message = string.IsNullOrEmpty(requiredItemId)
             ? "The door is locked."
-            : $"The door is locked. I need to find a {requiredItemId}.";
+            : $"It's locked. I need the {displayName} to unlock it.";
+        // -----------------------------------------------------
 
         ShowDialogue(message);
     }

@@ -116,10 +116,11 @@ public class MainMenuManager : MonoBehaviour
     {
         isTransitioning = true;
 
-        if (SaveSystem.Instance != null)
-        {
-            SaveSystem.Instance.CreateNewGame();
-        }
+        // FIXED: Tell SaveSystem to create a new game via PlayerPrefs
+        // This ensures the logic runs AFTER the scene loads in SaveSystem.Start()
+        PlayerPrefs.SetInt("LoadSlotOnStart", -1);
+        PlayerPrefs.Save();
+        Debug.Log("[MainMenu] Queued New Game (-1) for SaveSystem");
 
         // Use ScreenFader if available
         if (ScreenFader.Instance != null)
@@ -194,10 +195,11 @@ public class MainMenuManager : MonoBehaviour
 
         if (lastFoundSlot != -1)
         {
-            if (SaveSystem.Instance != null)
-            {
-                SaveSystem.Instance.LoadGame(lastFoundSlot);
-            }
+            // FIXED: Do not call SaveSystem.LoadGame here directly.
+            // Instead, set the preference so SaveSystem.Start() picks it up in the next scene.
+            PlayerPrefs.SetInt("LoadSlotOnStart", lastFoundSlot);
+            PlayerPrefs.Save();
+            Debug.Log($"[MainMenu] Queued Slot {lastFoundSlot} for SaveSystem");
 
             // Use ScreenFader if available
             if (ScreenFader.Instance != null)

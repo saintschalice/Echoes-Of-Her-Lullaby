@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LockedDoor : MonoBehaviour
+public class LockedDoor : MonoBehaviour, IInteractable
 {
     [Header("Door Identity")]
     public string doorName = "Front Door";
@@ -62,21 +62,13 @@ public class LockedDoor : MonoBehaviour
         CheckSaveState();
     }
 
-    void Update()
+    public void OnInteract(PlayerContext context)
     {
-        CheckPlayerDistance();
+        playerInRange = IsPlayerInRange(context.Transform);
 
-        if (playerInRange && !isOpening && Input.GetMouseButtonDown(0))
-        {
-            AttemptOpenDoor();
-        }
-    }
-
-    void OnMouseDown()
-    {
         if (!playerInRange)
         {
-            Debug.Log($"[{doorName}] Player not in range");
+            ShowDialogue("I need to get closer.");
             return;
         }
 
@@ -85,18 +77,20 @@ public class LockedDoor : MonoBehaviour
         AttemptOpenDoor();
     }
 
-    void CheckPlayerDistance()
+    public void OnFocus(PlayerContext context)
     {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            float distance = Vector2.Distance(transform.position, player.transform.position);
-            playerInRange = distance <= interactionRadius;
-        }
-        else
-        {
-            playerInRange = false;
-        }
+        playerInRange = IsPlayerInRange(context.Transform);
+    }
+
+    public void OnBlur(PlayerContext context)
+    {
+        playerInRange = false;
+    }
+
+    bool IsPlayerInRange(Transform playerTransform)
+    {
+        if (playerTransform == null) return false;
+        return Vector2.Distance(transform.position, playerTransform.position) <= interactionRadius;
     }
 
     void AttemptOpenDoor()

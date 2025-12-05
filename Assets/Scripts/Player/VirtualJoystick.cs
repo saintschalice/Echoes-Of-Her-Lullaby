@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -17,6 +18,15 @@ public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler,
     private Canvas canvas;
     private Camera cam;
     private bool isPressed = false;
+    private PlayerInputRouter inputRouter;
+
+    public event Action InteractPressed;
+
+    private void OnEnable()
+    {
+        PlayerInputRouter.OnInstanceChanged += HandleInputRouterChanged;
+        HandleInputRouterChanged(PlayerInputRouter.Instance);
+    }
 
     void Start()
     {
@@ -51,6 +61,21 @@ public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler,
         Debug.Log("VirtualJoystick: Single-touch D-pad initialized!");
     }
 
+    private void OnDisable()
+    {
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= OnInteractAction;
+        }
+
+        PlayerInputRouter.OnInstanceChanged -= HandleInputRouterChanged;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerInputRouter.OnInstanceChanged -= HandleInputRouterChanged;
+    }
+
     void DisableButtonRaycast(RectTransform button)
     {
         if (button != null)
@@ -78,6 +103,11 @@ public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler,
         isPressed = false;
         inputVector = Vector2.zero;
         Debug.Log("Released - stopped moving");
+    }
+
+    public void OnInteractButtonPressed()
+    {
+        OnInteractAction();
     }
 
     void UpdateDirection(PointerEventData eventData)
@@ -136,5 +166,25 @@ public class VirtualJoystick : MonoBehaviour, IPointerDownHandler, IDragHandler,
     public Vector2 Direction()
     {
         return inputVector;
+    }
+
+    private void HandleInputRouterChanged(PlayerInputRouter router)
+    {
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed -= OnInteractAction;
+        }
+
+        inputRouter = router;
+
+        if (inputRouter != null)
+        {
+            inputRouter.InteractPerformed += OnInteractAction;
+        }
+    }
+
+    private void OnInteractAction()
+    {
+        InteractPressed?.Invoke();
     }
 }

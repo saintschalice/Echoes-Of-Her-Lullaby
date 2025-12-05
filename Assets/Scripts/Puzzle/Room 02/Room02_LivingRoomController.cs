@@ -3,12 +3,20 @@ using System.Collections;
 
 public class Room02_LivingRoomController : MonoBehaviour
 {
+    public static Room02_LivingRoomController Instance { get; private set; }
+
     [Header("Room Objects")]
     public GameObject tv;
     public GameObject rockingChair;
-    public GameObject coffeeTable_Key;
+    public GameObject coffeeTable_Key; // This is the Hallway Key Item (sprite with collider)
     public GameObject books_Pushed;
     public GameObject smallKey;
+
+    [Header("Hallway Event Trigger")]
+    [Tooltip("Location where the player must step to trigger the 'What was that?' dialogue. Defaults to CoffeeTable_Key if empty.")]
+    public Transform hallwayTriggerLocation;
+    public float hallwayTriggerRadius = 2.0f;
+    [SerializeField] private bool hallwayTriggerArmed = false; // Set true after cutscene
 
     [Header("Animators")]
     public Animator tvAnimator;
@@ -19,12 +27,14 @@ public class Room02_LivingRoomController : MonoBehaviour
     public AudioClip rockingChairSound;
     public AudioClip lullabyFragment;
     public AudioClip bookshelfShakeSound;
-    public AudioClip keyRevealSound;
+    public AudioClip keyRevealSound; // plays when CoffeeTable_Key is revealed
+    public AudioClip tvTurnOffSound; // NEW: Played when TV turns off
+    public AudioClip toyBoxUnlockSound; // NEW: Played when toy box unlocks
 
     [Header("TV Ghost Audio")]
-    public AudioSource tvAudioSource;     // Assign in Inspector (AudioSource on the TV)
-    public AudioClip ghostTVAudio;        // Assign the eerie one-time audio
-    public float ghostAudioDelay = 10f;   // Seconds after turning off TV
+    public AudioSource tvAudioSource;
+    public AudioClip ghostTVAudio;
+    public float ghostAudioDelay = 10f;
 
     [Header("Camera Shake")]
     public float shakeIntensity = 0.08f;
@@ -47,6 +57,7 @@ public class Room02_LivingRoomController : MonoBehaviour
     private const string ROOM_NAME = "Room02_LivingRoom";
     private const string FLAG_TV_INTRO_DONE = "TV_IntroSequenceDone";
     private const string FLAG_TV_GHOST_PLAYED = "TV_GhostAudioPlayed";
+    private const string FLAG_TV_GHOST_DIALOGUE = "TV_GhostDialogueShown";
 
     // Item IDs
     private const string SMALL_KEY_ID = "living_room_small_key";
@@ -65,15 +76,49 @@ public class Room02_LivingRoomController : MonoBehaviour
     private bool ghostAudioRunning = false;
     private bool hasPlayedGhostAudio = false;
     private JoystickPlayerController playerController;
+    private Transform playerTransform;
+
+    // NEW: guard so hallway sequence doesn't spam
+    [SerializeField] private bool hallwayEventRunning = false;
+
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
 
     void Start()
     {
         playerController = FindFirstObjectByType<JoystickPlayerController>();
+        playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+        // Default trigger location to the key's position if not explicitly set
+        if (hallwayTriggerLocation == null && coffeeTable_Key != null)
+        {
+            hallwayTriggerLocation = coffeeTable_Key.transform;
+        }
+
         InitializeRoom();
+    }
+
+    void Update()
+    {
+        // Check for Hallway Event Trigger (The "What was that?" moment)
+        // Only active AFTER cutscene (hallwayTriggerArmed) and BEFORE key is revealed.
+        if (hallwayTriggerArmed && !hallwayEventRunning && playerTransform != null)
+        {
+            Vector3 targetPos = hallwayTriggerLocation != null ? hallwayTriggerLocation.position : Vector3.zero;
+            float dist = Vector2.Distance(playerTransform.position, targetPos);
+
+            if (dist <= hallwayTriggerRadius)
+            {
+                StartCoroutine(PlayHallwayEventSequence());
+            }
+        }
     }
 
     void InitializeRoom()
     {
+        // Default: hide key, then let LoadRoomState re-show it if already revealed
         if (coffeeTable_Key != null) coffeeTable_Key.SetActive(false);
         if (books_Pushed != null) books_Pushed.SetActive(false);
         if (smallKey != null) smallKey.SetActive(false);
@@ -83,7 +128,6 @@ public class Room02_LivingRoomController : MonoBehaviour
         bool tvIntroDone = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_INTRO_DONE);
         hasPlayedGhostAudio = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_GHOST_PLAYED);
 
-        // If intro not completed, start/continue the intro on entering the room
         if (!tvIntroDone)
         {
             StartCoroutine(TVEntranceSequence());
@@ -95,7 +139,6 @@ public class Room02_LivingRoomController : MonoBehaviour
             tvTurnedOff = true;
             if (tvAnimator != null) tvAnimator.SetTrigger("TurnOff");
 
-            // If intro done but ghost audio not marked played yet, schedule it once
             if (!hasPlayedGhostAudio && ghostTVAudio != null && tvAudioSource != null)
             {
                 StartCoroutine(PlayGhostTVAudioAfterDelay());
@@ -105,7 +148,8 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (lullabyPlayed && rockingChairAnimator != null)
         {
             rockingChairAnimator.SetBool("isRocking", true);
-            AudioManager.Instance?.PlayAmbient(rockingChairSound, loop: true);
+            // CHANGED: Use PlayLoopingSFX instead of PlayAmbient so it doesn't override room music
+            AudioManager.Instance?.PlayLoopingSFX(rockingChairSound, "rocking_chair");
         }
 
         CheckPuzzleCompletion();
@@ -129,6 +173,16 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         if (state.collectedItems.Contains(COFFEE_TABLE_KEY_ID) && coffeeTable_Key != null)
             coffeeTable_Key.SetActive(false);
+
+        // If we already revealed the key but didn't pick it up, ensure it's visible
+        if (state.interactedObjects.Contains("coffeeTableKeyRevealed") && !state.collectedItems.Contains(COFFEE_TABLE_KEY_ID))
+        {
+            if (coffeeTable_Key != null)
+            {
+                coffeeTable_Key.SetActive(true);
+                Debug.Log("[Room02] CoffeeTable_Key restored visible from saved state.");
+            }
+        }
     }
 
     void SaveRoomState(string key, bool value)
@@ -175,17 +229,42 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void OnTVInteract()
     {
-        // Don’t interact during the intro
         if (introSequenceRunning) return;
 
         bool tvIntroDone = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_INTRO_DONE);
 
-        // If ghost audio is running, allow stopping it first
+        // --- GHOST AUDIO CASE ---
         if (ghostAudioRunning && ghostTVAudio != null)
         {
+            // 1. Stop the ghost audio
+            // FIX: Stop the local source specifically
+            if (tvAudioSource != null && tvAudioSource.isPlaying)
+            {
+                tvAudioSource.Stop();
+            }
+
+            // Safety: Stop any global one-shots if they were used
             AudioManager.Instance?.StopAllSFX();
+
             ghostAudioRunning = false;
 
+            // 2. Play Turn Off Sound
+            if (tvTurnOffSound != null)
+            {
+                AudioManager.Instance?.PlaySFX(tvTurnOffSound);
+            }
+
+            // 3. Trigger Animation
+            if (tvAnimator != null)
+            {
+                tvAnimator.SetTrigger("TurnOff");
+            }
+
+            // 4. Update State
+            tvTurnedOff = true;
+            SaveRoomState("tvTurnedOff", true);
+
+            // 5. Handle Flags
             if (!hasPlayedGhostAudio)
             {
                 SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_PLAYED);
@@ -193,31 +272,31 @@ public class Room02_LivingRoomController : MonoBehaviour
                 hasPlayedGhostAudio = true;
             }
 
+            // 6. Dialogue
             DialogueSystemV2.Instance?.StartDialogue("I should turn that off.", "Lisa");
             Debug.Log("[LivingRoom] Lisa manually stopped ghost TV audio.");
             return;
         }
 
-        // Normal “already off” case
+        // --- ALREADY OFF CASE ---
         if (tvTurnedOff)
         {
             DialogueSystemV2.Instance?.StartDialogue("The TV is already off.", "Lisa");
             return;
         }
 
-        // Otherwise, play Emily's dialogue + turn off process
+        // --- EMILY / INTRO CASE ---
         if (emilyDialogueSound != null)
             AudioManager.Instance?.PlayDialogue(emilyDialogueSound);
 
         DialogueSystemV2.Instance?.StartDialogue(new DialogueLine[]
         {
-        new DialogueLine { text = "IF YOU DON'T LEAVE THIS HOUSE, YOU'LL REGRET IT.", speakerName = "???" },
-        new DialogueLine { text = "It's coming from the TV! I need to turn it off!", speakerName = "Lisa" }
+            new DialogueLine { text = "IF YOU DON'T LEAVE THIS HOUSE, YOU'LL REGRET IT.", speakerName = "???" },
+            new DialogueLine { text = "It's coming from the TV! I need to turn it off!", speakerName = "Lisa" }
         });
 
         StartCoroutine(TurnOffTVAfterDialogue());
     }
-
 
     IEnumerator TurnOffTVAfterDialogue()
     {
@@ -230,16 +309,20 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         if (tvAnimator != null) tvAnimator.SetTrigger("TurnOff");
 
+        // Play dedicated turn off sound
+        if (tvTurnOffSound != null)
+        {
+            AudioManager.Instance?.PlaySFX(tvTurnOffSound);
+        }
+
         tvTurnedOff = true;
         SaveRoomState("tvTurnedOff", true);
 
-        // Mark the intro sequence as completed only after the TV is turned off
         SaveSystem.Instance.TriggerDialogue(FLAG_TV_INTRO_DONE);
         SaveSystem.Instance.OnStoryProgressMade();
 
         if (playerController != null) playerController.enabled = true;
 
-        // Schedule the one-time ghost audio if not already played
         if (!hasPlayedGhostAudio && ghostTVAudio != null)
         {
             Debug.Log("[LivingRoom] Scheduling ghost TV audio...");
@@ -249,7 +332,6 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     IEnumerator PlayGhostTVAudioAfterDelay()
     {
-        // Don’t replay if already done
         if (hasPlayedGhostAudio || ghostTVAudio == null)
             yield break;
 
@@ -261,21 +343,54 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         ghostAudioRunning = true;
 
-        // Play through global AudioManager instead of AudioSource
-        AudioManager.Instance?.PlaySFX(ghostTVAudio);
+        // Resume TV static animation while ghost audio plays
+        if (tvAnimator != null)
+        {
+            tvAnimator.SetTrigger("PlayStatic");
+        }
+
+        // FIX: Use the local AudioSource on the TV GameObject.
+        // This ensures the sound is attached to the TV object.
+        // When the Room02 scene unloads, the TV object is destroyed, and this audio stops automatically.
+        if (tvAudioSource != null)
+        {
+            tvAudioSource.clip = ghostTVAudio;
+            tvAudioSource.Play();
+        }
+        else
+        {
+            // Fallback to global manager if local source missing (though less safe for bleeding)
+            AudioManager.Instance?.PlaySFX(ghostTVAudio);
+        }
 
         hasPlayedGhostAudio = true;
         SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_PLAYED);
         SaveSystem.Instance.OnStoryProgressMade();
 
-        // Optional: Wait for clip length (if known)
+        bool hasShownDialogue = SaveSystem.Instance.WasDialogueTriggered(FLAG_TV_GHOST_DIALOGUE);
+        if (!hasShownDialogue)
+        {
+            // Wait 3 seconds before showing Lisa's reaction
+            yield return new WaitForSeconds(3.0f);
+
+            if (playerController != null) playerController.enabled = false;
+
+            DialogueSystemV2.Instance?.StartDialogue("It's the TV again... what's wrong with it? I turned it off already.", "Lisa");
+
+            while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+                yield return null;
+
+            if (playerController != null) playerController.enabled = true;
+
+            SaveSystem.Instance.TriggerDialogue(FLAG_TV_GHOST_DIALOGUE);
+            SaveSystem.Instance.OnStoryProgressMade();
+        }
+
         if (ghostTVAudio != null)
-            yield return new WaitForSeconds(ghostTVAudio.length);
+            yield return new WaitForSeconds(ghostTVAudio.length - 3.0f);
 
         ghostAudioRunning = false;
     }
-
-
 
     void OnEnable()
     {
@@ -290,15 +405,22 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (lullabyPlayed && rockingChairAnimator != null)
         {
             rockingChairAnimator.SetBool("isRocking", true);
-            if (rockingChairSound != null)
-                AudioManager.Instance?.PlayAmbient(rockingChairSound, loop: true);
+            // CHANGED: Use PlayLoopingSFX here as well
+            AudioManager.Instance?.PlayLoopingSFX(rockingChairSound, "rocking_chair");
         }
     }
 
     void OnDisable()
     {
-        if (rockingChairSound != null)
-            AudioManager.Instance?.StopAmbient();
+        // FIX: Explicitly stop specific room loops so they don't bleed into next scene
+        AudioManager.Instance?.StopLoopingSFX("tv_static");
+        AudioManager.Instance?.StopLoopingSFX("rocking_chair");
+
+        // FIX: Ensure local TV audio source stops if scene changes while it's playing
+        if (tvAudioSource != null)
+        {
+            tvAudioSource.Stop();
+        }
     }
 
     public void OnFrameExamine()
@@ -354,7 +476,7 @@ public class Room02_LivingRoomController : MonoBehaviour
     IEnumerator JumpPlayerBack(Transform player)
     {
         Vector3 startPos = player.position;
-        Vector3 targetPos = startPos + Vector3.down * jumpBackDistance;
+        Vector3 targetPos = startPos + Vector3.left * jumpBackDistance;
 
         float elapsed = 0f;
 
@@ -409,7 +531,10 @@ public class Room02_LivingRoomController : MonoBehaviour
             return;
         }
 
-        DialogueSystemV2.Instance?.StartDialogue("The small key fits! The toy box is now open.", "Lisa");
+        if (toyBoxUnlockSound != null)
+            AudioManager.Instance?.PlaySFX(toyBoxUnlockSound);
+
+        DialogueSystemV2.Instance?.StartDialogue("Yes, it fit!", "Lisa");
         StartCoroutine(ShowToyBoxContents());
     }
 
@@ -456,7 +581,6 @@ public class Room02_LivingRoomController : MonoBehaviour
         StartCoroutine(ShowCouchItems());
     }
 
-
     IEnumerator ShowCouchItems()
     {
         while (DialogueSystemV2.Instance.IsDialogueActive())
@@ -466,7 +590,6 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         bool needsDiary1 = GlobalDiaryManager.Instance == null || !GlobalDiaryManager.Instance.HasDiaryPage(DIARY_1_ID);
         bool needsDiary2 = GlobalDiaryManager.Instance == null || !GlobalDiaryManager.Instance.HasDiaryPage(DIARY_2_ID);
-
 
         if (needsDiary1 && needsDiary2)
         {
@@ -499,14 +622,14 @@ public class Room02_LivingRoomController : MonoBehaviour
         GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_2_ID);
         yield return new WaitForSeconds(0.3f);
 
+        yield return new WaitForSeconds(0.5f);
         DialogueSystemV2.Instance?.StartDialogue("Diary Pages 1 and 2 added to inventory.", "Lisa");
     }
 
-
     public void OnLooseFloorboardInteract()
     {
-        bool hasDiary3 = SaveSystem.Instance.HasItem(DIARY_3_ID);
-        bool hasDiary4 = SaveSystem.Instance.HasItem(DIARY_4_ID);
+        bool hasDiary3 = (GlobalDiaryManager.Instance != null && GlobalDiaryManager.Instance.HasDiaryPage(DIARY_3_ID)) || SaveSystem.Instance.HasItem(DIARY_3_ID);
+        bool hasDiary4 = (GlobalDiaryManager.Instance != null && GlobalDiaryManager.Instance.HasDiaryPage(DIARY_4_ID)) || SaveSystem.Instance.HasItem(DIARY_4_ID);
 
         if (hasDiary3 && hasDiary4)
         {
@@ -558,9 +681,9 @@ public class Room02_LivingRoomController : MonoBehaviour
         GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_4_ID);
         yield return new WaitForSeconds(0.3f);
 
+        yield return new WaitForSeconds(0.5f);
         DialogueSystemV2.Instance?.StartDialogue("Diary Pages 3 and 4 added to inventory.", "Lisa");
     }
-
 
     public void OnCoffeeTableKeyInteract()
     {
@@ -603,6 +726,8 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void CheckPuzzleCompletion()
     {
+        if (SaveSystem.Instance == null) return;
+
         if (!musicBoxPuzzleComplete && SaveSystem.Instance.HasItem(MUSIC_BOX_COMPLETE_ID))
         {
             musicBoxPuzzleComplete = true;
@@ -618,41 +743,88 @@ public class Room02_LivingRoomController : MonoBehaviour
             state.solvedPuzzles.Add("diaryPuzzle");
             SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
         }
-
-        if (musicBoxPuzzleComplete && diaryPuzzleComplete)
-        {
-            if (coffeeTable_Key != null && !SaveSystem.Instance.HasItem(COFFEE_TABLE_KEY_ID))
-            {
-                RoomState state = SaveSystem.Instance.GetRoomState(ROOM_NAME);
-
-                if (!state.interactedObjects.Contains("coffeeTableKeyRevealed"))
-                {
-                    StartCoroutine(RevealCoffeeTableKey());
-                    state.interactedObjects.Add("coffeeTableKeyRevealed");
-                    SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
-                }
-                else
-                {
-                    coffeeTable_Key.SetActive(true);
-                }
-            }
-        }
     }
 
+    // Called by MusicBoxController after cutscene finishes
+    public void OnMusicBoxCutsceneEnded()
+    {
+        Debug.Log("[Room02] Cutscene ended. Revealing key immediately.");
 
-    IEnumerator RevealCoffeeTableKey()
+        // Disable the trigger logic just in case
+        hallwayTriggerArmed = false;
+
+        // Reveal the key and play sound immediately
+        RevealCoffeeTableKeyAndSound();
+
+        // Restore scene ambient audio
+        SceneAmbientPlayer ambientPlayer = FindFirstObjectByType<SceneAmbientPlayer>();
+        if (ambientPlayer != null && ambientPlayer.sceneAmbientConfig != null)
+        {
+            Debug.Log("[Room02] Restoring scene ambient audio...");
+            AudioManager.Instance?.PlayAmbient(
+                ambientPlayer.sceneAmbientConfig.ambientClip,
+                true,
+                2.0f // Smooth fade in
+            );
+        }
+
+        // Trigger the reaction dialogue
+        DialogueSystemV2.Instance?.StartDialogue("What... was that?", "Lisa");
+    }
+
+    // Sequence for when player steps into the trigger AFTER cutscene
+    IEnumerator PlayHallwayEventSequence()
+    {
+        if (hallwayEventRunning)
+            yield break; // already running
+
+        hallwayEventRunning = true;
+        hallwayTriggerArmed = false; // fire only once
+
+        Debug.Log("[Room02] Hallway event triggered (What... was that?).");
+
+        // 1. Dialogue
+        DialogueSystemV2.Instance?.StartDialogue("What... was that?", "Lisa");
+
+        // Wait for dialogue to finish
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            yield return null;
+
+        // 2. Reveal key + play sound
+        RevealCoffeeTableKeyAndSound();
+
+        hallwayEventRunning = false;
+    }
+
+    // Central helper that actually reveals the CoffeeTable_Key and plays the sound
+    private void RevealCoffeeTableKeyAndSound()
     {
         if (keyRevealSound != null)
+        {
+            Debug.Log("[Room02] Playing keyRevealSound.");
             AudioManager.Instance?.PlaySFX(keyRevealSound);
-
-        yield return new WaitForSeconds(0.2f);
+        }
+        else
+        {
+            Debug.LogWarning("[Room02] keyRevealSound is NULL – assign an AudioClip in the inspector.");
+        }
 
         if (coffeeTable_Key != null)
+        {
             coffeeTable_Key.SetActive(true);
+            Debug.Log("[Room02] CoffeeTable_Key revealed. activeSelf = " + coffeeTable_Key.activeSelf);
+        }
+        else
+        {
+            Debug.LogError("[Room02] coffeeTable_Key reference is NULL – drag CoffeeTable_Key into the field on this script.");
+        }
 
-        yield return new WaitForSeconds(0.3f);
-
-        DialogueSystemV2.Instance?.StartDialogue("What was that?", "Lisa");
+        RoomState state = SaveSystem.Instance.GetRoomState(ROOM_NAME);
+        if (!state.interactedObjects.Contains("coffeeTableKeyRevealed"))
+        {
+            state.interactedObjects.Add("coffeeTableKeyRevealed");
+            SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
+        }
     }
 
     public void OnLullabyPlayed()
@@ -672,6 +844,16 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (rockingChairAnimator != null)
             rockingChairAnimator.SetBool("isRocking", true);
 
-        AudioManager.Instance?.PlayAmbient(rockingChairSound, loop: true);
+        // CHANGED: Use PlayLoopingSFX so it doesn't kill the room ambient
+        AudioManager.Instance?.PlayLoopingSFX(rockingChairSound, "rocking_chair");
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (hallwayTriggerLocation != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(hallwayTriggerLocation.position, hallwayTriggerRadius);
+        }
     }
 }

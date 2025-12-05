@@ -246,9 +246,15 @@ public class DiaryReaderUI : MonoBehaviour
 
         EnablePlayerControls();
 
+        // 🔔 NEW: Re-open inventory when diary closes, as requested
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.OpenInventoryUI();
+        }
+
         // 🔔 Let quiz managers (e.g., SnugglesQuizManager) know we closed
+        Debug.Log("[DEBUG_TRACE] [DiaryReaderUI] Invoking OnDiaryClosed event...");
         OnDiaryClosed?.Invoke();
-        Debug.Log("[DiaryReaderUI] Diary closed (event invoked).");
     }
 
     /// <summary>Returns true if the diary is currently visible.</summary>
@@ -282,14 +288,6 @@ public class DiaryReaderUI : MonoBehaviour
 
         // Keep index in range
         currentPageIndex = Mathf.Clamp(currentPageIndex, 0, Mathf.Max(0, currentPages.Count - 1));
-
-        // Debug dump
-        {
-            var ids = GlobalDiaryManager.Instance != null ? GlobalDiaryManager.Instance.GetCollectedIds() : new List<string>();
-            var spriteNames = new List<string>();
-            foreach (var s in currentPages) spriteNames.Add(s ? s.name : "NULL");
-            Debug.Log($"[DiaryReaderUI] RefreshPages -> count={currentPages.Count}, ids=[{string.Join(", ", ids)}], sprites=[{string.Join(", ", spriteNames)}], index={currentPageIndex}");
-        }
 
         // If open, make sure the UI reflects new content
         if (IsReaderOpen())

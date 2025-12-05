@@ -4,7 +4,7 @@ using UnityEngine;
 /// Place this on a GameObject in any scene to trigger a cutscene.
 /// Can be triggered on Start, manually via code, or by specific game events.
 /// </summary>
-public class CutsceneTrigger : MonoBehaviour
+public class CutsceneTrigger : MonoBehaviour, IInteractable
 {
     [Header("Cutscene Data")]
     [Tooltip("The cutscene data asset to play")]
@@ -97,4 +97,22 @@ public class CutsceneTrigger : MonoBehaviour
     {
         hasPlayed = false;
     }
+
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        PlayCutsceneOnce();
+    }
+    // =================================================================================
+
+    public void OnInteract(PlayerContext context)
+    {
+        PlayCutsceneOnce();
+    }
+
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
 }

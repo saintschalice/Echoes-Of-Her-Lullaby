@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Handles table notes pickup with proper audio integration
 /// </summary>
-public class TableInteractable : MonoBehaviour
+public class TableInteractable : MonoBehaviour, IInteractable
 {
     [Header("References")]
     public GameObject tableNotesObject;
@@ -16,14 +16,6 @@ public class TableInteractable : MonoBehaviour
     [TextArea] public string pickupDialogue = "These diary pages... they're covered in blood.";
 
     private bool hasBeenPickedUp = false;
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Player") && !hasBeenPickedUp)
-        {
-            PickupNotes();
-        }
-    }
 
     void PickupNotes()
     {
@@ -64,9 +56,9 @@ public class TableInteractable : MonoBehaviour
         Debug.Log($"[TableInteractable] Picked up diary page: {diaryPageId}");
     }
 
-    /// <summary>
-    /// Manual interaction method (can be called from interaction system)
-    /// </summary>
+    // =================================================================================
+    // FIX: Ensure public void Interact() exists for the button
+    // =================================================================================
     public void Interact()
     {
         if (!hasBeenPickedUp)
@@ -74,4 +66,13 @@ public class TableInteractable : MonoBehaviour
             PickupNotes();
         }
     }
+
+    public void OnInteract(PlayerContext context)
+    {
+        Interact();
+    }
+
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
 }

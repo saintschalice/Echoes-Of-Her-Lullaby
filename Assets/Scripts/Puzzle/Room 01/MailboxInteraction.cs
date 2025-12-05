@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MailboxInteraction : MonoBehaviour
+public class MailboxInteraction : MonoBehaviour, IInteractable
 {
     [Header("Interaction Settings")]
     public float interactionRadius = 1.5f;
@@ -17,7 +17,6 @@ public class MailboxInteraction : MonoBehaviour
     private bool waitingForDialogueClose = false;
     private bool waitingForResponse = false;
     private DialogueSystemV2 dialogueSystem;
-    private Camera mainCamera;
 
     private enum NextAction { None, ShowLookInsideChoices }
     private NextAction nextAction = NextAction.None;
@@ -28,7 +27,6 @@ public class MailboxInteraction : MonoBehaviour
     void Start()
     {
         dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
-        mainCamera = Camera.main;
 
         CheckSaveState();
     }
@@ -36,7 +34,6 @@ public class MailboxInteraction : MonoBehaviour
     void Update()
     {
         SyncStateWithSave();
-        CheckPlayerDistance();
 
         if (waitingForDialogueClose)
         {
@@ -52,17 +49,6 @@ public class MailboxInteraction : MonoBehaviour
             }
             return;
         }
-
-        if (playerInRange && !hasBeenOpened && !waitingForResponse)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (IsTappedOn())
-                {
-                    AskToLookInside();
-                }
-            }
-        }
     }
 
     void SyncStateWithSave()
@@ -73,31 +59,59 @@ public class MailboxInteraction : MonoBehaviour
         mailTaken = hasBeenOpened;
     }
 
-    bool IsTappedOn()
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker
+    // =================================================================================
+    public void Interact()
     {
-        if (mainCamera == null) return false;
+        Debug.Log("Mailbox Interact() called!"); // DEBUG: Check console to see if this prints
 
-        Vector2 touchPosition = Input.mousePosition;
-        Ray ray = mainCamera.ScreenPointToRay(touchPosition);
-        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-        if (hit.collider != null)
+        // The Tracker handles the distance check, so we can execute the logic directly.
+        if (waitingForDialogueClose || waitingForResponse)
         {
-            return hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform);
+            Debug.Log("Mailbox busy waiting for dialogue/response.");
+            return;
         }
 
-        return false;
+        if (!hasBeenOpened)
+        {
+            AskToLookInside();
+        }
+        else
+        {
+            // Optional: Feedback if already opened
+            ShowDialogue("I've already checked the mail.");
+        }
+    }
+    // =================================================================================
+
+    public void OnInteract(PlayerContext context)
+    {
+        playerInRange = IsInRange(context.Transform);
+
+        if (!playerInRange || waitingForDialogueClose || waitingForResponse)
+            return;
+
+        if (!hasBeenOpened)
+        {
+            AskToLookInside();
+        }
     }
 
-    void CheckPlayerDistance()
+    public void OnFocus(PlayerContext context)
     {
-        GameObject player = GameObject.FindGameObjectWithTag(requiredTag);
+        playerInRange = IsInRange(context.Transform);
+    }
 
-        if (player != null)
-        {
-            float distance = Vector2.Distance(transform.position, player.transform.position);
-            playerInRange = distance <= interactionRadius;
-        }
+    public void OnBlur(PlayerContext context)
+    {
+        playerInRange = false;
+    }
+
+    bool IsInRange(Transform playerTransform)
+    {
+        if (playerTransform == null) return false;
+        return Vector2.Distance(transform.position, playerTransform.position) <= interactionRadius;
     }
 
     void AskToLookInside()

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FlowerPotInteraction : MonoBehaviour
+public class FlowerPotInteraction : MonoBehaviour, IInteractable
 {
     [Header("Flower Pot Objects")]
     public GameObject intactFlowerPot;
@@ -23,7 +23,6 @@ public class FlowerPotInteraction : MonoBehaviour
     private bool waitingForDialogueClose = false;
     private bool waitingForResponse = false;
     private DialogueSystemV2 dialogueSystem;
-    private Camera mainCamera;
 
     private const string FLOWERPOT_EXAMINED_ID = "FlowerPot_Foyer_Examined";
     private const string FLOWERPOT_BROKEN_ID = "FlowerPot_Foyer_Broken";
@@ -43,7 +42,6 @@ public class FlowerPotInteraction : MonoBehaviour
             houseKey.SetActive(false);
 
         dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
-        mainCamera = Camera.main;
 
         CheckSaveState();
     }
@@ -51,7 +49,6 @@ public class FlowerPotInteraction : MonoBehaviour
     void Update()
     {
         SyncStateWithSave();
-        CheckPlayerDistance();
 
         if (waitingForDialogueClose)
         {
@@ -67,34 +64,6 @@ public class FlowerPotInteraction : MonoBehaviour
             return;
         }
 
-        if (playerInRange && !waitingForResponse)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (IsTappedOn())
-                {
-                    if (!hasBeenExamined)
-                    {
-                        FirstExamine();
-                    }
-                    else if (hasBeenExamined && !hasBeenBroken)
-                    {
-                        AskToBreakPot();
-                    }
-                }
-            }
-        }
-
-        if (playerInRange && keyRevealed && houseKey != null && houseKey.activeSelf)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (IsTappedOn())
-                {
-                    PickupKey();
-                }
-            }
-        }
     }
 
     void SyncStateWithSave()
@@ -144,31 +113,68 @@ public class FlowerPotInteraction : MonoBehaviour
         }
     }
 
-    bool IsTappedOn()
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
     {
-        if (mainCamera == null) return false;
+        if (waitingForDialogueClose || waitingForResponse)
+            return;
 
-        Vector2 touchPosition = Input.mousePosition;
-        Ray ray = mainCamera.ScreenPointToRay(touchPosition);
-        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-        if (hit.collider != null)
+        if (keyRevealed && houseKey != null && houseKey.activeSelf)
         {
-            return hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform);
+            PickupKey();
+            return;
         }
 
-        return false;
+        if (!hasBeenExamined)
+        {
+            FirstExamine();
+        }
+        else if (!hasBeenBroken)
+        {
+            AskToBreakPot();
+        }
+    }
+    // =================================================================================
+
+    public void OnInteract(PlayerContext context)
+    {
+        playerInRange = IsInRange(context.Transform);
+
+        if (!playerInRange || waitingForDialogueClose || waitingForResponse)
+            return;
+
+        if (keyRevealed && houseKey != null && houseKey.activeSelf)
+        {
+            PickupKey();
+            return;
+        }
+
+        if (!hasBeenExamined)
+        {
+            FirstExamine();
+        }
+        else if (!hasBeenBroken)
+        {
+            AskToBreakPot();
+        }
     }
 
-    void CheckPlayerDistance()
+    public void OnFocus(PlayerContext context)
     {
-        GameObject player = GameObject.FindGameObjectWithTag(requiredTag);
+        playerInRange = IsInRange(context.Transform);
+    }
 
-        if (player != null)
-        {
-            float distance = Vector2.Distance(transform.position, player.transform.position);
-            playerInRange = distance <= interactionRadius;
-        }
+    public void OnBlur(PlayerContext context)
+    {
+        playerInRange = false;
+    }
+
+    bool IsInRange(Transform playerTransform)
+    {
+        if (playerTransform == null) return false;
+        return Vector2.Distance(transform.position, playerTransform.position) <= interactionRadius;
     }
 
     void FirstExamine()

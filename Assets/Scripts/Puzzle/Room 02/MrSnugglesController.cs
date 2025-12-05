@@ -1,234 +1,204 @@
-﻿using UnityEngine;
+using UnityEngine;
+using System.Collections;
 
-/// <summary>
-/// Manages Mr. Snuggles quiz logic when examined from inventory
-/// No scene object needed - this is triggered when player examines the teddy in inventory
-/// </summary>
-public class MrSnugglesController : MonoBehaviour
+public class MrSnugglesController : MonoBehaviour, IInteractable
 {
-    public static MrSnugglesController Instance { get; private set; }
+    [Header("IDs")]
+    [SerializeField] private string diaryPage3Id = "diary_page_3";
+    [SerializeField] private string windingKeyId = "winding_key";
+    [SerializeField] private string musicBoxCompleteId = "music_box_complete";
 
-    [Header("State")]
-    private bool hasOpenedDiaryOnce = false;
-    private bool hasExaminedSnuggles = false;
-    private bool quizSolved = false;
+    [Header("Save Flags")]
+    private const string FLAG_DIARY_EXAMINED = "snuggles_diary_examined";
+    private const string FLAG_SNUGGLES_EXAMINED = "snuggles_first_examined";
+    private const string FLAG_QUIZ_ARMED = "snuggles_quiz_armed";
+    private const string FLAG_QUIZ_SOLVED = "snuggles_quiz_solved";
+    private const string FLAG_KEY_GIVEN = "snuggles_key_given";
 
-    [Header("Items")]
-    [Tooltip("Item ID for Mr. Snuggles in inventory")]
-    public string snugglesItemId = "mr_snuggles";
+    [Header("Debug View")]
+    [SerializeField] private bool diaryExamined;
+    [SerializeField] private bool snugglesExamined;
+    [SerializeField] private bool quizArmed;
+    [SerializeField] private bool quizSolved;
+    [SerializeField] private bool windingKeyGiven;
 
-    [Tooltip("Item ID for the winding key")]
-    public string windingKeyItemId = "winding_key";
-
-    void Awake()
+    void Start()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        LoadState();
-    }
-
-    void OnEnable()
-    {
+        // Subscribe to diary close event
         DiaryReaderUI.OnDiaryClosed += OnDiaryClosed;
+
+        // Load state from SaveSystem
+        LoadState();
+
+        // AUTO-ARM FIX: If quiz was previously armed (in save data) but not solved,
+        // re-arm the manager immediately on load so the player doesn't have to examine Snuggles again.
+        if (quizArmed && !quizSolved)
+        {
+            StartCoroutine(AutoArmQuizNextFrame());
+        }
     }
 
-    void OnDisable()
+    void OnDestroy()
     {
         DiaryReaderUI.OnDiaryClosed -= OnDiaryClosed;
     }
 
-    #region Public API - Called by Inventory System
-
-    /// <summary>
-    /// Call this when player examines Mr. Snuggles from inventory
-    /// </summary>
-    public void OnSnugglesExamined()
+    IEnumerator AutoArmQuizNextFrame()
     {
-        Debug.Log($"[MrSnuggles] Examined from inventory. State: diary={hasOpenedDiaryOnce}, examined={hasExaminedSnuggles}, solved={quizSolved}");
+        // Wait one frame to ensure SnugglesQuizManager.Instance is initialized
+        yield return null;
 
-        // Case 1: Quiz already solved - give the key
-        if (quizSolved)
+        if (SnugglesQuizManager.Instance != null)
+        {
+            Debug.Log("[MrSnuggles] Detected armed state on load. Re-arming Quiz Manager now.");
+            SnugglesQuizManager.Instance.ArmQuizOnNextDiaryClose();
+        }
+    }
+
+    void LoadState()
+    {
+        if (SaveSystem.Instance == null) return;
+
+        diaryExamined = SaveSystem.Instance.WasDialogueTriggered(FLAG_DIARY_EXAMINED);
+        snugglesExamined = SaveSystem.Instance.WasDialogueTriggered(FLAG_SNUGGLES_EXAMINED);
+        quizArmed = SaveSystem.Instance.WasDialogueTriggered(FLAG_QUIZ_ARMED);
+        quizSolved = SaveSystem.Instance.WasDialogueTriggered(FLAG_QUIZ_SOLVED);
+        windingKeyGiven = SaveSystem.Instance.WasDialogueTriggered(FLAG_KEY_GIVEN);
+    }
+
+    // Call this from your interactable
+    public void OnExamine()
+    {
+        Debug.Log($"[DEBUG_TRACE] [MrSnuggles] OnExamine. diaryExamined={diaryExamined}, snugglesExamined={snugglesExamined}, quizArmed={quizArmed}, quizSolved={quizSolved}");
+
+        // 7. If quiz is solved, checking snuggles again grants the key
+        if (quizSolved && !windingKeyGiven)
         {
             GiveWindingKey();
             return;
         }
 
-        // Case 2: Haven't opened diary yet
-        if (!hasOpenedDiaryOnce)
+        // If music box is already complete or key given, standard msg
+        if (SaveSystem.Instance != null && (SaveSystem.Instance.HasItem(musicBoxCompleteId) || windingKeyGiven))
         {
-            ShowDialogue("It's an old teddy bear. I should explore more first.");
+            Say("He feels empty now. I already used what he was hiding.");
             return;
         }
 
-        // Case 3: Opened diary but first time examining after
-        if (!hasExaminedSnuggles)
-        {
-            hasExaminedSnuggles = true;
-            SaveState();
-            ShowDialogue("I think I read about him somewhere in the diary entries...");
-            return;
-        }
-
-        // Case 4: Already examined, remind to check diary
-        ShowDialogue("I should check the diary again to remember where Mr. Snuggles was mentioned.");
-
-        // Auto-open diary
-        if (DiaryReaderUI.Instance != null && !DiaryReaderUI.Instance.IsReaderOpen())
-        {
-            // Close inventory first
-            if (InventoryManager.Instance != null)
-            {
-                InventoryManager.Instance.CloseInventoryUI();
-            }
-
-            // Open diary
-            DiaryReaderUI.Instance.ShowDiary();
-        }
+        // Handle the examination flow (Steps 1, 2, 3)
+        HandleExamination();
     }
 
-    /// <summary>
-    /// Alternative: Use this if you want to check from inventory examine
-    /// </summary>
-    public void OnItemExamined(string itemId)
+    void HandleExamination()
     {
-        if (itemId == snugglesItemId)
+        // 2. The player needs to examine mr snuggles at least once
+        if (!snugglesExamined)
         {
-            OnSnugglesExamined();
+            Say("Why does he seem so familiar?");
+            snugglesExamined = true;
+            SaveSystem.Instance?.TriggerDialogue(FLAG_SNUGGLES_EXAMINED);
+            SaveSystem.Instance?.OnStoryProgressMade();
+            return;
+        }
+
+        // Check if diary UI has been opened at least once (Step 1 requirement)
+        if (!diaryExamined)
+        {
+            Say("Maybe I should look for clues about this teddy bear in the diary.");
+            return;
+        }
+
+        // 3. After (both done), when player examines mr snuggles again, start dialogue
+        // IF NOT YET ARMED:
+        if (!quizArmed)
+        {
+            Say("I think I read something about this teddy bear in the diary entries.");
+
+            quizArmed = true;
+            SaveSystem.Instance?.TriggerDialogue(FLAG_QUIZ_ARMED);
+            SaveSystem.Instance?.OnStoryProgressMade();
+
+            Debug.Log("[DEBUG_TRACE] [MrSnuggles] Arming quiz now for NEXT diary close.");
+
+            // 4. Arms the quiz so it appears next time Diary closes
+            if (SnugglesQuizManager.Instance != null)
+                SnugglesQuizManager.Instance.ArmQuizOnNextDiaryClose();
+            else
+                Debug.LogError("[DEBUG_TRACE] [MrSnuggles] SnugglesQuizManager.Instance is NULL!");
+
+            return;
+        }
+
+        // IF ARMED BUT NOT SOLVED (Reminder):
+        if (quizArmed && !quizSolved)
+        {
+            Say("I should check the diary again. Which page mentioned Mr. Snuggles?");
+
+            // Re-arm just in case it was lost
+            if (SnugglesQuizManager.Instance != null)
+                SnugglesQuizManager.Instance.ArmQuizOnNextDiaryClose();
         }
     }
-
-    #endregion
-
-    #region Diary Tracking
 
     void OnDiaryClosed()
     {
-        // Track that diary has been opened at least once
-        if (!hasOpenedDiaryOnce)
+        // 1. Mark that the diary UI has been examined at least once
+        if (!diaryExamined)
         {
-            hasOpenedDiaryOnce = true;
-            SaveState();
-            Debug.Log("[MrSnuggles] Diary opened for the first time");
+            diaryExamined = true;
+            SaveSystem.Instance?.TriggerDialogue(FLAG_DIARY_EXAMINED);
+            SaveSystem.Instance?.OnStoryProgressMade();
+            Debug.Log("[DEBUG_TRACE] [MrSnuggles] Diary has been examined for the first time");
         }
     }
-
-    #endregion
-
-    #region Winding Key
 
     void GiveWindingKey()
     {
-        if (InventoryManager.Instance == null)
+        windingKeyGiven = true;
+        SaveSystem.Instance?.TriggerDialogue(FLAG_KEY_GIVEN);
+        SaveSystem.Instance?.OnStoryProgressMade();
+
+        // Add to inventory
+        InventoryManager.Instance?.AddItem(windingKeyId);
+
+        // Add to save system
+        if (SaveSystem.Instance != null && !SaveSystem.Instance.HasItem(windingKeyId))
         {
-            Debug.LogError("[MrSnuggles] InventoryManager not found!");
-            return;
+            SaveSystem.Instance.AddInventoryItem(windingKeyId);
         }
 
-        // Check if already has the key
-        if (InventoryManager.Instance.HasItem(windingKeyItemId))
-        {
-            ShowDialogue("I already took the winding key from Mr. Snuggles.");
-            return;
-        }
-
-        // Give the key
-        InventoryManager.Instance.AddItem(windingKeyItemId);
-        ShowDialogue("You found a winding key hidden inside Mr. Snuggles!");
-
-        Debug.Log("[MrSnuggles] Winding key given to player");
+        // 6. & 7. Dialogue and item get
+        Say("Wait... there's something between the cushions! I got the winding key!");
     }
 
-    #endregion
-
-    #region Quiz Callback
-
-    /// <summary>
-    /// Called by SnugglesQuizManager when quiz is solved correctly
-    /// </summary>
     public void MarkQuizSolved()
     {
         quizSolved = true;
-        SaveState();
-        Debug.Log("[MrSnuggles] Quiz solved! Winding key is now available.");
-
-        ShowDialogue("That's right! I remember now. There should be something inside Mr. Snuggles.");
+        SaveSystem.Instance?.TriggerDialogue(FLAG_QUIZ_SOLVED);
+        SaveSystem.Instance?.OnStoryProgressMade();
+        Debug.Log("[DEBUG_TRACE] [MrSnuggles] Quiz solved! Player can now get winding key on next examination.");
     }
 
-    #endregion
-
-    #region Dialogue Helper
-
-    void ShowDialogue(string message)
+    void Say(string text)
     {
-        if (DialogueSystemV2.Instance != null)
-        {
-            DialogueSystemV2.Instance.StartDialogue(message, "Lisa");
-        }
-        else
-        {
-            Debug.Log($"[MrSnuggles] Dialogue: {message}");
-        }
+        DialogueSystemV2.Instance?.StartDialogue(text, "Lisa");
     }
 
-    #endregion
-
-    #region Save/Load
-
-    void SaveState()
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
     {
-        PlayerPrefs.SetInt("MrSnuggles_DiaryOpened", hasOpenedDiaryOnce ? 1 : 0);
-        PlayerPrefs.SetInt("MrSnuggles_Examined", hasExaminedSnuggles ? 1 : 0);
-        PlayerPrefs.SetInt("MrSnuggles_QuizSolved", quizSolved ? 1 : 0);
-        PlayerPrefs.Save();
+        OnExamine();
     }
+    // =================================================================================
 
-    void LoadState()
+    public void OnInteract(PlayerContext context)
     {
-        hasOpenedDiaryOnce = PlayerPrefs.GetInt("MrSnuggles_DiaryOpened", 0) == 1;
-        hasExaminedSnuggles = PlayerPrefs.GetInt("MrSnuggles_Examined", 0) == 1;
-        quizSolved = PlayerPrefs.GetInt("MrSnuggles_QuizSolved", 0) == 1;
-
-        Debug.Log($"[MrSnuggles] State loaded: diary={hasOpenedDiaryOnce}, examined={hasExaminedSnuggles}, solved={quizSolved}");
+        OnExamine();
     }
 
-    public void ResetState()
-    {
-        hasOpenedDiaryOnce = false;
-        hasExaminedSnuggles = false;
-        quizSolved = false;
-        SaveState();
+    public void OnFocus(PlayerContext context) { }
 
-        Debug.Log("[MrSnuggles] State reset");
-    }
-
-    #endregion
-
-    #region Public Getters
-
-    public bool IsQuizSolved() => quizSolved;
-    public bool HasExaminedSnuggles() => hasExaminedSnuggles;
-
-    #endregion
-
-    #region Context Menu
-
-    [ContextMenu("Test: Examine Snuggles")]
-    void TestExamine() => OnSnugglesExamined();
-
-    [ContextMenu("Test: Mark Quiz Solved")]
-    void TestSolve() => MarkQuizSolved();
-
-    [ContextMenu("Test: Reset State")]
-    void TestReset() => ResetState();
-
-    #endregion
+    public void OnBlur(PlayerContext context) { }
 }

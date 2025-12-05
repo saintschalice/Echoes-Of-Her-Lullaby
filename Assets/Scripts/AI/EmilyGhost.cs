@@ -4,13 +4,16 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(AudioSource))]
+[RequireComponent(typeof(EmilyPerception))]
+[RequireComponent(typeof(EmilyMovement))]
+[RequireComponent(typeof(EmilyAudio))]
 public sealed class EmilyGhost : MonoBehaviour
 {
     // ───────── CONFIG ─────────
     [Header("Speed (u/s)")]
-    public float patrolSpeed = 1.4f;
-    public float investigateSpeed = 2.4f;
-    public float huntSpeed = 2.8f;
+    public float patrolSpeed = 0.5f;
+    public float investigateSpeed = 0.5f;
+    public float huntSpeed = 0.5f;
 
     [Header("State Timers (s)")]
     public float searchTime = 12f;
@@ -21,6 +24,9 @@ public sealed class EmilyGhost : MonoBehaviour
     public enum State { Patrol, Investigate, Hunt, Search, Cooldown }
     State _cur = State.Patrol;
     float _stateT;
+
+    // NEW FLAG: Prevents the "Catch" logic from running infinite times
+    bool _hasCaughtPlayer = false;
 
     EmilyPerception _perception;
     EmilyMovement _move;
@@ -34,9 +40,13 @@ public sealed class EmilyGhost : MonoBehaviour
 
     void Awake()
     {
-        _perception = gameObject.AddComponent<EmilyPerception>();
-        _move = gameObject.AddComponent<EmilyMovement>();
-        _audio = gameObject.AddComponent<EmilyAudio>();
+        _perception = GetComponent<EmilyPerception>();
+        _move = GetComponent<EmilyMovement>();
+        _audio = GetComponent<EmilyAudio>();
+
+        if (_perception == null) _perception = gameObject.AddComponent<EmilyPerception>();
+        if (_move == null) _move = gameObject.AddComponent<EmilyMovement>();
+        if (_audio == null) _audio = gameObject.AddComponent<EmilyAudio>();
 
         _animator = GetComponentInChildren<EmilyAnimator>();
 
@@ -60,6 +70,7 @@ public sealed class EmilyGhost : MonoBehaviour
     void OnEnable()
     {
         Debug.Log("[EMILY] Enabled");
+        _hasCaughtPlayer = false; // Reset catch state
         SetState(State.Patrol); // start wandering immediately
     }
 
@@ -72,6 +83,10 @@ public sealed class EmilyGhost : MonoBehaviour
 
     void Update()
     {
+        // CRITICAL FIX: If we already caught the player, stop updating logic immediately.
+        // This prevents the infinite loop of "Catch Triggered" messages while the game is frozen.
+        if (_hasCaughtPlayer) return;
+
         float dt = Time.deltaTime;
         _stateT += dt;
 
@@ -80,6 +95,8 @@ public sealed class EmilyGhost : MonoBehaviour
             case State.Patrol:
                 if (_perception.PlayerVisible) SetState(State.Hunt);
                 else if (_perception.HeardNoise) SetState(State.Investigate);
+                // FIX: If we reached the random point, pick a new one!
+                else if (_move.Reached) _move.Wander();
                 break;
 
             case State.Investigate:
@@ -113,6 +130,8 @@ public sealed class EmilyGhost : MonoBehaviour
         {
             Debug.Log("[EMILY] CATCH TRIGGERED");
 
+            _hasCaughtPlayer = true; // MARK AS CAUGHT
+
             // Stop movement completely
             _move.StopMovement();
 
@@ -136,13 +155,10 @@ public sealed class EmilyGhost : MonoBehaviour
         {
             _anim.SetFloat("InputX", vel.x);
             _anim.SetFloat("InputY", vel.y);
-
         }
-
-
-
     }
 
+    // INTERNAL STATE SETTER
     void SetState(State next)
     {
         if (_cur == next) return;
@@ -181,6 +197,25 @@ public sealed class EmilyGhost : MonoBehaviour
                 _audio.ToCooldown();
                 _agent.speed = patrolSpeed;
                 break;
+        }
+    }
+
+    // NEW: Public helper to force state from external Directors (like KitchenRoomController)
+    public void SetStateExternal(State next)
+    {
+        Debug.Log($"[EMILY] External State Override -> {next}");
+        SetState(next);
+    }
+
+    // NEW: Force the Animator to show a specific direction (even if not moving)
+    public void ForceFacing(Vector2 dir)
+    {
+        if (_anim != null)
+        {
+            _anim.SetFloat("InputX", dir.x);
+            _anim.SetFloat("InputY", dir.y);
+            // Ensure walk cycle is off so we stand still in that direction
+            _anim.SetBool("isWalking", false);
         }
     }
 }

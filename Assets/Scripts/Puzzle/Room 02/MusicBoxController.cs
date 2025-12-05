@@ -1,13 +1,12 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
-public class MusicBoxController : MonoBehaviour
+public class MusicBoxController : MonoBehaviour, IInteractable
 {
     [Header("IDs")]
     [SerializeField] private string brokenMusicBoxId = "broken_music_box";
     [SerializeField] private string windingKeyId = "winding_key";
     [SerializeField] private string completeMusicBoxId = "music_box_complete";
-    [SerializeField] private string hallwayKeyId = "hallway_door_key";
 
     [Header("Cutscene Data")]
     [Tooltip("Assign the Music Box Reveal VoiceOverCutsceneData asset here.")]
@@ -16,10 +15,7 @@ public class MusicBoxController : MonoBehaviour
     [Header("State")]
     [SerializeField] private bool isComplete;
     [SerializeField] private bool cutscenePlayed;
-    [SerializeField] private bool hallwayKeyGiven;
 
-
-    // Called when player selects “Combine” in inventory
     public void TryCombine()
     {
         if (isComplete) return;
@@ -29,86 +25,81 @@ public class MusicBoxController : MonoBehaviour
 
         if (hasBox && hasKey)
         {
-            // Remove broken parts, add complete music box
             InventoryManager.Instance?.RemoveItem(brokenMusicBoxId);
             InventoryManager.Instance?.RemoveItem(windingKeyId);
             InventoryManager.Instance?.AddItem(completeMusicBoxId);
 
             isComplete = true;
-
-            DialogueSystemV2.Instance?.StartDialogue(
-                "It fits perfectly...",
-                "Lisa"
-            );
+            PlayRevealCutscene();
         }
     }
 
+    public void PlayRevealCutscene()
+    {
+        if (cutscenePlayed) return;
+        StartCoroutine(BeginCutsceneSequence());
+    }
 
-    // Called when the player interacts with the music box object in the world
+    // =================================================================================
+    // FIX: Added parameterless Interact() method for PlayerInteractionTracker (Button)
+    // =================================================================================
+    public void Interact()
+    {
+        OnExamine();
+    }
+    // =================================================================================
+
+    public void OnInteract(PlayerContext context)
+    {
+        OnExamine();
+    }
+
+    public void OnFocus(PlayerContext context) { }
+
+    public void OnBlur(PlayerContext context) { }
+
     public void OnExamine()
     {
+        if (!isComplete && SaveSystem.Instance != null && SaveSystem.Instance.HasItem(completeMusicBoxId))
+            isComplete = true;
+
         if (!isComplete)
         {
-            DialogueSystemV2.Instance?.StartDialogue(
-                "A delicate music box. Something seems to be missing.",
-                "Lisa"
-            );
+            DialogueSystemV2.Instance?.StartDialogue("A delicate music box. Something seems to be missing.", "Lisa");
             return;
         }
 
-        // Cutscene hasn't been played → start it
         if (!cutscenePlayed)
         {
             StartCoroutine(BeginCutsceneSequence());
             return;
         }
 
-        // Already complete + key given
-        if (hallwayKeyGiven)
-        {
-            DialogueSystemV2.Instance?.StartDialogue(
-                "I already got the key. Time to move on.",
-                "Lisa"
-            );
-        }
+        DialogueSystemV2.Instance?.StartDialogue("It's fixed. The melody reminds me of something...", "Lisa");
     }
 
-
-    // Sequence that plays the cutscene THEN gives the hallway key
     private IEnumerator BeginCutsceneSequence()
     {
         cutscenePlayed = true;
+        InventoryManager.Instance?.CloseInventoryUI();
 
-        // If cutscene exists: call it properly (CutsceneManager does NOT return IEnumerator)
         if (musicBoxCutscene != null && CutsceneManager.Instance != null)
         {
             bool finished = false;
-
-            CutsceneManager.Instance.PlayCutscene(musicBoxCutscene, () =>
-            {
-                finished = true;
-            });
-
-            // Wait until CutsceneManager says it's done
+            CutsceneManager.Instance.PlayCutscene(musicBoxCutscene, () => finished = true);
             while (!finished)
                 yield return null;
         }
         else
         {
-            // No cutscene available → simple delay placeholder
+            Debug.LogWarning("[MusicBoxController] No cutscene data assigned!");
             yield return new WaitForSeconds(2f);
         }
 
-        // Grant the hallway key AFTER the cutscene
-        if (!hallwayKeyGiven)
-        {
-            hallwayKeyGiven = true;
-            InventoryManager.Instance?.AddItem(hallwayKeyId);
-
-            DialogueSystemV2.Instance?.StartDialogue(
-                "I got it. Now to the next room.",
-                "Lisa"
-            );
-        }
+        Room02_LivingRoomController roomController = FindFirstObjectByType<Room02_LivingRoomController>();
+        if (roomController != null)
+            roomController.OnMusicBoxCutsceneEnded();
+        else
+            Debug.LogError("[MusicBoxController] Could not find Room02_LivingRoomController.");
     }
 }
