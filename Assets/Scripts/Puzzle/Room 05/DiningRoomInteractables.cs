@@ -2,8 +2,8 @@
 
 public class DiningRoomInteractable : MonoBehaviour, IInteractable
 {
-    // Idinagdag ko ang MotherChair at FatherChair sa listahan
-    public enum InteractableType { Chair, MotherChair, FatherChair, Table, Cabinet, Calendar, Spoon, Key }
+    // Idinagdag ang Floorboard sa huli
+    public enum InteractableType { Chair, MotherChair, FatherChair, Table, Cabinet, Calendar, Spoon, Key, Floorboard }
 
     [Header("Settings")]
     public InteractableType type;
@@ -25,15 +25,18 @@ public class DiningRoomInteractable : MonoBehaviour, IInteractable
 
         switch (type)
         {
-            case InteractableType.Chair: roomController.OnChairInteract(); break;       // Child Chair
-            case InteractableType.MotherChair: roomController.OnMotherChairInteract(); break; // Mother Chair
-            case InteractableType.FatherChair: roomController.OnFatherChairInteract(); break; // Father Chair
+            case InteractableType.Chair: roomController.OnChairInteract(); break;
+            case InteractableType.MotherChair: roomController.OnMotherChairInteract(); break;
+            case InteractableType.FatherChair: roomController.OnFatherChairInteract(); break;
 
             case InteractableType.Table: roomController.OnTableInteract(); break;
             case InteractableType.Cabinet: roomController.OnCabinetInteract(); break;
             case InteractableType.Calendar: roomController.OnCalendarInteract(); break;
             case InteractableType.Spoon: roomController.OnSpoonInteract(); break;
             case InteractableType.Key: roomController.OnKeyInteract(); break;
+            
+            // Idinagdag ang case para sa Floorboard
+            case InteractableType.Floorboard: roomController.OnFloorboardInteract(); break;
         }
     }
 
