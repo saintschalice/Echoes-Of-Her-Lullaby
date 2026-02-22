@@ -4,7 +4,9 @@ using System.Collections;
 
 public class Room05_DiningRoomController : MonoBehaviour
 {
-    [Header("Puzzle Objects")]
+    public static Room05_DiningRoomController Instance { get; private set; }
+
+    [Header("Puzzle Configuration")]
     public string correctCode = "332412";
     public GameObject sideboard;
     public GameObject spoonPickup;
@@ -17,76 +19,71 @@ public class Room05_DiningRoomController : MonoBehaviour
     public GameObject cabinetPanel;
     public TMP_InputField codeInput;
 
-    [Header("Table UI")]
+    [Header("Table & Ritual")]
     public GameObject tablePanel;
     public GameObject placedSpoonIcon;
+    public GameObject ghostlyCutlery;
 
-    // State Checkers - DITO ANG FIX PARA SA ERROR
-    private bool hasSpoon = false; // Ito ang nawawalang variable
-    private bool isCabinetOpen = false;
-    private bool isSpoonPlaced = false;
-    private bool isCalendarSeen = false;
+    // PERSISTENT FLAGS (Naka-save sa PC)
+    public bool isCalendarSeen { get { return PlayerPrefs.GetInt("R05_Calendar", 0) == 1; } set { PlayerPrefs.SetInt("R05_Calendar", value ? 1 : 0); } }
+    public bool isCabinetOpen { get { return PlayerPrefs.GetInt("R05_Cabinet", 0) == 1; } set { PlayerPrefs.SetInt("R05_Cabinet", value ? 1 : 0); } }
+    public bool hasSpoon { get { return PlayerPrefs.GetInt("R05_HasSpoon", 0) == 1; } set { PlayerPrefs.SetInt("R05_HasSpoon", value ? 1 : 0); } }
+    public bool isSpoonPlaced { get { return PlayerPrefs.GetInt("R05_SpoonPlaced", 0) == 1; } set { PlayerPrefs.SetInt("R05_SpoonPlaced", value ? 1 : 0); } }
+    public int chairsFixed { get { return PlayerPrefs.GetInt("R05_Chairs", 0); } set { PlayerPrefs.SetInt("R05_Chairs", value); } }
+
+    private void Awake() { if (Instance == null) Instance = this; }
 
     void Start()
     {
         if (cabinetPanel != null) cabinetPanel.SetActive(false);
         if (tablePanel != null) tablePanel.SetActive(false);
-        if (spoonPickup != null) spoonPickup.SetActive(false);
-        if (bedroomKey != null) bedroomKey.SetActive(false);
-        if (placedSpoonIcon != null) placedSpoonIcon.SetActive(false);
         if (emilyEnemy != null) emilyEnemy.SetActive(false);
+
+        SyncRoomState();
+    }
+
+    private void SyncRoomState()
+    {
+        // Spoon visibility
+        if (spoonPickup != null) spoonPickup.SetActive(isCabinetOpen && !hasSpoon && !isSpoonPlaced);
+
+        // Cabinet color/state
+        if (sideboard != null && isCabinetOpen) sideboard.GetComponent<SpriteRenderer>().color = Color.green;
+
+        // Ritual Progress
+        if (ghostlyCutlery != null) ghostlyCutlery.SetActive(chairsFixed >= 3);
+        if (placedSpoonIcon != null) placedSpoonIcon.SetActive(isSpoonPlaced);
+
+        // Key & Floorboard
+        if (looseFloorboard != null && isSpoonPlaced && openFloorboardSprite != null)
+            looseFloorboard.GetComponent<SpriteRenderer>().sprite = openFloorboardSprite;
+
+        // I-check sa inventory manager kung nakuha na talaga ang susi
+        bool alreadyHasKey = (InventoryManager.Instance != null) && InventoryManager.Instance.HasItem("bedroom_key");
+        if (bedroomKey != null) bedroomKey.SetActive(isSpoonPlaced && !alreadyHasKey);
     }
 
     // ==========================================================
-    // 1. CALENDAR
+    // 1. CALENDAR & CABINET
     // ==========================================================
     public void OnCalendarInteract()
     {
-        isCalendarSeen = true;
-        TryShowDialogue("There are red marks on certain dates... It looks like a sequence. I should take note of this.");
+        isCalendarSeen = true; PlayerPrefs.Save();
+        TryShowDialogue("There are red marks on certain dates... It looks like a sequence.");
     }
 
-    // ==========================================================
-    // 2. CABINET (Dialogue -> Wait -> UI)
-    // ==========================================================
     public void OnCabinetInteract()
     {
-        if (isCabinetOpen)
-        {
-            // Kung nakuha na ang spoon o nasa mesa na, "Empty" na dapat ito
-            if (isSpoonPlaced || hasSpoon)
-            {
-                TryShowDialogue("It's empty ngayon.");
-                if (spoonPickup != null) spoonPickup.SetActive(false);
-                return;
-            }
-
-            if (spoonPickup != null) spoonPickup.SetActive(true);
-            TryShowDialogue("The sideboard is open.");
-            return;
-        }
-
-        if (!isCalendarSeen)
-        {
-            TryShowDialogue("It's locked tight with a 6-digit code. I should look around for a clue.");
-        }
-        else
-        {
-            StartCoroutine(ShowCabinetUISequence());
-        }
+        if (isCabinetOpen) { TryShowDialogue(hasSpoon || isSpoonPlaced ? "It's empty." : "The sideboard is open."); return; }
+        if (!isCalendarSeen) TryShowDialogue("It's locked tight. I need a clue.");
+        else StartCoroutine(ShowCabinetUISequence());
     }
 
     IEnumerator ShowCabinetUISequence()
     {
-        TryShowDialogue("A combination lock... Maybe the dates from the calendar will work here.");
-        yield return new WaitForSeconds(2.0f);
-
-        if (cabinetPanel != null)
-        {
-            cabinetPanel.SetActive(true);
-            if (codeInput != null) codeInput.text = "";
-            if (codeInput != null) codeInput.ActivateInputField();
-        }
+        TryShowDialogue("Maybe the calendar dates work here...");
+        yield return new WaitForSeconds(1.5f);
+        if (cabinetPanel != null) { cabinetPanel.SetActive(true); codeInput.text = ""; codeInput.ActivateInputField(); }
     }
 
     public void OnEnterPressed()
@@ -94,116 +91,121 @@ public class Room05_DiningRoomController : MonoBehaviour
         if (codeInput.text.Trim() == correctCode)
         {
             isCabinetOpen = true;
-            if (sideboard != null) sideboard.GetComponent<SpriteRenderer>().color = Color.green;
+            PlayerPrefs.Save();
 
-            // FIX: Lalabas lang ang spoon kung wala pa kay Lisa at wala pa sa mesa
-            if (spoonPickup != null && !hasSpoon && !isSpoonPlaced)
+            // 1. Force Sync the whole room
+            SyncRoomState();
+
+            // 2. EMERGENCY OVERRIDE: Siguraduhin nating mag-check ang object sa Hierarchy
+            if (spoonPickup != null)
+            {
                 spoonPickup.SetActive(true);
+                Debug.Log("[DEBUG] Spoon_Pickup is now FORCED to Active: " + spoonPickup.activeSelf);
+            }
 
             CloseCabinetUI();
-            TryShowDialogue("Click! It unlocked. A silver spoon is sitting inside.");
+            TryShowDialogue("Click! It unlocked. A silver spoon is inside.");
         }
         else
         {
-            if (codeInput != null) codeInput.text = "";
-            TryShowDialogue("The lock didn't move. Wrong code.");
+            codeInput.text = "";
+            TryShowDialogue("Wrong code.");
         }
     }
-
-    public void OnClearPressed() => codeInput.text = "";
     public void CloseCabinetUI() => cabinetPanel.SetActive(false);
 
     // ==========================================================
-    // 3. TABLE & SPOON
+    // 2. SPOON & TABLE
     // ==========================================================
     public void OnSpoonInteract()
     {
-        hasSpoon = true;
+        hasSpoon = true; PlayerPrefs.Save();
         if (spoonPickup != null) spoonPickup.SetActive(false);
         if (InventoryManager.Instance != null) InventoryManager.Instance.AddItem("spoon");
-
-        TryShowDialogue("Got the silver spoon. Lisa earned this through good behavior.");
+        TryShowDialogue("Got the silver spoon.");
     }
 
     public void OnTableInteract()
     {
-        if (isSpoonPlaced)
-        {
-            TryShowDialogue("The table is set properly. The floorboard is na-pried open.");
-            return;
-        }
+        if (isSpoonPlaced) { TryShowDialogue("The table is set properly."); return; }
+        if (chairsFixed < 3) { TryShowDialogue("The table setting is incomplete. Mother wouldn't be pleased."); return; }
 
-        if (hasSpoon)
-        {
-            if (tablePanel != null) tablePanel.SetActive(true);
-        }
-        else
-        {
-            TryShowDialogue("I can't sit. The table setting is incomplete. Mother wouldn't be pleased.");
-        }
+        bool hasSpoonInInventory = (InventoryManager.Instance != null) && InventoryManager.Instance.HasItem("spoon");
+        if (hasSpoon || hasSpoonInInventory) tablePanel.SetActive(true);
+        else TryShowDialogue("It's missing a spoon.");
     }
 
     public void OnPlaceSpoonConfirmed()
     {
-        isSpoonPlaced = true;
-        hasSpoon = false;
-
-        // FORCE HIDE: Siguraduhing wala na ang spoon sa cabinet
-        if (spoonPickup != null) spoonPickup.SetActive(false);
-
-        if (InventoryManager.Instance != null)
-            InventoryManager.Instance.RemoveItem("spoon");
-
-        if (tablePanel != null) tablePanel.SetActive(false);
-        if (placedSpoonIcon != null) placedSpoonIcon.SetActive(true);
-
-        if (looseFloorboard != null && openFloorboardSprite != null)
-        {
-            looseFloorboard.GetComponent<SpriteRenderer>().sprite = openFloorboardSprite;
-        }
-
-        if (bedroomKey != null) bedroomKey.SetActive(true);
-
-        TryShowDialogue("I placed the spoon... (CREAK)... Something moved under the floorboards.");
+        isSpoonPlaced = true; hasSpoon = false; PlayerPrefs.Save();
+        if (InventoryManager.Instance != null) InventoryManager.Instance.RemoveItem("spoon");
+        tablePanel.SetActive(false); SyncRoomState();
+        TryShowDialogue("I placed the spoon... Something moved under the floor boards.");
     }
 
     // ==========================================================
-    // 4. FLOORBOARD & KEY
+    // 3. KEY & CHAIRS (With Bridge Methods)
     // ==========================================================
+
+    // Ito ang tinitirahan ng logic para sa lahat ng upuan
+    public void FixChair(string type)
+    {
+        // Guard clause para sa dialogue lang kung tapos na
+        if (chairsFixed >= 3 && PlayerPrefs.GetInt("R05_Chairs", 0) >= 3)
+        {
+            switch (type)
+            {
+                case "Child": TryShowDialogue("This chair is cold as ice."); break;
+                case "Mother": TryShowDialogue("The blood here is still wet."); break;
+                case "Father": TryShowDialogue("The dust on this chair is thick."); break;
+            }
+            return;
+        }
+
+        chairsFixed++; PlayerPrefs.Save();
+        switch (type)
+        {
+            case "Child": TryShowDialogue("Someone tied a child to this chair... regularly."); break;
+            case "Mother": TryShowDialogue("It was thrown backward violently."); break;
+            case "Father": TryShowDialogue("Empty chair covered in dust."); break;
+        }
+
+        if (chairsFixed >= 3) { SyncRoomState(); TryShowDialogue("The table... it's manifesting cutlery."); }
+    }
+
+    public void OnChairInteract() => FixChair("Child");
+    public void OnMotherChairInteract() => FixChair("Mother");
+    public void OnFatherChairInteract() => FixChair("Father");
+
     public void OnFloorboardInteract()
     {
-        if (isSpoonPlaced)
-        {
-            if (bedroomKey != null) bedroomKey.SetActive(true);
-            TryShowDialogue("The board is open. I can see a key glinting in the dark.");
-        }
-        else
-        {
-            TryShowDialogue("This floorboard is loose, but I can't lift it with my bare hands. I need a tool.");
-        }
+        if (isSpoonPlaced) TryShowDialogue("The board is open. I can see a key.");
+        else TryShowDialogue("It's loose, but I can't lift it.");
     }
 
     public void OnKeyInteract()
     {
-        if (!isSpoonPlaced) return;
-
+        // Mas maluwag na pickup logic
         if (bedroomKey != null) bedroomKey.SetActive(false);
         if (InventoryManager.Instance != null) InventoryManager.Instance.AddItem("bedroom_key");
-
-        TryShowDialogue("Got the Bedroom Key. I need to get out of here before she finds me.");
+        TryShowDialogue("Got the Bedroom Key. Time to go.");
         if (emilyEnemy != null) emilyEnemy.SetActive(true);
     }
 
-    // ==========================================================
-    // 5. THE ORIGINAL DIALOGUES (STRICTLY PRESERVED)
-    // ==========================================================
-    public void OnChairInteract() => TryShowDialogue("Someone tied a child to this chair... regularly.");
-    public void OnMotherChairInteract() => TryShowDialogue("It was thrown backward violently, blood stains on the seat.");
-    public void OnFatherChairInteract() => TryShowDialogue("Empty chair covered in dust shows he abandoned his family.");
+    private void TryShowDialogue(string text) { if (DialogueSystemV2.Instance != null) DialogueSystemV2.Instance.StartDialogue(text, "Lisa"); }
 
-    private void TryShowDialogue(string text)
+    // ==========================================================
+    // DEBUG TOOLS
+    // ==========================================================
+    [ContextMenu("Reset Room 05 Puzzle")]
+    public void ResetPuzzle()
     {
-        if (DialogueSystemV2.Instance != null)
-            DialogueSystemV2.Instance.StartDialogue(text, "Lisa");
+        PlayerPrefs.DeleteKey("R05_Calendar");
+        PlayerPrefs.DeleteKey("R05_Cabinet");
+        PlayerPrefs.DeleteKey("R05_HasSpoon");
+        PlayerPrefs.DeleteKey("R05_SpoonPlaced");
+        PlayerPrefs.DeleteKey("R05_Chairs");
+        PlayerPrefs.Save();
+        Debug.Log("Room 05 Puzzle Reset!");
     }
 }
