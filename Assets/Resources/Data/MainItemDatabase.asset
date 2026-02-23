@@ -262,3 +262,34 @@ MonoBehaviour:
     triggersMemory: 0
     memoryFragmentId: 
     requiredForPuzzle: kitchen_cookie_puzzle
+  - itemId: spoon
+    itemName: Silver Spoon
+    description: A shiny spoon from the cabinet.
+    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: Cabinet_Puzzle_Panel
+  - itemId: bedroom_key
+    itemName: Bedroom Key
+    description: A old rusty key found under the floorboards.
+    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: kitchen_key
+    itemName: Kitchen Key
+    description: A rusty key found in the dining room. It might unlock the back door
+      of the kitchen.
+    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
