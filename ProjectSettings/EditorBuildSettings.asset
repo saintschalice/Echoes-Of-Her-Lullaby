@@ -29,9 +29,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Room04_Kitchen.unity
     guid: 68a7f79f2327b024eb59697ddade303a
-  - enabled: 1
-    path: Assets/Scenes/Room05_DiningRoom.unity
-    guid: 95521c1fc42fe61418bef1e36f2550cb
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: fb00222c00a52bc4ebc810be245789ff, type: 2}
