@@ -1,0 +1,2483 @@
+fileFormatVersion: 2
+guid: 7256b7388ddc97f49b39504209ea5f21
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6320677239115031017
+    second: please_dont_go_up-Photoroom_0
+  - first:
+      213: -6135011352350514194
+    second: please_dont_go_up-Photoroom_1
+  - first:
+      213: -2153717267749668683
+    second: please_dont_go_up-Photoroom_2
+  - first:
+      213: 8646997579079705594
+    second: please_dont_go_up-Photoroom_3
+  - first:
+      213: -5975300795868465964
+    second: please_dont_go_up-Photoroom_4
+  - first:
+      213: 2925867477409747064
+    second: please_dont_go_up-Photoroom_5
+  - first:
+      213: -8274771032629509362
+    second: please_dont_go_up-Photoroom_6
+  - first:
+      213: 2238463257175968332
+    second: please_dont_go_up-Photoroom_7
+  - first:
+      213: -9120055058533025847
+    second: please_dont_go_up-Photoroom_8
+  - first:
+      213: -5235819361457792107
+    second: please_dont_go_up-Photoroom_9
+  - first:
+      213: -4930398850208890847
+    second: please_dont_go_up-Photoroom_10
+  - first:
+      213: 3119072247381693321
+    second: please_dont_go_up-Photoroom_11
+  - first:
+      213: -9187274183573471076
+    second: please_dont_go_up-Photoroom_12
+  - first:
+      213: -4726452236832993632
+    second: please_dont_go_up-Photoroom_13
+  - first:
+      213: -6582716129584127604
+    second: please_dont_go_up-Photoroom_14
+  - first:
+      213: -8648859268553185417
+    second: please_dont_go_up-Photoroom_15
+  - first:
+      213: -3554035799547621015
+    second: please_dont_go_up-Photoroom_16
+  - first:
+      213: 2745669447083049845
+    second: please_dont_go_up-Photoroom_17
+  - first:
+      213: 5324704900768010782
+    second: please_dont_go_up-Photoroom_18
+  - first:
+      213: -647074102832562512
+    second: please_dont_go_up-Photoroom_19
+  - first:
+      213: 4101868111963130575
+    second: please_dont_go_up-Photoroom_20
+  - first:
+      213: 3294866155702883882
+    second: please_dont_go_up-Photoroom_21
+  - first:
+      213: 7640857010630035300
+    second: please_dont_go_up-Photoroom_22
+  - first:
+      213: 9024015332482498506
+    second: please_dont_go_up-Photoroom_23
+  - first:
+      213: -4306298828772107395
+    second: please_dont_go_up-Photoroom_24
+  - first:
+      213: -6918805066004961557
+    second: please_dont_go_up-Photoroom_25
+  - first:
+      213: 4893087938224201477
+    second: please_dont_go_up-Photoroom_26
+  - first:
+      213: 8569517392500451373
+    second: please_dont_go_up-Photoroom_27
+  - first:
+      213: 6471299633093611255
+    second: please_dont_go_up-Photoroom_28
+  - first:
+      213: 5813732833507020416
+    second: please_dont_go_up-Photoroom_29
+  - first:
+      213: 2566365886916889476
+    second: please_dont_go_up-Photoroom_30
+  - first:
+      213: -6137336783854478685
+    second: please_dont_go_up-Photoroom_31
+  - first:
+      213: -145363040602863303
+    second: please_dont_go_up-Photoroom_32
+  - first:
+      213: 3654979354320827463
+    second: please_dont_go_up-Photoroom_33
+  - first:
+      213: -3065733605121739978
+    second: please_dont_go_up-Photoroom_34
+  - first:
+      213: 2834228244805292318
+    second: please_dont_go_up-Photoroom_35
+  - first:
+      213: -659687743263468839
+    second: please_dont_go_up-Photoroom_36
+  - first:
+      213: -8339768139256495150
+    second: please_dont_go_up-Photoroom_37
+  - first:
+      213: -659760020153778948
+    second: please_dont_go_up-Photoroom_38
+  - first:
+      213: 2907876920024766852
+    second: please_dont_go_up-Photoroom_39
+  - first:
+      213: 7811568111379534124
+    second: please_dont_go_up-Photoroom_40
+  - first:
+      213: 1249329623563214751
+    second: please_dont_go_up-Photoroom_41
+  - first:
+      213: 2433834169358958860
+    second: please_dont_go_up-Photoroom_42
+  - first:
+      213: 7060515619807675831
+    second: please_dont_go_up-Photoroom_43
+  - first:
+      213: -6608653801692006849
+    second: please_dont_go_up-Photoroom_44
+  - first:
+      213: -7333222097931157926
+    second: please_dont_go_up-Photoroom_45
+  - first:
+      213: 8509547554353363870
+    second: please_dont_go_up-Photoroom_46
+  - first:
+      213: 6286884519579755620
+    second: please_dont_go_up-Photoroom_47
+  - first:
+      213: -7492695374543126582
+    second: please_dont_go_up-Photoroom_48
+  - first:
+      213: 1862569125890893863
+    second: please_dont_go_up-Photoroom_49
+  - first:
+      213: 2351500588991084115
+    second: please_dont_go_up-Photoroom_50
+  - first:
+      213: 6871102595276134406
+    second: please_dont_go_up-Photoroom_51
+  - first:
+      213: -819663612907760574
+    second: please_dont_go_up-Photoroom_52
+  - first:
+      213: 4492502808255786571
+    second: please_dont_go_up-Photoroom_53
+  - first:
+      213: 9215451937729985309
+    second: please_dont_go_up-Photoroom_54
+  - first:
+      213: 5897838290614725943
+    second: please_dont_go_up-Photoroom_55
+  - first:
+      213: -6176598715715874101
+    second: please_dont_go_up-Photoroom_56
+  - first:
+      213: -8766439165845327198
+    second: please_dont_go_up-Photoroom_57
+  - first:
+      213: 483511713416829941
+    second: please_dont_go_up-Photoroom_58
+  - first:
+      213: -6340629650242316392
+    second: please_dont_go_up-Photoroom_59
+  - first:
+      213: -2162297843710731410
+    second: please_dont_go_up-Photoroom_60
+  - first:
+      213: 6381159263468900661
+    second: please_dont_go_up-Photoroom_61
+  - first:
+      213: -1311442401242932558
+    second: please_dont_go_up-Photoroom_62
+  - first:
+      213: -704124671006860515
+    second: please_dont_go_up-Photoroom_63
+  - first:
+      213: 7820790954517387817
+    second: please_dont_go_up-Photoroom_64
+  - first:
+      213: -5182832373124309915
+    second: please_dont_go_up-Photoroom_65
+  - first:
+      213: 6231428176372559350
+    second: please_dont_go_up-Photoroom_66
+  - first:
+      213: -3276286151400141043
+    second: please_dont_go_up-Photoroom_67
+  - first:
+      213: 9145523674326601705
+    second: please_dont_go_up-Photoroom_68
+  - first:
+      213: 1203115320790225969
+    second: please_dont_go_up-Photoroom_69
+  - first:
+      213: -6642596768667707409
+    second: please_dont_go_up-Photoroom_70
+  - first:
+      213: -3717167198266579949
+    second: please_dont_go_up-Photoroom_71
+  - first:
+      213: 3963872452619596066
+    second: please_dont_go_up-Photoroom_72
+  - first:
+      213: -1775418270008071168
+    second: please_dont_go_up-Photoroom_73
+  - first:
+      213: -218792777379252723
+    second: please_dont_go_up-Photoroom_74
+  - first:
+      213: 3027624053345228017
+    second: please_dont_go_up-Photoroom_75
+  - first:
+      213: -4546516598311045410
+    second: please_dont_go_up-Photoroom_76
+  - first:
+      213: -161525911176607040
+    second: please_dont_go_up-Photoroom_77
+  - first:
+      213: -5765732299009839011
+    second: please_dont_go_up-Photoroom_78
+  - first:
+      213: 418567654926598417
+    second: please_dont_go_up-Photoroom_79
+  - first:
+      213: 5720668822204706829
+    second: please_dont_go_up-Photoroom_80
+  - first:
+      213: 6136090866291817266
+    second: please_dont_go_up-Photoroom_81
+  - first:
+      213: 8061851141181128226
+    second: please_dont_go_up-Photoroom_82
+  - first:
+      213: -4559855259606927330
+    second: please_dont_go_up-Photoroom_83
+  - first:
+      213: -1596540485693683304
+    second: please_dont_go_up-Photoroom_84
+  - first:
+      213: 6490933927575785829
+    second: please_dont_go_up-Photoroom_85
+  - first:
+      213: 8819688721362901992
+    second: please_dont_go_up-Photoroom_86
+  - first:
+      213: -4417367770693397717
+    second: please_dont_go_up-Photoroom_87
+  - first:
+      213: 7501868389995424185
+    second: please_dont_go_up-Photoroom_88
+  - first:
+      213: -2237143729913280167
+    second: please_dont_go_up-Photoroom_89
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 16
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_0
+      rect:
+        serializedVersion: 2
+        x: 220
+        y: 512
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e12959e57e87b750800000000000000
+      internalID: 6320677239115031017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_1
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 512
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee3a8220eaf0cdaa0800000000000000
+      internalID: -6135011352350514194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_2
+      rect:
+        serializedVersion: 2
+        x: 242
+        y: 512
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b8f72d4e857c12e0800000000000000
+      internalID: -2153717267749668683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_3
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 512
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af365b20c7e400870800000000000000
+      internalID: 8646997579079705594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_4
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 508
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d4b62ca597731da0800000000000000
+      internalID: -5975300795868465964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_5
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 495
+        width: 17
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87050e208f4ca9820800000000000000
+      internalID: 2925867477409747064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_6
+      rect:
+        serializedVersion: 2
+        x: 688
+        y: 495
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e030d62669b1a2d80800000000000000
+      internalID: -8274771032629509362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_7
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 499
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4accb6f87e901f10800000000000000
+      internalID: 2238463257175968332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_8
+      rect:
+        serializedVersion: 2
+        x: 859
+        y: 495
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c772209e3e0f6180800000000000000
+      internalID: -9120055058533025847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_9
+      rect:
+        serializedVersion: 2
+        x: 189
+        y: 196
+        width: 258
+        height: 298
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59b12340802a657b0800000000000000
+      internalID: -5235819361457792107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_10
+      rect:
+        serializedVersion: 2
+        x: 434
+        y: 329
+        width: 88
+        height: 166
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1200e4c3e54b39bb0800000000000000
+      internalID: -4930398850208890847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_11
+      rect:
+        serializedVersion: 2
+        x: 522
+        y: 345
+        width: 96
+        height: 150
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98317f5feab294b20800000000000000
+      internalID: 3119072247381693321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_12
+      rect:
+        serializedVersion: 2
+        x: 693
+        y: 486
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c908cf96ece308080800000000000000
+      internalID: -9187274183573471076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_13
+      rect:
+        serializedVersion: 2
+        x: 816
+        y: 491
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ae08bf7bb4486eb0800000000000000
+      internalID: -4726452236832993632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_14
+      rect:
+        serializedVersion: 2
+        x: 824
+        y: 491
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8167ee8e8e75a4a0800000000000000
+      internalID: -6582716129584127604
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_15
+      rect:
+        serializedVersion: 2
+        x: 846
+        y: 491
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 777ea81a15419f780800000000000000
+      internalID: -8648859268553185417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_16
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 254
+        width: 106
+        height: 232
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96151f835478daec0800000000000000
+      internalID: -3554035799547621015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_17
+      rect:
+        serializedVersion: 2
+        x: 631
+        y: 428
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5734700a0d39a1620800000000000000
+      internalID: 2745669447083049845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_18
+      rect:
+        serializedVersion: 2
+        x: 692
+        y: 477
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e121f0055e625e940800000000000000
+      internalID: 5324704900768010782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_19
+      rect:
+        serializedVersion: 2
+        x: 801
+        y: 481
+        width: 14
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0be7f4528812507f0800000000000000
+      internalID: -647074102832562512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_20
+      rect:
+        serializedVersion: 2
+        x: 815
+        y: 482
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fca8011b053cce830800000000000000
+      internalID: 4101868111963130575
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_21
+      rect:
+        serializedVersion: 2
+        x: 838
+        y: 482
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a269029cf47b9bd20800000000000000
+      internalID: 3294866155702883882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_22
+      rect:
+        serializedVersion: 2
+        x: 702
+        y: 456
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 467082ad7f6c90a60800000000000000
+      internalID: 7640857010630035300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_23
+      rect:
+        serializedVersion: 2
+        x: 771
+        y: 455
+        width: 18
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: acf3c44322ebb3d70800000000000000
+      internalID: 9024015332482498506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_24
+      rect:
+        serializedVersion: 2
+        x: 789
+        y: 459
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7b9b5ee704fc34c0800000000000000
+      internalID: -4306298828772107395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_25
+      rect:
+        serializedVersion: 2
+        x: 793
+        y: 446
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be6e99a23777bff90800000000000000
+      internalID: -6918805066004961557
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_26
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 451
+        width: 12
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50f1a9c1e8db7e340800000000000000
+      internalID: 4893087938224201477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_27
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 429
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d28658c4aaa0de670800000000000000
+      internalID: 8569517392500451373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_28
+      rect:
+        serializedVersion: 2
+        x: 736
+        y: 341
+        width: 44
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7fe09a9dabcaec950800000000000000
+      internalID: 6471299633093611255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_29
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 407
+        width: 27
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08e0638a5378ea050800000000000000
+      internalID: 5813732833507020416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_30
+      rect:
+        serializedVersion: 2
+        x: 850
+        y: 398
+        width: 29
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48b8c5d4d209d9320800000000000000
+      internalID: 2566365886916889476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_31
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 420
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3aa5a6b46bcc3daa0800000000000000
+      internalID: -6137336783854478685
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_32
+      rect:
+        serializedVersion: 2
+        x: 623
+        y: 389
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9394561b5119bfdf0800000000000000
+      internalID: -145363040602863303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_33
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 394
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 744fdab9b5819b230800000000000000
+      internalID: 3654979354320827463
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_34
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 389
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 633bdb277835475d0800000000000000
+      internalID: -3065733605121739978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_35
+      rect:
+        serializedVersion: 2
+        x: 868
+        y: 389
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e119fff7293355720800000000000000
+      internalID: 2834228244805292318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_36
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 377
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d21a102e7158d6f0800000000000000
+      internalID: -659687743263468839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_37
+      rect:
+        serializedVersion: 2
+        x: 815
+        y: 376
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d30f763011334c80800000000000000
+      internalID: -8339768139256495150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_38
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 381
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfcbab9d1cf08d6f0800000000000000
+      internalID: -659760020153778948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_39
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 372
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48912a4f6aada5820800000000000000
+      internalID: 2907876920024766852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_40
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 354
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c21db815fc3486c60800000000000000
+      internalID: 7811568111379534124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_41
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 306
+        width: 27
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9f9bd36ca2865110800000000000000
+      internalID: 1249329623563214751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_42
+      rect:
+        serializedVersion: 2
+        x: 798
+        y: 337
+        width: 26
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0149d23847b6c120800000000000000
+      internalID: 2433834169358958860
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_43
+      rect:
+        serializedVersion: 2
+        x: 829
+        y: 342
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b5cbb94c8dfbf160800000000000000
+      internalID: 7060515619807675831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_44
+      rect:
+        serializedVersion: 2
+        x: 587
+        y: 324
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f36fc9aa1685944a0800000000000000
+      internalID: -6608653801692006849
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_45
+      rect:
+        serializedVersion: 2
+        x: 671
+        y: 105
+        width: 92
+        height: 227
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5eb4c1ea592b3a90800000000000000
+      internalID: -7333222097931157926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_46
+      rect:
+        serializedVersion: 2
+        x: 763
+        y: 332
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9bb6884a6cf71670800000000000000
+      internalID: 8509547554353363870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_47
+      rect:
+        serializedVersion: 2
+        x: 789
+        y: 144
+        width: 102
+        height: 188
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 464247549208f3750800000000000000
+      internalID: 6286884519579755620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_48
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 170
+        width: 110
+        height: 157
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: acff42e3149940890800000000000000
+      internalID: -7492695374543126582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_49
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 315
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 728265e60cc29d910800000000000000
+      internalID: 1862569125890893863
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_50
+      rect:
+        serializedVersion: 2
+        x: 504
+        y: 153
+        width: 80
+        height: 162
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3567fefa35532a020800000000000000
+      internalID: 2351500588991084115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_51
+      rect:
+        serializedVersion: 2
+        x: 587
+        y: 98
+        width: 102
+        height: 229
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 608d2bed76f0b5f50800000000000000
+      internalID: 6871102595276134406
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_52
+      rect:
+        serializedVersion: 2
+        x: 763
+        y: 284
+        width: 34
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 244d15d6948ff94f0800000000000000
+      internalID: -819663612907760574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_53
+      rect:
+        serializedVersion: 2
+        x: 772
+        y: 314
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4ee7867083985e30800000000000000
+      internalID: 4492502808255786571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_54
+      rect:
+        serializedVersion: 2
+        x: 890
+        y: 169
+        width: 93
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1bb41936bcd3ef70800000000000000
+      internalID: 9215451937729985309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_55
+      rect:
+        serializedVersion: 2
+        x: 181
+        y: 289
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73da9ce5da459d150800000000000000
+      internalID: 5897838290614725943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_56
+      rect:
+        serializedVersion: 2
+        x: 737
+        y: 258
+        width: 35
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc21f9d6130584aa0800000000000000
+      internalID: -6176598715715874101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_57
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 240
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a2b7b6760a575680800000000000000
+      internalID: -8766439165845327198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_58
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 227
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fb53f27757c5b600800000000000000
+      internalID: 483511713416829941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_59
+      rect:
+        serializedVersion: 2
+        x: 176
+        y: 218
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8975ffc5dee8108a0800000000000000
+      internalID: -6340629650242316392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_60
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 179
+        width: 23
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6b57074199fdf1e0800000000000000
+      internalID: -2162297843710731410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_61
+      rect:
+        serializedVersion: 2
+        x: 141
+        y: 157
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 531d1429a8e6e8850800000000000000
+      internalID: 6381159263468900661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_62
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 165
+        width: 61
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ba978a9512dccde0800000000000000
+      internalID: -1311442401242932558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_63
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 25
+        width: 102
+        height: 171
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1b1c03a7527a36f0800000000000000
+      internalID: -704124671006860515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_64
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 34
+        width: 102
+        height: 171
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92ad892dfe7098c60800000000000000
+      internalID: 7820790954517387817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_65
+      rect:
+        serializedVersion: 2
+        x: 444
+        y: 166
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56cd78d9a61e218b0800000000000000
+      internalID: -5182832373124309915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_66
+      rect:
+        serializedVersion: 2
+        x: 948
+        y: 144
+        width: 10
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6fdeb0039ea7a7650800000000000000
+      internalID: 6231428176372559350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_67
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 148
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0f43439a1b4882d0800000000000000
+      internalID: -3276286151400141043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_68
+      rect:
+        serializedVersion: 2
+        x: 474
+        y: 153
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ef8925a35d6bee70800000000000000
+      internalID: 9145523674326601705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_69
+      rect:
+        serializedVersion: 2
+        x: 553
+        y: 131
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1341887820352b010800000000000000
+      internalID: 1203115320790225969
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_70
+      rect:
+        serializedVersion: 2
+        x: 772
+        y: 135
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe75761de61c0d3a0800000000000000
+      internalID: -6642596768667707409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_71
+      rect:
+        serializedVersion: 2
+        x: 785
+        y: 126
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3142698a028f96cc0800000000000000
+      internalID: -3717167198266579949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_72
+      rect:
+        serializedVersion: 2
+        x: 802
+        y: 118
+        width: 18
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 221f8518ef0820730800000000000000
+      internalID: 3963872452619596066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_73
+      rect:
+        serializedVersion: 2
+        x: 861
+        y: 109
+        width: 12
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00c2e607d727c57e0800000000000000
+      internalID: -1775418270008071168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_74
+      rect:
+        serializedVersion: 2
+        x: 802
+        y: 108
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0673e0d021b6fcf0800000000000000
+      internalID: -218792777379252723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_75
+      rect:
+        serializedVersion: 2
+        x: 811
+        y: 100
+        width: 13
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f412151908440a20800000000000000
+      internalID: 3027624053345228017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_76
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 117
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed6b0480e3787e0c0800000000000000
+      internalID: -4546516598311045410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_77
+      rect:
+        serializedVersion: 2
+        x: 632
+        y: 91
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ca0c422a0522cdf0800000000000000
+      internalID: -161525911176607040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_78
+      rect:
+        serializedVersion: 2
+        x: 645
+        y: 91
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d50b58fa5010cffa0800000000000000
+      internalID: -5765732299009839011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_79
+      rect:
+        serializedVersion: 2
+        x: 706
+        y: 82
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1114e52801d0fc500800000000000000
+      internalID: 418567654926598417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_80
+      rect:
+        serializedVersion: 2
+        x: 715
+        y: 21
+        width: 48
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d00f9210cf5e36f40800000000000000
+      internalID: 5720668822204706829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_81
+      rect:
+        serializedVersion: 2
+        x: 759
+        y: 82
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23bb7dae126c72550800000000000000
+      internalID: 6136090866291817266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_82
+      rect:
+        serializedVersion: 2
+        x: 811
+        y: 87
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22ebd2e36e271ef60800000000000000
+      internalID: 8061851141181128226
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_83
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 86
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e18beefecc328b0c0800000000000000
+      internalID: -4559855259606927330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_84
+      rect:
+        serializedVersion: 2
+        x: 811
+        y: 73
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 899c2b813e2f7d9e0800000000000000
+      internalID: -1596540485693683304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_85
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 64
+        width: 13
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5619fa5440e641a50800000000000000
+      internalID: 6490933927575785829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_86
+      rect:
+        serializedVersion: 2
+        x: 861
+        y: 80
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ebda52d924d56a70800000000000000
+      internalID: 8819688721362901992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_87
+      rect:
+        serializedVersion: 2
+        x: 785
+        y: 69
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b239f81ba6b52b2c0800000000000000
+      internalID: -4417367770693397717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_88
+      rect:
+        serializedVersion: 2
+        x: 824
+        y: 56
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b9a869dd8dfb1860800000000000000
+      internalID: 7501868389995424185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: please_dont_go_up-Photoroom_89
+      rect:
+        serializedVersion: 2
+        x: 325
+        y: 26
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 959c60b61a114f0e0800000000000000
+      internalID: -2237143729913280167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      please_dont_go_up-Photoroom_0: 6320677239115031017
+      please_dont_go_up-Photoroom_1: -6135011352350514194
+      please_dont_go_up-Photoroom_10: -4930398850208890847
+      please_dont_go_up-Photoroom_11: 3119072247381693321
+      please_dont_go_up-Photoroom_12: -9187274183573471076
+      please_dont_go_up-Photoroom_13: -4726452236832993632
+      please_dont_go_up-Photoroom_14: -6582716129584127604
+      please_dont_go_up-Photoroom_15: -8648859268553185417
+      please_dont_go_up-Photoroom_16: -3554035799547621015
+      please_dont_go_up-Photoroom_17: 2745669447083049845
+      please_dont_go_up-Photoroom_18: 5324704900768010782
+      please_dont_go_up-Photoroom_19: -647074102832562512
+      please_dont_go_up-Photoroom_2: -2153717267749668683
+      please_dont_go_up-Photoroom_20: 4101868111963130575
+      please_dont_go_up-Photoroom_21: 3294866155702883882
+      please_dont_go_up-Photoroom_22: 7640857010630035300
+      please_dont_go_up-Photoroom_23: 9024015332482498506
+      please_dont_go_up-Photoroom_24: -4306298828772107395
+      please_dont_go_up-Photoroom_25: -6918805066004961557
+      please_dont_go_up-Photoroom_26: 4893087938224201477
+      please_dont_go_up-Photoroom_27: 8569517392500451373
+      please_dont_go_up-Photoroom_28: 6471299633093611255
+      please_dont_go_up-Photoroom_29: 5813732833507020416
+      please_dont_go_up-Photoroom_3: 8646997579079705594
+      please_dont_go_up-Photoroom_30: 2566365886916889476
+      please_dont_go_up-Photoroom_31: -6137336783854478685
+      please_dont_go_up-Photoroom_32: -145363040602863303
+      please_dont_go_up-Photoroom_33: 3654979354320827463
+      please_dont_go_up-Photoroom_34: -3065733605121739978
+      please_dont_go_up-Photoroom_35: 2834228244805292318
+      please_dont_go_up-Photoroom_36: -659687743263468839
+      please_dont_go_up-Photoroom_37: -8339768139256495150
+      please_dont_go_up-Photoroom_38: -659760020153778948
+      please_dont_go_up-Photoroom_39: 2907876920024766852
+      please_dont_go_up-Photoroom_4: -5975300795868465964
+      please_dont_go_up-Photoroom_40: 7811568111379534124
+      please_dont_go_up-Photoroom_41: 1249329623563214751
+      please_dont_go_up-Photoroom_42: 2433834169358958860
+      please_dont_go_up-Photoroom_43: 7060515619807675831
+      please_dont_go_up-Photoroom_44: -6608653801692006849
+      please_dont_go_up-Photoroom_45: -7333222097931157926
+      please_dont_go_up-Photoroom_46: 8509547554353363870
+      please_dont_go_up-Photoroom_47: 6286884519579755620
+      please_dont_go_up-Photoroom_48: -7492695374543126582
+      please_dont_go_up-Photoroom_49: 1862569125890893863
+      please_dont_go_up-Photoroom_5: 2925867477409747064
+      please_dont_go_up-Photoroom_50: 2351500588991084115
+      please_dont_go_up-Photoroom_51: 6871102595276134406
+      please_dont_go_up-Photoroom_52: -819663612907760574
+      please_dont_go_up-Photoroom_53: 4492502808255786571
+      please_dont_go_up-Photoroom_54: 9215451937729985309
+      please_dont_go_up-Photoroom_55: 5897838290614725943
+      please_dont_go_up-Photoroom_56: -6176598715715874101
+      please_dont_go_up-Photoroom_57: -8766439165845327198
+      please_dont_go_up-Photoroom_58: 483511713416829941
+      please_dont_go_up-Photoroom_59: -6340629650242316392
+      please_dont_go_up-Photoroom_6: -8274771032629509362
+      please_dont_go_up-Photoroom_60: -2162297843710731410
+      please_dont_go_up-Photoroom_61: 6381159263468900661
+      please_dont_go_up-Photoroom_62: -1311442401242932558
+      please_dont_go_up-Photoroom_63: -704124671006860515
+      please_dont_go_up-Photoroom_64: 7820790954517387817
+      please_dont_go_up-Photoroom_65: -5182832373124309915
+      please_dont_go_up-Photoroom_66: 6231428176372559350
+      please_dont_go_up-Photoroom_67: -3276286151400141043
+      please_dont_go_up-Photoroom_68: 9145523674326601705
+      please_dont_go_up-Photoroom_69: 1203115320790225969
+      please_dont_go_up-Photoroom_7: 2238463257175968332
+      please_dont_go_up-Photoroom_70: -6642596768667707409
+      please_dont_go_up-Photoroom_71: -3717167198266579949
+      please_dont_go_up-Photoroom_72: 3963872452619596066
+      please_dont_go_up-Photoroom_73: -1775418270008071168
+      please_dont_go_up-Photoroom_74: -218792777379252723
+      please_dont_go_up-Photoroom_75: 3027624053345228017
+      please_dont_go_up-Photoroom_76: -4546516598311045410
+      please_dont_go_up-Photoroom_77: -161525911176607040
+      please_dont_go_up-Photoroom_78: -5765732299009839011
+      please_dont_go_up-Photoroom_79: 418567654926598417
+      please_dont_go_up-Photoroom_8: -9120055058533025847
+      please_dont_go_up-Photoroom_80: 5720668822204706829
+      please_dont_go_up-Photoroom_81: 6136090866291817266
+      please_dont_go_up-Photoroom_82: 8061851141181128226
+      please_dont_go_up-Photoroom_83: -4559855259606927330
+      please_dont_go_up-Photoroom_84: -1596540485693683304
+      please_dont_go_up-Photoroom_85: 6490933927575785829
+      please_dont_go_up-Photoroom_86: 8819688721362901992
+      please_dont_go_up-Photoroom_87: -4417367770693397717
+      please_dont_go_up-Photoroom_88: 7501868389995424185
+      please_dont_go_up-Photoroom_89: -2237143729913280167
+      please_dont_go_up-Photoroom_9: -5235819361457792107
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
