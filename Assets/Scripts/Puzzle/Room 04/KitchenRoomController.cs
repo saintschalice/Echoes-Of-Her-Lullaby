@@ -146,24 +146,24 @@ public class KitchenRoomController : MonoBehaviour
         }
     }
 
-    public void OnDoughMixed() 
-    { 
-        doughMixed = true; 
+    public void OnDoughMixed()
+    {
+        doughMixed = true;
         PlayerPrefs.SetInt(puzzleId + "_dough", 1);
         PlayerPrefs.Save();
         SyncIngredientObjects(); // Siguradong mawawala ang mga gamit sa counter
     }
 
-    public void OnOvenSetCorrect() 
-    { 
-        ovenSetCorrect = true; 
+    public void OnOvenSetCorrect()
+    {
+        ovenSetCorrect = true;
         PlayerPrefs.SetInt(puzzleId + "_oven", 1);
         PlayerPrefs.Save();
     }
 
-    public void OnCookiesBakedAndStored() 
-    { 
-        cookiesBakedAndStored = true; 
+    public void OnCookiesBakedAndStored()
+    {
+        cookiesBakedAndStored = true;
         PlayerPrefs.SetInt(puzzleId + "_cookies", 1);
         PlayerPrefs.Save();
     }
@@ -173,7 +173,7 @@ public class KitchenRoomController : MonoBehaviour
         bridgePlaced = true;
         PlayerPrefs.SetInt(puzzleId + "_bridge", 1);
         PlayerPrefs.Save();
-        
+
         if (SaveSystem.Instance != null)
         {
             SaveSystem.Instance.MarkPuzzleSolved(puzzleId + "_bridge");
@@ -334,5 +334,43 @@ public class KitchenRoomController : MonoBehaviour
             }
         }
         if (anim != null) anim.SetBool("isWalking", false);
+    }
+
+    [ContextMenu("Reset Kitchen Puzzle")]
+    public void ResetPuzzle()
+    {
+        PlayerPrefs.DeleteKey(puzzleId + "_bridge");
+        PlayerPrefs.DeleteKey(puzzleId + "_dough");
+        PlayerPrefs.DeleteKey(puzzleId + "_oven");
+        PlayerPrefs.DeleteKey(puzzleId + "_cookies");
+        PlayerPrefs.DeleteKey(puzzleId + "_recipe");
+        PlayerPrefs.DeleteKey(puzzleId + "_floorboard");
+        PlayerPrefs.DeleteKey("emily_kitchen_intro");
+        PlayerPrefs.Save();
+
+        recipeRead = false;
+        hasFlour = false;
+        hasSugar = false;
+        hasVanilla = false;
+        hasChocolate = false;
+        hasEgg = false;
+        hasSalt = false;
+        doughMixed = false;
+        ovenSetCorrect = false;
+        cookiesBakedAndStored = false;
+        floorboardObtained = false;
+        bridgePlaced = false;
+        emilyIntroDone = false;
+        isPlayerHidden = false;
+        introInProgress = false;
+
+        if (flourObject != null) flourObject.SetActive(true);
+        if (sugarObject != null) sugarObject.SetActive(true);
+        if (vanillaObject != null) vanillaObject.SetActive(true);
+        if (chocolateObject != null) chocolateObject.SetActive(true);
+        if (eggObject != null) eggObject.SetActive(true);
+        if (saltObject != null) saltObject.SetActive(true);
+
+        Debug.Log("DEBUG: Kitchen Puzzle Reset! (NOTE: Kung nasa SaveSystem pa rin ang items mo, baka kailangan mong i-clear din ang main save data mo).");
     }
 }

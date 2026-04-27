@@ -32,6 +32,21 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Room05_DiningRoom.unity
     guid: 95521c1fc42fe61418bef1e36f2550cb
+  - enabled: 1
+    path: Assets/Scenes/Room06_ReturnToHallway.unity
+    guid: 06eb1cc745678d24f93c8065b529b16c
+  - enabled: 1
+    path: Assets/Scenes/Room06_ReturnToHallwayUpStairs.unity
+    guid: 24b80edc581305e4897d6cb8e78525af
+  - enabled: 1
+    path: Assets/Scenes/Room07_Lisa'sBedroom.unity
+    guid: 6690ea3125890934db788289eb497aa7
+  - enabled: 1
+    path: Assets/Scenes/Room08_Lisa'sBathroom.unity
+    guid: 54479ba160f74174c882b86ce959794c
+  - enabled: 1
+    path: Assets/Scenes/Room09_Master's_Bathroom.unity
+    guid: 26d68ec1fad78104d989f75b86ed50cb
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: fb00222c00a52bc4ebc810be245789ff, type: 2}

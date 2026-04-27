@@ -265,7 +265,7 @@ MonoBehaviour:
   - itemId: spoon
     itemName: Silver Spoon
     description: A shiny spoon from the cabinet.
-    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    itemIcon: {fileID: 6855564448319954688, guid: 09ed7d97ba2bca24a8eb378171b8078f, type: 3}
     isKeyItem: 1
     isUsable: 0
     isConsumable: 0
@@ -275,7 +275,7 @@ MonoBehaviour:
   - itemId: bedroom_key
     itemName: Bedroom Key
     description: A old rusty key found under the floorboards.
-    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    itemIcon: {fileID: 21300000, guid: 6dcf5795ff887da49a3563d8cde9ec0e, type: 3}
     isKeyItem: 1
     isUsable: 0
     isConsumable: 1

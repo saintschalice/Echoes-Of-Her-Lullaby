@@ -15,6 +15,12 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
     public bool consumeKeyOnUse = false; // Should key disappear after use?
     public bool unlockPermanently = true; // Save unlocked state?
 
+    [Header("Story/Puzzle Requirements (Optional)")]
+    [Tooltip("Check this if this is the exit door inside Room 5 that requires the table ritual to be done.")]
+    public bool requireRoom5PuzzleComplete = false;
+    [Tooltip("Message to show if Lisa tries to leave before finishing the puzzle.")]
+    public string incompletePuzzleMessage = "I can't leave yet. I need to finish setting the table.";
+
     [Header("Spawn Settings")]
     public string targetSpawnPointID = "Main"; // Which spawn point to use in target scene
     public Vector3 spawnOffset = Vector3.zero; // Optional offset from spawn point
@@ -162,6 +168,30 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
     {
         Debug.Log($"[UnifiedDoor] Attempting to open {doorID}...");
 
+        // --- NEW: ROOM 5 PUZZLE CHECK ---
+        if (requireRoom5PuzzleComplete)
+        {
+            bool isPuzzleDone = false;
+
+            // Para kung nasa loob siya ng Dining Room
+            if (Room05_DiningRoomController.Instance != null)
+            {
+                isPuzzleDone = Room05_DiningRoomController.Instance.puzzleCompleted;
+            }
+            // Para kung nasa Kitchen siya (kung nasa inventory na niya yung bedroom key, ibig sabihin tapos na ang puzzle!)
+            else if (InventoryManager.Instance != null && InventoryManager.Instance.HasItem("bedroom_key"))
+            {
+                isPuzzleDone = true;
+            }
+
+            if (!isPuzzleDone)
+            {
+                ShowLockedMessage(incompletePuzzleMessage);
+                return;
+            }
+        }
+        // --------------------------------
+
         // If door is already unlocked, just open it
         if (doorUnlocked)
         {
@@ -192,13 +222,20 @@ public class UnifiedDoorInteraction : MonoBehaviour, IInteractable
         }
     }
 
-    void ShowLockedMessage()
+    // Updated to accept custom messages for puzzle blocks
+    void ShowLockedMessage(string customMessage = "")
     {
         Debug.Log($"[UnifiedDoor] {doorID} is locked!");
 
         if (lockedDoorSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(lockedDoorSound);
+        }
+
+        if (!string.IsNullOrEmpty(customMessage))
+        {
+            ShowDialogue(customMessage);
+            return;
         }
 
         // --- FIX: Logic to display pretty name instead of ID ---
