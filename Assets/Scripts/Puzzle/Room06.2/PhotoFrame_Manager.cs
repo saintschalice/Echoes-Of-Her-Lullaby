@@ -27,28 +27,24 @@ public class PhotoFrame_Manager : MonoBehaviour, IInteractable
     private SpriteRenderer sr;
     private AudioSource audioSource;
     private bool isTransformed = false;
-    private bool isSequencePlaying = false; // Panangga para di mag-doble click
+    private bool isSequencePlaying = false;
 
     void Start()
     {
         sr = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
         sr.sprite = normalPhoto;
-
         if (photoUIPanel != null) photoUIPanel.SetActive(false);
     }
 
     public void Interact()
     {
-        // Wag pansinin ang click kung may tumatakbo nang sequence o dialogue
         if (isSequencePlaying) return;
         if (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) return;
 
-        // Distance Check
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null && Vector2.Distance(transform.position, player.transform.position) > interactionRange) return;
 
-        // Simulan ang Sequence
         StartCoroutine(InteractionSequence());
     }
 
@@ -56,60 +52,62 @@ public class PhotoFrame_Manager : MonoBehaviour, IInteractable
     {
         isSequencePlaying = true;
 
-        // 1. OPEN UI POP-UP
-        if (photoUIPanel != null)
-        {
+        // SIGURADONG ISE-SAVE PARA BUMUKAS ANG PINTO!
+        Debug.Log("[PhotoFrame] Sini-save ang progress sa R06_PhotoInteracted = 1");
+        PlayerPrefs.SetInt("R06_PhotoInteracted", 1);
+        PlayerPrefs.Save();
+
+        if (photoUIPanel != null) {
             photoUIPanel.SetActive(true);
             photoUIImage.sprite = isTransformed ? distortedPhoto : normalPhoto;
         }
 
-        // 2. TRIGGER NORMAL DIALOGUE
         if (!isTransformed)
         {
-            // ITO YUNG KINOPYA NATIN MULA SA DINING ROOM SCRIPT MO!
-            if (DialogueSystemV2.Instance != null)
+            if (DialogueSystemV2.Instance != null) 
                 DialogueSystemV2.Instance.StartDialogue(dialogueBeforeScare, "Lisa");
-
-            // Hihintayin matapos ang dialogue ni Lisa bago magulat
-            yield return new WaitForSeconds(0.1f); // maliit na delay para di mag-skip
+            
+            yield return new WaitForSeconds(0.1f);
             yield return new WaitUntil(() => DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive());
 
-            // 3. THE SCARE & TRANSFORMATION!
             if (audioSource != null && transformationSound != null)
                 audioSource.PlayOneShot(transformationSound);
 
             if (photoUIImage != null) photoUIImage.sprite = distortedPhoto;
             sr.sprite = distortedPhoto;
-            transform.rotation = Quaternion.Euler(0, 0, -8f);
+            transform.rotation = Quaternion.Euler(0, 0, -8f); 
             isTransformed = true;
 
-            // PLAY SCARE DIALOGUE
-            if (DialogueSystemV2.Instance != null)
+            if (DialogueSystemV2.Instance != null) 
                 DialogueSystemV2.Instance.StartDialogue(dialogueDuringScare, "Lisa");
 
             yield return new WaitForSeconds(0.1f);
             yield return new WaitUntil(() => DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive());
+            
+            // --- PALABASIN SI EMILY! ---
+            Debug.Log("[PhotoFrame] Tinatawag na ang Hallway Controller para kay Emily...");
+            if (Room06_HallwayController.Instance != null)
+            {
+                Room06_HallwayController.Instance.TriggerEmilyChase();
+            }
+            else
+            {
+                Debug.LogError("[PhotoFrame] ERROR: Hindi mahanap ang Room06_HallwayController.Instance!");
+            }
         }
         else
         {
-            // KUNG NA-TRANSFORM NA (Pag pinindot ulit ni player mamaya)
-            if (DialogueSystemV2.Instance != null)
+            if (DialogueSystemV2.Instance != null) 
                 DialogueSystemV2.Instance.StartDialogue(dialogueAfterScare, "Lisa");
 
             yield return new WaitForSeconds(0.1f);
             yield return new WaitUntil(() => DialogueSystemV2.Instance == null || !DialogueSystemV2.Instance.IsDialogueActive());
         }
 
-        // 4. CLOSE UI POP-UP PAGKATAPOS NG LAHAT
-        if (photoUIPanel != null)
-        {
-            photoUIPanel.SetActive(false);
-        }
-
+        if (photoUIPanel != null) photoUIPanel.SetActive(false);
         isSequencePlaying = false;
     }
 
-    // --- IINTERACTABLE ---
     public void OnInteract(PlayerContext context) => Interact();
     public void OnFocus(PlayerContext context) { }
     public void OnBlur(PlayerContext context) { }

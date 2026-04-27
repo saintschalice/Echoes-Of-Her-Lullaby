@@ -1,5 +1,13 @@
+// ==========================================================
+// Developer: Jhon Jellar Z. Miranda
+// Project: Echoes of Her Lullaby
+// Description: Handles locked hallway door interactions, 
+// dialogue checks, and scene transitions.
+// ==========================================================
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections; // Kailangan para sa Coroutines
 using System.Globalization;
 
 public class HallwayDoorInteraction : MonoBehaviour, IInteractable
@@ -11,8 +19,8 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
     [Header("Lock Settings")]
     public bool startsLocked = true;
     public string requiredItemId = "bedroom_key";
-    public bool consumeKeyOnUse = true;
-    public bool unlockPermanently = true;
+    public bool consumeKeyOnUse = true; 
+    public bool unlockPermanently = true; 
 
     [Header("Hallway Puzzle Requirements")]
     public bool requirePhotoInteraction = true;
@@ -44,6 +52,10 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
     public float transitionDelay = 1.5f;
     public bool useFadeTransition = true;
 
+    [Header("DEBUG & TESTING")]
+    [Tooltip("Check this to ignore key and photo requirements during testing.")]
+    public bool debug_BypassRequirements = false;
+
     private AudioSource audioSource;
     private bool playerInRange = false;
     private bool doorUnlocked = false;
@@ -62,11 +74,19 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
         UpdateVisuals();
     }
 
+    void Update()
+    {
+        // DEBUG SHORTCUT: Pindutin ang F8 kapag nasa tapat ng pinto para mag-force unlock
+        if (playerInRange && Input.GetKeyDown(KeyCode.F8))
+        {
+            Debug.Log("[DEBUG] Force Unlocking Door via F8!");
+            UnlockAndOpenDoor();
+        }
+    }
+
     public void Interact()
     {
         if (isTransitioning) return;
-
-        // Tinanggal muna natin ang IsDialogueActive check dito para siguradong papasok
         AttemptOpenDoor();
     }
 
@@ -128,12 +148,17 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
 
     void AttemptOpenDoor()
     {
-        Debug.Log($"[DoorLogic] Checking door: {doorID}");
-
         if (doorUnlocked)
         {
-            Debug.Log("[DoorLogic] Door is already unlocked! Opening...");
             OpenDoor();
+            return;
+        }
+
+        // 0. DEBUG BYPASS CHECK
+        if (debug_BypassRequirements)
+        {
+            Debug.Log("[DEBUG] Requirements Bypassed!");
+            UnlockAndOpenDoor();
             return;
         }
 
@@ -144,25 +169,30 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
 
         if (!hasKey)
         {
-            Debug.Log("[DoorLogic] Result: Missing Key.");
             ShowLockedMessage(lockedDialogue);
             return;
         }
 
-        // 2. CHECK PHOTO FRAME PROGRESS
+        // 2. BULLETPROOF PUZZLE CHECK
         if (requirePhotoInteraction)
         {
-            bool hasCheckedPhoto = PlayerPrefs.GetInt(photoPrefsKey, 0) == 1;
-            if (!hasCheckedPhoto)
+            bool isEmilyChasing = false;
+            // Note: Siguraduhing existing ang Room06_HallwayController script mo
+            if (Room06_HallwayController.Instance != null)
             {
-                Debug.Log("[DoorLogic] Result: Has Key, but Photo Frame NOT checked.");
+                isEmilyChasing = Room06_HallwayController.Instance.isEmilyHunting;
+            }
+
+            bool hasCheckedPhoto = PlayerPrefs.GetInt(photoPrefsKey, 0) == 1;
+
+            if (!hasCheckedPhoto && !isEmilyChasing)
+            {
                 ShowLockedMessage(missingPhotoDialogue);
                 return;
             }
         }
 
-        // TAMA LAHAT! May susi at nakita ang picture.
-        Debug.Log("[DoorLogic] Result: ALL REQUIREMENTS MET! Unlocking door.");
+        // TAMA LAHAT! May susi at tapos na ang jumpscare/hunting.
         UnlockAndOpenDoor();
     }
 
@@ -180,7 +210,7 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
 
         if (unlockPermanently) SaveDoorState();
 
-        if (consumeKeyOnUse && !string.IsNullOrEmpty(requiredItemId))
+        if (consumeKeyOnUse && !string.IsNullOrEmpty(requiredItemId) && !debug_BypassRequirements)
         {
             if (SaveSystem.Instance != null) SaveSystem.Instance.RemoveInventoryItem(requiredItemId);
             if (InventoryManager.Instance != null) InventoryManager.Instance.RemoveItem(requiredItemId);
@@ -193,7 +223,14 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
 
         ShowDialogue(successDialogue);
 
-        Invoke(nameof(OpenDoor), 1.5f);
+        // Gumagamit na ng Coroutine para hindi maapektuhan ng Time.timeScale = 0 (Dialogue Pause)
+        StartCoroutine(OpenDoorRoutine(1.5f));
+    }
+
+    IEnumerator OpenDoorRoutine(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        OpenDoor();
     }
 
     void OpenDoor()
@@ -202,9 +239,6 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
         isTransitioning = true;
 
         if (doorOpenSound != null && audioSource != null) audioSource.PlayOneShot(doorOpenSound);
-
-        // Tinanggal muna ang Animator requirement baka nagko-cause ng error kung wala
-        // if (doorAnimator != null) doorAnimator.SetTrigger(openTrigger);
 
         if (SaveSystem.Instance != null)
         {
@@ -218,8 +252,14 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
         }
         else
         {
-            Invoke(nameof(TransitionToScene), transitionDelay);
+            StartCoroutine(TransitionRoutine(transitionDelay));
         }
+    }
+
+    IEnumerator TransitionRoutine(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        TransitionToScene();
     }
 
     void TransitionToScene()
@@ -240,10 +280,8 @@ public class HallwayDoorInteraction : MonoBehaviour, IInteractable
 
     void ShowDialogue(string message)
     {
-        // DEBUG LOG para kahit hindi lumabas sa screen, makikita mo sa Unity Console
         Debug.Log("[Dialogue Check] Lisa says: " + message);
 
-        // BALIK SA INSTANCE (Yung tested and working sa Photo Frame)
         if (DialogueSystemV2.Instance != null)
         {
             DialogueSystemV2.Instance.StartDialogue(message, "Lisa");
