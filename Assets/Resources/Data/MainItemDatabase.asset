@@ -262,3 +262,149 @@ MonoBehaviour:
     triggersMemory: 0
     memoryFragmentId: 
     requiredForPuzzle: kitchen_cookie_puzzle
+<<<<<<< Updated upstream
+=======
+  - itemId: spoon
+    itemName: Silver Spoon
+    description: A shiny spoon from the cabinet.
+    itemIcon: {fileID: 6855564448319954688, guid: 09ed7d97ba2bca24a8eb378171b8078f, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: Cabinet_Puzzle_Panel
+  - itemId: bedroom_key
+    itemName: Bedroom Key
+    description: An old brass key with a tag labeled 'Lisa's Room'. The metal is
+      tarnished but the key still works.
+    itemIcon: {fileID: 21300000, guid: 6dcf5795ff887da49a3563d8cde9ec0e, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: bedroom_door
+  - itemId: kitchen_key
+    itemName: Kitchen Key
+    description: A rusty key found in the dining room. It might unlock the back door
+      of the kitchen.
+    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: hammer
+    itemName: Hammer
+    description: A heavy hammer. Hidden in the medicine cabinet.
+    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    isKeyItem: 1
+    isUsable: 0
+    isConsumable: 1
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: emily_cup
+    itemName: Emily's Cup
+    description: A small porcelain cup with delicate floral patterns. It feels cold
+      to the touch. This was Emily's favorite cup for their tea parties.
+    itemIcon: {fileID: -7168200534815704981, guid: 230b34951824b1649aac515ad4e7c485, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: tea_party
+  - itemId: emily_doll
+    itemName: Emily Doll
+    description: 'A handmade doll with button eyes and yarn hair. The note attached
+      reads: ''Dear Emily, thank you for making mommy stop hurting me yesterday.'''
+    itemIcon: {fileID: -7310541540394132289, guid: 437d3c1acffae65439530ed91a0a1054, type: 3}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 1
+    memoryFragmentId: memory_doll
+    requiredForPuzzle: dollhouse
+  - itemId: diary_page_5
+    itemName: Diary Page 5
+    description: 'Lisa''s diary entry: ''Emily came to me again last night. She sang
+      the pretty song and made the scary dreams go away. I wish she could stay forever.'''
+    itemIcon: {fileID: 0}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 1
+    memoryFragmentId: memory_diary_5
+    requiredForPuzzle: 
+  - itemId: lullaby_fragment_3
+    itemName: Lullaby Fragment 3
+    description: A haunting melody fragment. The music box in the toy chest plays
+      this tune. It triggers a memory of someone tucking young Lisa into bed, singing
+      softly.
+    itemIcon: {fileID: 0}
+    isKeyItem: 1
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 1
+    memoryFragmentId: memory_lullaby_3
+    requiredForPuzzle: 
+  - itemId: fairy_tale_book
+    itemName: Fairy Tale Book
+    description: 'A worn children''s book. A note inside reads: ''Emily likes the
+      stories where the princess gets saved.'' Several pages are bookmarked.'
+    itemIcon: {fileID: 0}
+    isKeyItem: 0
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 1
+    memoryFragmentId: memory_fairy_tales
+    requiredForPuzzle: 
+  - itemId: emily_chair_note
+    itemName: Emily's Chair Note
+    description: 'A small note attached to a child''s chair: ''Emily''s Chair - Do
+      Not Sit.'' The chair is always cold to the touch.'
+    itemIcon: {fileID: 0}
+    isKeyItem: 0
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+  - itemId: closet_scratches
+    itemName: Closet Scratches Photo
+    description: A photo of deep scratches inside the closet. They look like they
+      were made by small fingers. Lisa hid here often when she was scared.
+    itemIcon: {fileID: 0}
+    isKeyItem: 0
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 1
+    memoryFragmentId: memory_closet
+    requiredForPuzzle: 
+  - itemId: wall_drawing
+    itemName: Wall Drawing
+    description: A crayon drawing showing two figures holding hands - one labeled
+      'Me' and another labeled 'Emily'. They're playing together under a smiling
+      sun.
+    itemIcon: {fileID: 0}
+    isKeyItem: 0
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 1
+    memoryFragmentId: memory_drawing
+    requiredForPuzzle: 
+  - itemId: bed_note
+    itemName: Bed Note
+    description: 'A note pinned to the bed: ''For my friend Emily - she keeps me
+      safe at night.'' The bed has two pillow indentations.'
+    itemIcon: {fileID: 0}
+    isKeyItem: 0
+    isUsable: 1
+    isConsumable: 0
+    triggersMemory: 0
+    memoryFragmentId: 
+    requiredForPuzzle: 
+>>>>>>> Stashed changes

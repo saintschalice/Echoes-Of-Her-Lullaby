@@ -4823,7 +4823,16 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce8b33620d1fc904a83b83ba781172d5, type: 3}
   m_Name: 
+<<<<<<< Updated upstream
   m_EditorClassIdentifier: Assembly-CSharp::DemoEndTrigger
+=======
+  m_EditorClassIdentifier: Assembly-CSharp::RoomExit
+  nextSceneName: Room05_DiningRoom
+  targetSpawnPointID: DiningRoom
+  fadeOutDuration: 0.8
+  fadeInDuration: 0.8
+  disablePlayerDuringTransition: 1
+>>>>>>> Stashed changes
 --- !u!1 &1627786646
 GameObject:
   m_ObjectHideFlags: 0

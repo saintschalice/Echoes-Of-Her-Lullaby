@@ -148,6 +148,13 @@ public class SaveSystem : MonoBehaviour
             {
                 // New game requested from MainMenu
                 CreateNewGame();
+                
+                // Clear inventory for fresh start
+                if (InventoryManager.Instance != null)
+                {
+                    InventoryManager.Instance.ClearAllItems();
+                }
+                
                 Debug.Log("[SaveSystem] New game started from MainMenu");
             }
             else if (HasSaveFile(slotToLoad))
@@ -232,6 +239,9 @@ public class SaveSystem : MonoBehaviour
 
     public void CreateNewGame()
     {
+        // CRITICAL: Clear ALL PlayerPrefs to reset room-specific progress
+        ClearAllGameProgress();
+
         currentSaveData = new GameSaveData();
         currentSaveData.saveName = "New Game";
         currentSaveData.currentScene = "Room01_Foyer";
@@ -255,7 +265,86 @@ public class SaveSystem : MonoBehaviour
             Debug.LogWarning("[SaveSystem] Using hardcoded spawn position");
         }
 
-        Debug.Log("Created new game save data");
+        Debug.Log("[SaveSystem] Created new game save data - ALL progress cleared");
+    }
+
+    /// <summary>
+    /// Clears ALL game progress including PlayerPrefs for room-specific data
+    /// Called when starting a new game to ensure fresh start
+    /// </summary>
+    private void ClearAllGameProgress()
+    {
+        Debug.Log("[SaveSystem] Clearing ALL game progress...");
+
+        // Clear all room-specific PlayerPrefs
+        // Room 01
+        PlayerPrefs.DeleteKey("FoyerIntro_Played");
+        PlayerPrefs.DeleteKey("Foyer_MailPickedUp");
+        
+        // Room 02
+        PlayerPrefs.DeleteKey("R02_TVInteracted");
+        PlayerPrefs.DeleteKey("R02_PianoInteracted");
+        PlayerPrefs.DeleteKey("R02_LullabyPlayed");
+        PlayerPrefs.DeleteKey("R02_MrSnugglesFixed");
+        PlayerPrefs.DeleteKey("R02_SmallKeyObtained");
+        
+        // Room 03
+        PlayerPrefs.DeleteKey("R03_ClosetUsed");
+        
+        // Room 04
+        PlayerPrefs.DeleteKey("kitchen_cookie_puzzle_bridge");
+        PlayerPrefs.DeleteKey("kitchen_cookie_puzzle_dough");
+        PlayerPrefs.DeleteKey("kitchen_cookie_puzzle_oven");
+        PlayerPrefs.DeleteKey("kitchen_cookie_puzzle_cookies");
+        PlayerPrefs.DeleteKey("kitchen_cookie_puzzle_recipe");
+        PlayerPrefs.DeleteKey("kitchen_cookie_puzzle_floorboard");
+        PlayerPrefs.DeleteKey("emily_kitchen_intro");
+        PlayerPrefs.DeleteKey("Room04_Bridge_Completed");
+        PlayerPrefs.DeleteKey("Room04_Bridge_Fixed");
+        
+        // Room 05
+        PlayerPrefs.DeleteKey("R05_Calendar");
+        PlayerPrefs.DeleteKey("R05_Cabinet");
+        PlayerPrefs.DeleteKey("R05_HasSpoon");
+        PlayerPrefs.DeleteKey("R05_SpoonPlaced");
+        PlayerPrefs.DeleteKey("R05_FirstHide");
+        PlayerPrefs.DeleteKey("R05_Chairs");
+        PlayerPrefs.DeleteKey("R05_ChildChair");
+        PlayerPrefs.DeleteKey("R05_MotherChair");
+        PlayerPrefs.DeleteKey("R05_FatherChair");
+        
+        // Room 06
+        PlayerPrefs.DeleteKey("R06_IntroPlayed");
+        PlayerPrefs.DeleteKey("R06_PhotoInteracted");
+        
+        // Room 07
+        PlayerPrefs.DeleteKey("R07_IntroPlayed");
+        PlayerPrefs.DeleteKey("R07_ToyboxOpened");
+        PlayerPrefs.DeleteKey("R07_SlidingPuzzleSolved");
+        PlayerPrefs.DeleteKey("R07_TeaPartyComplete");
+        PlayerPrefs.DeleteKey("R07_CabinetUnlocked");
+        PlayerPrefs.DeleteKey("R07_AllPuzzlesComplete");
+        
+        // Room 08
+        PlayerPrefs.DeleteKey("R08_IntroPlayed");
+        PlayerPrefs.DeleteKey("R08_MedicineCabinetOpened");
+        PlayerPrefs.DeleteKey("R08_BathtubInteracted");
+        PlayerPrefs.DeleteKey("R08_AllEvidenceCollected");
+        PlayerPrefs.DeleteKey("R08_MirrorQTEComplete");
+        
+        // General game progress
+        PlayerPrefs.DeleteKey("LoadSlotOnStart");
+        PlayerPrefs.DeleteKey("HasSeenIntro");
+        PlayerPrefs.DeleteKey("CurrentChapter");
+        
+        // Clear any dialogue triggers
+        for (int i = 0; i < 100; i++)
+        {
+            PlayerPrefs.DeleteKey($"Dialogue_Triggered_{i}");
+        }
+        
+        PlayerPrefs.Save();
+        Debug.Log("[SaveSystem] All PlayerPrefs cleared for new game");
     }
 
     public void SaveGame(int slot, string saveName = "")

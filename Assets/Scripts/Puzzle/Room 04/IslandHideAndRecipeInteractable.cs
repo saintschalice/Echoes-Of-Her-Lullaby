@@ -16,10 +16,10 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour, IInteractable
     public float hideZoomSize = 3.5f;
     public float zoomDuration = 0.5f;
 
-    [Tooltip("Very subtle shake magnitude in world units (try 0.0003–0.001).")]
+    [Tooltip("Very subtle shake magnitude in world units (try 0.0003ï¿½0.001).")]
     public float shakeMagnitude = 0.0005f;
 
-    [Tooltip("How quickly the camera follows the shake offset (0–1).")]
+    [Tooltip("How quickly the camera follows the shake offset (0ï¿½1).")]
     [Range(0f, 1f)]
     public float shakeSmoothing = 0.15f;
 
@@ -127,7 +127,14 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour, IInteractable
     {
         if (KitchenRoomController.Instance != null)
         {
-            if (KitchenRoomController.Instance.recipeRead || InventoryManager.Instance.HasItem(recipeItemId))
+            // Check if recipe was already read
+            bool recipeInInventory = false;
+            if (InventoryManager.Instance != null)
+            {
+                recipeInInventory = InventoryManager.Instance.HasItem(recipeItemId);
+            }
+
+            if (KitchenRoomController.Instance.recipeRead || recipeInInventory)
             {
                 scratchesShown = true;
                 recipeFound = true;
@@ -314,9 +321,10 @@ public class IslandHideAndRecipeInteractable : MonoBehaviour, IInteractable
                 while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
             }
 
+            // FIX: Use AddItemWithNotification instead of AddItem
             if (InventoryManager.Instance != null)
             {
-                InventoryManager.Instance.AddItem(recipeItemId);
+                InventoryManager.Instance.AddItemWithNotification(recipeItemId, "A recipe book with cookie instructions.");
             }
 
             scratchesShown = true;

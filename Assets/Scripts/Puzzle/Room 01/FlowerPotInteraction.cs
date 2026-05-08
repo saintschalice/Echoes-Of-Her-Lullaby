@@ -288,16 +288,28 @@ public class FlowerPotInteraction : MonoBehaviour, IInteractable
     {
         if (!keyRevealed || houseKey == null || !houseKey.activeSelf) return;
 
+        // Use AddItemWithNotification with proper description
         if (InventoryManager.Instance != null)
         {
-            InventoryManager.Instance.AddItem(HOUSE_KEY_ID);
+            bool added = InventoryManager.Instance.AddItemWithNotification(
+                HOUSE_KEY_ID, 
+                "A rusty house key found in the broken flower pot."
+            );
+            
+            if (added)
+            {
+                houseKey.SetActive(false);
+                Debug.Log("[FlowerPot] House key added to inventory with notification!");
+            }
+            else
+            {
+                Debug.LogWarning("[FlowerPot] Failed to add house key to inventory!");
+            }
         }
-
-        houseKey.SetActive(false);
-
-        ShowDialogue("I picked up the house key. Now I can unlock the front door.");
-
-        Debug.Log("House key added to inventory!");
+        else
+        {
+            Debug.LogError("[FlowerPot] InventoryManager.Instance is null!");
+        }
     }
 
     void ShowDialogue(string message)

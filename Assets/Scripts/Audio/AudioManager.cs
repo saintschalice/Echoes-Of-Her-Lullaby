@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
 /// <summary>
@@ -370,6 +371,23 @@ public class LoopingSoundManager : MonoBehaviour
     {
         if (instance == null) { instance = this; DontDestroyOnLoad(gameObject); }
         else if (instance != this) Destroy(gameObject);
+
+        // Subscribe to scene loaded event to clean up on scene change
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Clean up all looping sounds when scene changes
+        StopAllLoopingSounds();
+    }
+
+    void OnDestroy()
+    {
+        // Unsubscribe from scene loaded event
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        // Clean up all looping sounds
+        StopAllLoopingSounds();
     }
 
     public void PlayLoopingSound(AudioClip clip, string id, float volume = 1f)
@@ -422,8 +440,6 @@ public class LoopingSoundManager : MonoBehaviour
         foreach (var s in loopingSounds.Values)
             if (s != null) s.volume = vol;
     }
-
-    void OnDestroy() => StopAllLoopingSounds();
 }
 #endregion
 

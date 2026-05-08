@@ -215,8 +215,8 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         DialogueSystemV2.Instance?.StartDialogue(new DialogueLine[]
         {
-            new DialogueLine { text = "GO AWAY!!!!!!! GO AWAY!!!!!!", speakerName = "???" },
-            new DialogueLine { text = "What is that?!", speakerName = "Lisa" }
+            new DialogueLine { text = EnhancedGameDialogues.R02_TV_MESSAGE_1, speakerName = "???" },
+            new DialogueLine { text = EnhancedGameDialogues.R02_TV_MESSAGE_2, speakerName = "Lisa" }
         });
 
         while (DialogueSystemV2.Instance.IsDialogueActive())
@@ -291,8 +291,8 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         DialogueSystemV2.Instance?.StartDialogue(new DialogueLine[]
         {
-            new DialogueLine { text = "IF YOU DON'T LEAVE THIS HOUSE, YOU'LL REGRET IT.", speakerName = "???" },
-            new DialogueLine { text = "It's coming from the TV! I need to turn it off!", speakerName = "Lisa" }
+            new DialogueLine { text = EnhancedGameDialogues.R02_TV_MESSAGE_1, speakerName = "???" },
+            new DialogueLine { text = EnhancedGameDialogues.R02_TV_OFF_1, speakerName = "Lisa" }
         });
 
         StartCoroutine(TurnOffTVAfterDialogue());
@@ -375,7 +375,7 @@ public class Room02_LivingRoomController : MonoBehaviour
 
             if (playerController != null) playerController.enabled = false;
 
-            DialogueSystemV2.Instance?.StartDialogue("It's the TV again... what's wrong with it? I turned it off already.", "Lisa");
+            DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_TV_GHOST_1, "Lisa");
 
             while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
                 yield return null;
@@ -425,10 +425,7 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void OnFrameExamine()
     {
-        DialogueSystemV2.Instance?.StartDialogue(
-            "These photos... the woman's face is scratched out in every single one. Who would do this?",
-            "Lisa"
-        );
+        DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_FRAME_1, "Lisa");
     }
 
     public void OnBookshelf2Interact()
@@ -438,7 +435,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (state.interactedObjects.Contains("booksPushed"))
         {
             if (!SaveSystem.Instance.HasItem(SMALL_KEY_ID))
-                DialogueSystemV2.Instance?.StartDialogue("There's something underneath the books...", "Lisa");
+                DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_BOOKSHELF_2, "Lisa");
             else
                 DialogueSystemV2.Instance?.StartDialogue("The books are still scattered on the floor.", "Lisa");
             return;
@@ -456,7 +453,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (bookshelfShakeSound != null)
             AudioManager.Instance?.PlaySFX(bookshelfShakeSound);
 
-        DialogueSystemV2.Instance?.StartDialogue("Woah!", "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_BOOKSHELF_1, "Lisa");
 
         yield return StartCoroutine(ShakeCamera());
 
@@ -470,7 +467,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         while (DialogueSystemV2.Instance.IsDialogueActive())
             yield return null;
 
-        DialogueSystemV2.Instance?.StartDialogue("There's something underneath the books...", "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_BOOKSHELF_2, "Lisa");
     }
 
     IEnumerator JumpPlayerBack(Transform player)
@@ -514,14 +511,14 @@ public class Room02_LivingRoomController : MonoBehaviour
 
     public void OnSmallKeyInteract()
     {
-        ShowItemPickupChoice(SMALL_KEY_ID, "Small Golden Key", "A small golden key. Take it?", "Small Golden Key added to inventory.");
+        AutoPickupItem(SMALL_KEY_ID, "Small Golden Key added to inventory.");
     }
 
     public void OnToyBoxInteract()
     {
         if (!SaveSystem.Instance.HasItem(SMALL_KEY_ID))
         {
-            DialogueSystemV2.Instance?.StartDialogue("This toy box is locked. I need a key to open it.", "Lisa");
+            DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_TOYBOX_LOCKED, "Lisa");
             return;
         }
 
@@ -534,36 +531,28 @@ public class Room02_LivingRoomController : MonoBehaviour
         if (toyBoxUnlockSound != null)
             AudioManager.Instance?.PlaySFX(toyBoxUnlockSound);
 
-        DialogueSystemV2.Instance?.StartDialogue("Yes, it fit!", "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_TOYBOX_OPEN_1, "Lisa");
         StartCoroutine(ShowToyBoxContents());
     }
 
     IEnumerator ShowToyBoxContents()
     {
+        // Wait for dialogue to finish first
         while (DialogueSystemV2.Instance.IsDialogueActive())
             yield return null;
 
         yield return new WaitForSeconds(0.5f);
 
-        DialogueSystemV2.Instance?.ShowChoices(
-            new string[] { "Take all items", "Leave them" },
-            new System.Action[]
-            {
-                () => StartCoroutine(TakeAllToyBoxItems()),
-                () => DialogueSystemV2.Instance?.StartDialogue("I'll leave them for now.", "Lisa")
-            }
-        );
-    }
-
-    IEnumerator TakeAllToyBoxItems()
-    {
-        InventoryManager.Instance?.AddItem(TEDDY_BEAR_ID);
+        // Add items individually with notifications
+        InventoryManager.Instance?.AddItemWithNotification(TEDDY_BEAR_ID);
+        
+        // Wait for notification to finish before showing next one
+        while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+            yield return null;
+        
         yield return new WaitForSeconds(0.3f);
 
-        InventoryManager.Instance?.AddItem(MUSIC_BOX_ID);
-        yield return new WaitForSeconds(0.3f);
-
-        DialogueSystemV2.Instance?.StartDialogue("Mr. Snuggles and a broken music box added to inventory.", "Lisa");
+        InventoryManager.Instance?.AddItemWithNotification(MUSIC_BOX_ID);
     }
 
     public void OnCouchInteract()
@@ -577,12 +566,13 @@ public class Room02_LivingRoomController : MonoBehaviour
             return;
         }
 
-        DialogueSystemV2.Instance?.StartDialogue("There are some torn diary pages hidden in the couch cushions.", "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_COUCH_DIARY, "Lisa");
         StartCoroutine(ShowCouchItems());
     }
 
     IEnumerator ShowCouchItems()
     {
+        // Wait for dialogue to finish first
         while (DialogueSystemV2.Instance.IsDialogueActive())
             yield return null;
 
@@ -593,37 +583,29 @@ public class Room02_LivingRoomController : MonoBehaviour
 
         if (needsDiary1 && needsDiary2)
         {
-            DialogueSystemV2.Instance?.ShowChoices(
-                new string[] { "Take all pages", "Leave them" },
-                new System.Action[]
-                {
-                    () => StartCoroutine(TakeAllCouchItems()),
-                    () => DialogueSystemV2.Instance?.StartDialogue("I'll leave them for now.", "Lisa")
-                }
-            );
+            // Add pages individually with notifications
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_1_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_1_ID);
+            
+            // Wait for notification to finish before showing next one
+            while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+                yield return null;
+            
+            yield return new WaitForSeconds(0.3f);
+
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_2_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_2_ID);
         }
         else if (needsDiary1)
         {
-            ShowItemPickupChoice(DIARY_1_ID, "Diary Page 1", "Take Diary Page 1?", "Diary Page 1 added to inventory.");
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_1_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_1_ID);
         }
         else if (needsDiary2)
         {
-            ShowItemPickupChoice(DIARY_2_ID, "Diary Page 2", "Take Diary Page 2?", "Diary Page 2 added to inventory.");
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_2_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_2_ID);
         }
-    }
-
-    IEnumerator TakeAllCouchItems()
-    {
-        InventoryManager.Instance?.AddItem(DIARY_1_ID);
-        GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_1_ID);
-        yield return new WaitForSeconds(0.3f);
-
-        InventoryManager.Instance?.AddItem(DIARY_2_ID);
-        GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_2_ID);
-        yield return new WaitForSeconds(0.3f);
-
-        yield return new WaitForSeconds(0.5f);
-        DialogueSystemV2.Instance?.StartDialogue("Diary Pages 1 and 2 added to inventory.", "Lisa");
     }
 
     public void OnLooseFloorboardInteract()
@@ -637,91 +619,76 @@ public class Room02_LivingRoomController : MonoBehaviour
             return;
         }
 
-        DialogueSystemV2.Instance?.StartDialogue("There are more diary pages hidden underneath the loose floorboard.", "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_FLOORBOARD, "Lisa");
 
         StartCoroutine(ShowFloorboardItems());
     }
 
     IEnumerator ShowFloorboardItems()
     {
+        // Wait for dialogue to finish first
         while (DialogueSystemV2.Instance.IsDialogueActive())
             yield return null;
+
+        yield return new WaitForSeconds(0.5f);
 
         bool needsDiary3 = !SaveSystem.Instance.HasItem(DIARY_3_ID);
         bool needsDiary4 = !SaveSystem.Instance.HasItem(DIARY_4_ID);
 
         if (needsDiary3 && needsDiary4)
         {
-            DialogueSystemV2.Instance?.ShowChoices(
-                new string[] { "Take all pages", "Leave them" },
-                new System.Action[]
-                {
-                    () => StartCoroutine(TakeAllFloorboardItems()),
-                    () => DialogueSystemV2.Instance?.StartDialogue("I'll leave them for now.", "Lisa")
-                }
-            );
+            // Add pages individually with notifications
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_3_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_3_ID);
+            
+            // Wait for notification to finish before showing next one
+            while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+                yield return null;
+            
+            yield return new WaitForSeconds(0.3f);
+
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_4_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_4_ID);
         }
         else if (needsDiary3)
         {
-            ShowItemPickupChoice(DIARY_3_ID, "Diary Page 3", "Take Diary Page 3?", "Diary Page 3 added to inventory.");
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_3_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_3_ID);
         }
         else if (needsDiary4)
         {
-            ShowItemPickupChoice(DIARY_4_ID, "Diary Page 4", "Take Diary Page 4?", "Diary Page 4 added to inventory.");
+            InventoryManager.Instance?.AddItemWithNotification(DIARY_4_ID);
+            GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_4_ID);
         }
-    }
-
-    IEnumerator TakeAllFloorboardItems()
-    {
-        InventoryManager.Instance?.AddItem(DIARY_3_ID);
-        GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_3_ID);
-        yield return new WaitForSeconds(0.3f);
-
-        InventoryManager.Instance?.AddItem(DIARY_4_ID);
-        GlobalDiaryManager.Instance?.AddDiaryPage(DIARY_4_ID);
-        yield return new WaitForSeconds(0.3f);
-
-        yield return new WaitForSeconds(0.5f);
-        DialogueSystemV2.Instance?.StartDialogue("Diary Pages 3 and 4 added to inventory.", "Lisa");
     }
 
     public void OnCoffeeTableKeyInteract()
     {
-        ShowItemPickupChoice(COFFEE_TABLE_KEY_ID, "Hallway Door Key", "A key to the hallway! Take it?", "Hallway Door Key added to inventory.");
+        AutoPickupItem(COFFEE_TABLE_KEY_ID, "Hallway Door Key added to inventory.");
     }
 
-    void ShowItemPickupChoice(string itemId, string itemName, string message, string confirmMessage = "")
+    void AutoPickupItem(string itemId, string confirmMessage = "")
     {
-        DialogueSystemV2.Instance?.ShowChoices(
-            new string[] { "Take it", "Leave it" },
-            new System.Action[]
-            {
-                () => {
-                    InventoryManager.Instance?.AddItem(itemId);
+        // Hide the object immediately
+        if (itemId == SMALL_KEY_ID && smallKey != null) smallKey.SetActive(false);
+        if (itemId == COFFEE_TABLE_KEY_ID && coffeeTable_Key != null) coffeeTable_Key.SetActive(false);
 
-                    if (GlobalDiaryManager.Instance != null && itemId.StartsWith("diary_page_"))
-                    {
-                        GlobalDiaryManager.Instance.AddDiaryPage(itemId);
-                    }
+        // Add to diary manager if it's a diary page
+        if (GlobalDiaryManager.Instance != null && itemId.StartsWith("diary_page_"))
+        {
+            GlobalDiaryManager.Instance.AddDiaryPage(itemId);
+        }
 
-                    RoomState state = SaveSystem.Instance.GetRoomState(ROOM_NAME);
-                    if (!state.collectedItems.Contains(itemId))
-                    {
-                        state.collectedItems.Add(itemId);
-                        SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
-                    }
-
-                    if (itemId == SMALL_KEY_ID && smallKey != null) smallKey.SetActive(false);
-                    if (itemId == COFFEE_TABLE_KEY_ID && coffeeTable_Key != null) coffeeTable_Key.SetActive(false);
-
-                    if (!string.IsNullOrEmpty(confirmMessage))
-                        DialogueSystemV2.Instance?.StartDialogue(confirmMessage, "Lisa");
-                },
-                () => {
-                    DialogueSystemV2.Instance?.StartDialogue("I'll leave it for now.", "Lisa");
-                }
-            }
-        );
+        // Use AddItemWithNotification - it handles everything (inventory + save system + notification)
+        InventoryManager.Instance?.AddItemWithNotification(itemId, confirmMessage);
+        
+        // Update room state to track that this item was collected in this room
+        RoomState state = SaveSystem.Instance.GetRoomState(ROOM_NAME);
+        if (!state.collectedItems.Contains(itemId))
+        {
+            state.collectedItems.Add(itemId);
+            SaveSystem.Instance.UpdateRoomState(ROOM_NAME, state);
+        }
     }
 
     public void CheckPuzzleCompletion()
@@ -769,7 +736,7 @@ public class Room02_LivingRoomController : MonoBehaviour
         }
 
         // Trigger the reaction dialogue
-        DialogueSystemV2.Instance?.StartDialogue("What... was that?", "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue(EnhancedGameDialogues.R02_KEY_APPEARS_1, "Lisa");
     }
 
     // Sequence for when player steps into the trigger AFTER cutscene

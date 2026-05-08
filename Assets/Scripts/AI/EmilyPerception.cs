@@ -5,7 +5,7 @@ public sealed class EmilyPerception : MonoBehaviour
 {
     [Header("Vision")]
     public float visionRange = 6f;
-    public float visionAngle = 60f;
+    public float visionAngle = 90f; // Changed from 60° to 90° for proper forward detection cone
 
     [Header("References")]
     [Tooltip("Assign the AI_Forward child here. This determines where Emily is 'looking'.")]

@@ -42,12 +42,21 @@ public class OvenUI : MonoBehaviour
 
             // Notify Inventory/Manager to pause or hide other UI
             InventoryManager.Instance?.NotifyActionStarted();
+
+            // Pause Emily AI
+            EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+            if (emilyAI != null) emilyAI.isPaused = true;
         }
     }
 
     public void CloseUI()
     {
         if (panel != null) panel.SetActive(false);
+
+        // Resume Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = false;
+
         InventoryManager.Instance?.NotifyActionEnded();
     }
 

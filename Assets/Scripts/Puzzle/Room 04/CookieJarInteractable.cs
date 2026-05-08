@@ -39,23 +39,47 @@ public class CookieJarInteractable : KitchenBaseInteractable
 
     private IEnumerator BakeRoutine()
     {
+        // STEP 1: Show dialogue first (baking process)
         ShowDialogue("There's a baking tray in here... I'll make the dough into balls and cook them up.");
-        yield return new WaitForSeconds(2.0f);
+        
+        // Wait for dialogue to finish
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+        {
+            yield return null;
+        }
+        
+        yield return new WaitForSeconds(0.3f); // Small delay after dialogue
 
+        // STEP 2: Remove dough from inventory
         if (InventoryManager.Instance != null)
             InventoryManager.Instance.RemoveItem(doughItemId);
 
+        // STEP 3: Update puzzle state
         if (KitchenRoomController.Instance != null)
         {
             KitchenRoomController.Instance.OnCookiesBakedAndStored();
             KitchenRoomController.Instance.OnFloorboardObtained();
         }
 
+        // STEP 4: Add item WITH NOTIFICATION (this will show the notification with sprite)
         if (InventoryManager.Instance != null)
         {
-            InventoryManager.Instance.AddItem(rewardItemId);
-            ShowDialogue("The cookies smell great... And look, there was a loose floorboard hidden behind the jar!");
+            InventoryManager.Instance.AddItemWithNotification(rewardItemId, "A loose floorboard that can be used as a bridge.");
         }
+
+        // STEP 5: Wait for notification to finish
+        if (ItemNotificationUI.Instance != null)
+        {
+            while (ItemNotificationUI.Instance.IsShowing())
+            {
+                yield return null;
+            }
+        }
+
+        yield return new WaitForSeconds(0.3f); // Small delay after notification
+
+        // STEP 6: Show dialogue AFTER notification
+        ShowDialogue("The cookies smell great... And look, there was a loose floorboard hidden behind the jar!");
     }
 
     protected override void OnAlreadyCollected()

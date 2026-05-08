@@ -61,7 +61,6 @@ public class DialogueSystemV2 : MonoBehaviour
 
     public static DialogueSystemV2 Instance { get; private set; }
     private InventoryUI cachedInventoryUI;
-    private Coroutine enableControlsCoroutine;
 
     void Awake()
     {
@@ -173,17 +172,21 @@ public class DialogueSystemV2 : MonoBehaviour
     {
         if (choicePanel == null || choiceButtonPrefab == null || choiceButtonParent == null)
         {
-            Debug.LogWarning("Choice system not set up properly!");
+            Debug.LogWarning("[Dialogue] Choice system not set up properly!");
             return;
         }
 
+        Debug.Log($"[Dialogue] ShowChoices called with {choices.Length} choices");
+
         currentChoiceCallbacks = callbacks;
 
+        // Clear existing buttons
         foreach (Transform child in choiceButtonParent)
         {
             Destroy(child.gameObject);
         }
 
+        // Create new buttons
         for (int i = 0; i < choices.Length; i++)
         {
             int index = i;
@@ -199,25 +202,64 @@ public class DialogueSystemV2 : MonoBehaviour
 
             if (button != null)
             {
+                button.interactable = true; // Ensure button is interactable
+                button.onClick.RemoveAllListeners(); // Clear any existing listeners
                 button.onClick.AddListener(() => OnChoiceSelected(index));
+                Debug.Log($"[Dialogue] Created button {index}: {choices[index]}, interactable: {button.interactable}");
             }
         }
 
-        choicePanel.SetActive(true);
-
+        // Hide dialogue panel first
         if (dialoguePanel != null)
         {
             dialoguePanel.SetActive(false);
+            
+            // Also disable its CanvasGroup if it has one
+            CanvasGroup dialogueCG = dialoguePanel.GetComponent<CanvasGroup>();
+            if (dialogueCG != null)
+            {
+                dialogueCG.blocksRaycasts = false;
+            }
         }
 
         if (tapToContinueIndicator != null)
         {
             tapToContinueIndicator.SetActive(false);
         }
+
+        // Show choice panel
+        choicePanel.SetActive(true);
+
+        // Ensure CanvasGroup allows interaction
+        CanvasGroup choicePanelCG = choicePanel.GetComponent<CanvasGroup>();
+        if (choicePanelCG != null)
+        {
+            choicePanelCG.alpha = 1f;
+            choicePanelCG.interactable = true;
+            choicePanelCG.blocksRaycasts = true;
+            Debug.Log($"[Dialogue] ChoicePanel CanvasGroup set: alpha={choicePanelCG.alpha}, interactable={choicePanelCG.interactable}, blocksRaycasts={choicePanelCG.blocksRaycasts}");
+        }
+        else
+        {
+            Debug.LogWarning("[Dialogue] ChoicePanel has no CanvasGroup!");
+        }
+
+        // DON'T disable player controller - keep it active so input works
+        // Just pause Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
+
+        Debug.Log("[Dialogue] ShowChoices complete - choice panel should be visible and clickable");
     }
 
     private void OnChoiceSelected(int choiceIndex)
     {
+        Debug.Log($"[Dialogue] OnChoiceSelected called with index: {choiceIndex}");
+
+        // Resume Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = false;
+
         if (choicePanel != null)
         {
             choicePanel.SetActive(false);
@@ -225,6 +267,7 @@ public class DialogueSystemV2 : MonoBehaviour
 
         if (currentChoiceCallbacks != null && choiceIndex < currentChoiceCallbacks.Length)
         {
+            Debug.Log($"[Dialogue] Invoking callback for choice {choiceIndex}");
             currentChoiceCallbacks[choiceIndex]?.Invoke();
         }
 
@@ -238,13 +281,6 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             Debug.LogWarning("No dialogue lines provided!");
             return;
-        }
-
-        // Cancel pending control enablement if a new dialogue starts immediately
-        if (enableControlsCoroutine != null)
-        {
-            StopCoroutine(enableControlsCoroutine);
-            enableControlsCoroutine = null;
         }
 
         InventoryManager.Instance?.NotifyActionStarted();
@@ -278,6 +314,10 @@ public class DialogueSystemV2 : MonoBehaviour
         {
             dialoguePanel.SetActive(true);
         }
+
+        // Pause Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
 
         EnsureInventoryReference();
         if (cachedInventoryUI != null)
@@ -543,30 +583,63 @@ public class DialogueSystemV2 : MonoBehaviour
         OnDialogueEnded?.Invoke();
         InventoryManager.Instance?.NotifyActionEnded();
 
-        // Delay the re-enabling of controls.
-        // If a chained dialogue starts within 0.1s, StartDialogue will cancel this coroutine.
-        if (enableControlsCoroutine != null) StopCoroutine(enableControlsCoroutine);
-        enableControlsCoroutine = StartCoroutine(EnableControlsAfterDelay());
-    }
+        // Resume Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = false;
 
-    IEnumerator EnableControlsAfterDelay()
-    {
-        yield return new WaitForSeconds(0.1f);
-
-        // Double check dialogue isn't active (redundant if stopped correctly, but safe)
-        if (!isDialogueActive)
+        // CRITICAL FIX: Immediately re-enable controls to prevent stuck state
+        // Re-enable joystick immediately - try multiple names
+        if (joystickUI != null)
         {
+            joystickUI.SetActive(true);
+            Debug.Log("[Dialogue] Joystick re-enabled immediately after dialogue");
+        }
+        else
+        {
+            // Fallback: try to find joystick with multiple possible names
+            joystickUI = GameObject.Find("Joystick");
+            if (joystickUI == null)
+            {
+                joystickUI = GameObject.Find("FloatingJoystick");
+            }
+            if (joystickUI == null)
+            {
+                joystickUI = GameObject.Find("VariableJoystick");
+            }
+            
             if (joystickUI != null)
             {
                 joystickUI.SetActive(true);
+                Debug.Log($"[Dialogue] Joystick found and re-enabled: {joystickUI.name} (fallback)");
             }
+            else
+            {
+                Debug.LogWarning("[Dialogue] Joystick not found! Player may be stuck. Tried: Joystick, FloatingJoystick, VariableJoystick");
+            }
+        }
 
+        // Re-enable player controller immediately
+        if (playerController != null)
+        {
+            playerController.enabled = true;
+            Debug.Log("[Dialogue] Player controller re-enabled immediately");
+        }
+        else
+        {
+            // Fallback: try to find player controller
+            EnsurePlayerControllerReference(false);
             if (playerController != null)
             {
                 playerController.enabled = true;
+                Debug.Log("[Dialogue] Player controller found and re-enabled (fallback)");
+            }
+            else
+            {
+                Debug.LogWarning("[Dialogue] Player controller not found! Player may be stuck.");
             }
         }
-        enableControlsCoroutine = null;
+
+        Debug.Log("[Dialogue] EndDialogue complete - controls should be restored");
     }
 
     public bool IsDialogueActive()

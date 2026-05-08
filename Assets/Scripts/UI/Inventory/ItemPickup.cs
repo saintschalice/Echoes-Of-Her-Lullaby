@@ -158,64 +158,67 @@ public class ItemPickup : MonoBehaviour
     {
         if (isPickedUp || InventoryManager.Instance == null) return;
 
-        // FIXED: Add to inventory (this adds the item TYPE to inventory)
-        bool success = InventoryManager.Instance.AddItem(itemId);
+        isPickedUp = true;
 
-        if (success)
+        // FIXED: Mark THIS SPECIFIC pickup instance as collected
+        if (SaveSystem.Instance != null)
         {
-            isPickedUp = true;
-
-            // FIXED: Mark THIS SPECIFIC pickup instance as collected
-            if (SaveSystem.Instance != null)
-            {
-                SaveSystem.Instance.MarkObjectExamined(uniquePickupId);
-                Debug.Log($"Marked pickup as collected: {uniquePickupId}");
-            }
-
-            // Play pickup sound
-            if (pickupSound != null)
-            {
-                AudioSource.PlayClipAtPoint(pickupSound, transform.position);
-            }
-
-            // Show pickup message
-            ShowPickupMessage();
-
-            // Hide interaction prompt
-            if (interactionPrompt != null)
-            {
-                interactionPrompt.SetActive(false);
-            }
-
-            // Pickup animation
-            if (playPickupAnimation)
-            {
-                StartCoroutine(PickupAnimation());
-            }
-            else if (hideAfterPickup)
-            {
-                gameObject.SetActive(false);
-            }
-
-            Debug.Log($"Picked up: {itemData?.itemName ?? itemId}");
+            SaveSystem.Instance.MarkObjectExamined(uniquePickupId);
+            Debug.Log($"Marked pickup as collected: {uniquePickupId}");
         }
+
+        // Play pickup sound
+        if (pickupSound != null)
+        {
+            AudioSource.PlayClipAtPoint(pickupSound, transform.position);
+        }
+
+        // Hide interaction prompt
+        if (interactionPrompt != null)
+        {
+            interactionPrompt.SetActive(false);
+        }
+
+        // Start the pickup sequence (dialogue -> notification -> animation)
+        StartCoroutine(PickupSequence());
+
+        Debug.Log($"Picked up: {itemData?.itemName ?? itemId}");
     }
 
-    void ShowPickupMessage()
+    System.Collections.IEnumerator PickupSequence()
     {
-        if (itemData == null) return;
-
-        string message = pickupMessage.Replace("{itemName}", itemData.itemName);
-
-        // Show through dialogue system if available
-        DialogueSystemV2 dialogueSystem = FindFirstObjectByType<DialogueSystemV2>();
-        if (dialogueSystem != null)
+        // 1. Show dialogue first (if any custom message)
+        if (!string.IsNullOrEmpty(pickupMessage) && itemData != null)
         {
-            dialogueSystem.StartDialogue(message, "System");
+            string message = pickupMessage.Replace("{itemName}", itemData.itemName);
+            DialogueSystemV2.Instance?.StartDialogue(message, "Lisa");
+
+            // Wait for dialogue to finish
+            while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+            {
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(0.3f);
         }
-        else
+
+        // 2. Add to inventory with notification
+        InventoryManager.Instance?.AddItemWithNotification(itemId);
+
+        // 3. Wait for notification to finish
+        while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
         {
-            Debug.Log(message);
+            yield return null;
+        }
+
+        // 4. Pickup animation
+        if (playPickupAnimation)
+        {
+            yield return StartCoroutine(PickupAnimation());
+        }
+        else if (hideAfterPickup)
+        {
+            gameObject.SetActive(false);
         }
     }
 

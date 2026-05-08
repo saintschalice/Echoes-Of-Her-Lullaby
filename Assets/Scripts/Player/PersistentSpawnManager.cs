@@ -6,6 +6,10 @@ public class PersistentSpawnManager : MonoBehaviour
 {
     [Header("Player Reference")]
     public Transform player; // Lisa from persistent scene
+    
+    [Header("New Game Settings")]
+    [Tooltip("Hide player on first load (for intro cutscene). FoyerIntroController will show her after cutscene.")]
+    public bool hidePlayerOnNewGame = true;
 
     [Header("Camera Reference")]
     public Camera playerCamera; // Main camera that follows Lisa
@@ -65,6 +69,33 @@ public class PersistentSpawnManager : MonoBehaviour
         }
 
         currentSceneName = SceneManager.GetActiveScene().name;
+        
+        // CRITICAL: Hide player on new game to prevent visibility before cutscene
+        if (hidePlayerOnNewGame && player != null)
+        {
+            // Check if this is a new game (LoadSlotOnStart == -1 means new game)
+            if (PlayerPrefs.HasKey("LoadSlotOnStart"))
+            {
+                int loadSlot = PlayerPrefs.GetInt("LoadSlotOnStart");
+                if (loadSlot == -1)
+                {
+                    // This is a NEW GAME - hide Lisa until FoyerIntroController shows her
+                    player.gameObject.SetActive(false);
+                    Debug.Log("[PersistentSpawn] NEW GAME detected - Lisa hidden until cutscene ends");
+                }
+                else
+                {
+                    // This is a LOAD GAME - Lisa should be visible
+                    player.gameObject.SetActive(true);
+                    Debug.Log("[PersistentSpawn] LOAD GAME detected - Lisa visible immediately");
+                }
+            }
+            else
+            {
+                // No flag set, assume normal gameplay (Lisa visible)
+                player.gameObject.SetActive(true);
+            }
+        }
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -144,7 +175,14 @@ public class PersistentSpawnManager : MonoBehaviour
 
         isFirstLoad = false;
 
-        // Fade in after positioning player
+        // SKIP FADE IN for Room01_Foyer (FoyerIntroController handles its own fade)
+        if (currentSceneName == "Room01_Foyer")
+        {
+            Debug.Log("[PersistentSpawn] Skipping fade in for Room01_Foyer (cutscene handles it)");
+            yield break;
+        }
+
+        // Fade in after positioning player (for all other rooms)
         if (ScreenFader.Instance != null && !ScreenFader.Instance.IsFading())
         {
             // Small delay before fading in
@@ -253,6 +291,34 @@ public class PersistentSpawnManager : MonoBehaviour
     {
         return player != null ? player.position : Vector3.zero;
     }
+    
+    /// <summary>
+    /// Enable the player GameObject. Called by FoyerIntroController after cutscene ends.
+    /// </summary>
+    public void EnablePlayer()
+    {
+        if (player != null)
+        {
+            player.gameObject.SetActive(true);
+            Debug.Log("[PersistentSpawn] Player enabled (called externally)");
+        }
+        else
+        {
+            Debug.LogError("[PersistentSpawn] Cannot enable player - player reference is null!");
+        }
+    }
+    
+    /// <summary>
+    /// Disable the player GameObject. For special cases like cutscenes.
+    /// </summary>
+    public void DisablePlayer()
+    {
+        if (player != null)
+        {
+            player.gameObject.SetActive(false);
+            Debug.Log("[PersistentSpawn] Player disabled (called externally)");
+        }
+    }
 
     // Debug helper
     void Update()
@@ -264,6 +330,7 @@ public class PersistentSpawnManager : MonoBehaviour
             {
                 Debug.Log($"[DEBUG] Player position: {(player != null ? player.position.ToString() : "NULL")}");
                 Debug.Log($"[DEBUG] Player reference: {(player != null ? player.name : "NULL")}");
+                Debug.Log($"[DEBUG] Player active: {(player != null ? player.gameObject.activeSelf.ToString() : "NULL")}");
             }
         }
     }

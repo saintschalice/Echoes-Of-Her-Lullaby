@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class KitchenRoomController : MonoBehaviour
 {
@@ -57,6 +58,12 @@ public class KitchenRoomController : MonoBehaviour
 
     private void Start()
     {
+        // Stop any lingering audio from previous scene
+        if (walkSource != null && walkSource.isPlaying)
+        {
+            walkSource.Stop();
+        }
+
         LoadRoomState();
         CheckFirstVisit();
     }
@@ -145,20 +152,71 @@ public class KitchenRoomController : MonoBehaviour
         }
     }
 
-    public void StartEmilyKitchenIntro(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint)
+    public void StartEmilyKitchenIntro(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint, EmilyGhost existingEmily = null)
     {
         if (emilyIntroDone) return;
-        StartCoroutine(EmilyIntroRoutine(player, emilyPrefab, emilySpawnPoint));
+        StartCoroutine(EmilyIntroRoutine(player, emilyPrefab, emilySpawnPoint, existingEmily));
     }
 
-    private IEnumerator EmilyIntroRoutine(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint)
+    private IEnumerator EmilyIntroRoutine(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint, EmilyGhost existingEmily = null)
     {
         Debug.Log("[KitchenRoomController] Starting Emily Intro Sequence...");
         introInProgress = true;
 
         JoystickPlayerController playerController = player.GetComponent<JoystickPlayerController>();
 
-        EmilyGhost emilyInstance = Instantiate(emilyPrefab, emilySpawnPoint.position, emilySpawnPoint.rotation);
+        // CRITICAL FIX: Use existing Emily if provided, otherwise spawn new one
+        EmilyGhost emilyInstance;
+        if (existingEmily != null)
+        {
+            Debug.Log("[KitchenController] Using existing Emily instance");
+            emilyInstance = existingEmily;
+            
+            // CRITICAL: Properly reset existing Emily
+            // Disable AI temporarily
+            emilyInstance.enabled = false;
+            
+            // Get and disable NavMeshAgent
+            UnityEngine.AI.NavMeshAgent existingAgent = emilyInstance.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (existingAgent != null)
+            {
+                existingAgent.enabled = false;
+            }
+            
+            // Move to spawn point
+            emilyInstance.transform.position = emilySpawnPoint.position;
+            emilyInstance.transform.rotation = emilySpawnPoint.rotation;
+            
+            // Re-enable agent and warp to position
+            if (existingAgent != null)
+            {
+                existingAgent.enabled = true;
+                existingAgent.Warp(emilySpawnPoint.position);
+            }
+            
+            Debug.Log($"[KitchenController] Existing Emily reset and moved to: {emilySpawnPoint.position}");
+        }
+        else
+        {
+            // Verify prefab is not null before spawning
+            if (emilyPrefab == null)
+            {
+                Debug.LogError("[KitchenController] Emily Prefab is NULL! Cannot spawn Emily. Aborting intro.");
+                introInProgress = false;
+                yield break;
+            }
+            
+            Debug.Log("[KitchenController] Spawning new Emily instance from prefab");
+            emilyInstance = Instantiate(emilyPrefab, emilySpawnPoint.position, emilySpawnPoint.rotation);
+            
+            if (emilyInstance == null)
+            {
+                Debug.LogError("[KitchenController] Failed to instantiate Emily! Aborting intro.");
+                introInProgress = false;
+                yield break;
+            }
+        }
+        
         Animator emilyAnim = emilyInstance.GetComponentInChildren<Animator>();
 
         if (AudioManager.Instance != null && introJumpscareSFX != null)
@@ -166,6 +224,7 @@ public class KitchenRoomController : MonoBehaviour
             AudioManager.Instance.PlaySFX(introJumpscareSFX);
         }
 
+        // Disable Emily for intro sequence (applies to both new and existing)
         emilyInstance.enabled = false;
         UnityEngine.AI.NavMeshAgent emilyAgent = emilyInstance.GetComponent<UnityEngine.AI.NavMeshAgent>();
         if (emilyAgent != null) emilyAgent.enabled = false;
@@ -205,16 +264,33 @@ public class KitchenRoomController : MonoBehaviour
             }
         }
 
+        // CRITICAL FIX: Properly enable Emily AI with frame delays
         if (emilyAgent != null)
         {
             emilyAgent.enabled = true;
             emilyAgent.Warp(emilyInstance.transform.position);
+            
+            // Wait for agent to be fully ready on NavMesh
+            yield return new WaitForEndOfFrame();
         }
 
+        // NOW enable Emily AI component
         emilyInstance.enabled = true;
+<<<<<<< Updated upstream
 
         if (isPlayerHidden) emilyInstance.SetStateExternal(EmilyGhost.State.Search);
         else emilyInstance.SetStateExternal(EmilyGhost.State.Hunt);
+=======
+        
+        // CRITICAL: Wait for Emily's OnEnable to complete initialization
+        yield return new WaitForEndOfFrame();
+
+        // NOW set the state - Emily is fully ready
+        EmilyGhost.State targetState = isPlayerHidden ? EmilyGhost.State.Search : EmilyGhost.State.Hunt;
+        emilyInstance.SetStateExternal(targetState);
+        
+        Debug.Log($"[KitchenController] Emily AI fully enabled. State: {targetState}");
+>>>>>>> Stashed changes
 
         emilyIntroDone = true;
         introInProgress = false;
@@ -293,4 +369,51 @@ public class KitchenRoomController : MonoBehaviour
         }
         if (anim != null) anim.SetBool("isWalking", false);
     }
+<<<<<<< Updated upstream
+=======
+
+    [ContextMenu("Reset Kitchen Puzzle")]
+    public void ResetPuzzle()
+    {
+        // Stop any playing audio first
+        if (walkSource != null && walkSource.isPlaying)
+        {
+            walkSource.Stop();
+        }
+
+        PlayerPrefs.DeleteKey(puzzleId + "_bridge");
+        PlayerPrefs.DeleteKey(puzzleId + "_dough");
+        PlayerPrefs.DeleteKey(puzzleId + "_oven");
+        PlayerPrefs.DeleteKey(puzzleId + "_cookies");
+        PlayerPrefs.DeleteKey(puzzleId + "_recipe");
+        PlayerPrefs.DeleteKey(puzzleId + "_floorboard");
+        PlayerPrefs.DeleteKey("emily_kitchen_intro");
+        PlayerPrefs.Save();
+
+        recipeRead = false;
+        hasFlour = false;
+        hasSugar = false;
+        hasVanilla = false;
+        hasChocolate = false;
+        hasEgg = false;
+        hasSalt = false;
+        doughMixed = false;
+        ovenSetCorrect = false;
+        cookiesBakedAndStored = false;
+        floorboardObtained = false;
+        bridgePlaced = false;
+        emilyIntroDone = false;
+        isPlayerHidden = false;
+        introInProgress = false;
+
+        if (flourObject != null) flourObject.SetActive(true);
+        if (sugarObject != null) sugarObject.SetActive(true);
+        if (vanillaObject != null) vanillaObject.SetActive(true);
+        if (chocolateObject != null) chocolateObject.SetActive(true);
+        if (eggObject != null) eggObject.SetActive(true);
+        if (saltObject != null) saltObject.SetActive(true);
+
+        Debug.Log("DEBUG: Kitchen Puzzle Reset! (NOTE: Kung nasa SaveSystem pa rin ang items mo, baka kailangan mong i-clear din ang main save data mo).");
+    }
+>>>>>>> Stashed changes
 }

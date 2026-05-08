@@ -385,6 +385,10 @@ public class DiaryReaderUI : MonoBehaviour
 
         if (playerController != null) playerController.enabled = false;
         if (joystickObject != null) joystickObject.SetActive(false);
+
+        // Pause Emily AI
+        EmilyGhost emily = FindFirstObjectByType<EmilyGhost>();
+        if (emily != null) emily.isPaused = true;
     }
 
     private void EnablePlayerControls()
@@ -394,6 +398,10 @@ public class DiaryReaderUI : MonoBehaviour
 
         if (playerController != null) playerController.enabled = true;
         if (joystickObject != null) joystickObject.SetActive(true);
+
+        // Resume Emily AI
+        EmilyGhost emily = FindFirstObjectByType<EmilyGhost>();
+        if (emily != null) emily.isPaused = false;
     }
 
     #endregion

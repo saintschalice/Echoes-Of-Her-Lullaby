@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public sealed class EmilySpawnTrigger : MonoBehaviour
@@ -40,6 +41,22 @@ public sealed class EmilySpawnTrigger : MonoBehaviour
     void Awake()
     {
         _triggerCollider = GetComponent<BoxCollider2D>();
+        
+        // Subscribe to scene loaded event to reset trigger on retry
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        // Unsubscribe from scene loaded event
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Reset the trigger when the scene loads (for retry logic)
+        _instance = null;
+        if (_triggerCollider != null) _triggerCollider.enabled = true;
     }
 
     void OnTriggerEnter2D(Collider2D col)
