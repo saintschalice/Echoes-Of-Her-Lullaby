@@ -387,6 +387,7 @@ MonoBehaviour:
   searchTime: 12
   cooldownTime: 18
   lostLOSTime: 1.8
+  isPaused: 0
 --- !u!114 &3276783980782230005
 MonoBehaviour:
   m_ObjectHideFlags: 0

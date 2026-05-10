@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class FoyerIntroController : MonoBehaviour
 {
@@ -32,6 +33,21 @@ public class FoyerIntroController : MonoBehaviour
         {
             cutsceneObject.SetActive(false);
         }
+
+        // Subscribe to scene loaded event to reset trigger on retry
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        // Unsubscribe from scene loaded event
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Reset the cutscene trigger when the scene loads (for retry logic)
+        manualFinishTriggered = false;
     }
 
     IEnumerator Start()
@@ -60,13 +76,19 @@ public class FoyerIntroController : MonoBehaviour
             if (cutsceneObject != null)
                 cutsceneObject.SetActive(false);
 
+            // Show all persistent objects (Lisa, UI, etc.)
+            if (PersistentSceneHider.Instance != null)
+            {
+                PersistentSceneHider.Instance.ShowAllObjects();
+            }
+
             // Start the fade in to reveal the Foyer
             yield return StartCoroutine(FadeInRoom());
         }
         else
         {
             // CASE 2: NEW GAME (NOT SEEN)
-            // Activate the cutscene logic
+            // All persistent objects are already hidden by PersistentSceneHider
             Debug.Log($"[FoyerIntro] First time seeing '{cutsceneSaveID}'. Playing cutscene.");
 
             // Mark it as seen in the SaveSystem immediately so next load won't replay it
@@ -77,16 +99,26 @@ public class FoyerIntroController : MonoBehaviour
                 manualFinishTriggered = false;
                 cutsceneObject.SetActive(true);
 
-                // FIXED: Instead of waiting for the cutscene to end completely (which can get stuck),
-                // we simply wait 2 seconds to ensure the Cutscene's own visuals/background have initialized,
-                // then we disable our safety blackout panel.
+                // Wait for cutscene to finish
+                // The cutscene should call FinishIntro() when done
                 yield return new WaitForSeconds(2f);
 
                 DisableBlackout();
+                
+                // Show all persistent objects after cutscene
+                if (PersistentSceneHider.Instance != null)
+                {
+                    PersistentSceneHider.Instance.ShowAllObjects();
+                    Debug.Log("[FoyerIntro] All persistent objects shown after cutscene");
+                }
             }
             else
             {
                 // Fallback if reference is missing
+                if (PersistentSceneHider.Instance != null)
+                {
+                    PersistentSceneHider.Instance.ShowAllObjects();
+                }
                 yield return StartCoroutine(FadeInRoom());
             }
         }
@@ -135,5 +167,12 @@ public class FoyerIntroController : MonoBehaviour
     {
         manualFinishTriggered = true;
         Debug.Log("[FoyerIntro] Manual finish triggered.");
+        
+        // Show all persistent objects when cutscene finishes
+        if (PersistentSceneHider.Instance != null)
+        {
+            PersistentSceneHider.Instance.ShowAllObjects();
+            Debug.Log("[FoyerIntro] All persistent objects shown via PersistentSceneHider");
+        }
     }
 }

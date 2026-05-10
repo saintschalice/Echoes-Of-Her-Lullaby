@@ -14,6 +14,17 @@ public class CalendarViewer : MonoBehaviour
         uiPanel.SetActive(true);
         currentIndex = 0;
         UpdateDisplay();
+
+        // Pause game for UI
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            JoystickPlayerController playerController = playerObj.GetComponent<JoystickPlayerController>();
+            if (playerController != null) playerController.enabled = false;
+        }
+
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
     }
 
     public void NextMonth()
@@ -45,6 +56,17 @@ public class CalendarViewer : MonoBehaviour
     public void CloseCalendar()
     {
         uiPanel.SetActive(false);
+
+        // Resume game from UI
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            JoystickPlayerController playerController = playerObj.GetComponent<JoystickPlayerController>();
+            if (playerController != null) playerController.enabled = true;
+        }
+
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = false;
     }
 
     private void UpdateDisplay()

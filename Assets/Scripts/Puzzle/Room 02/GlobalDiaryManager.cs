@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -177,10 +178,9 @@ public class GlobalDiaryManager : MonoBehaviour
                     Debug.Log($"[GlobalDiaryManager] Removed {page} from inventory after combination.");
                 }
 
-                DialogueSystemV2.Instance?.StartDialogue(
-                    "These pages fit together... I can now read them in my diary.",
-                    "Lisa"
-                );
+                // FIX: Delay dialogue until AFTER diary UI has a chance to show
+                // This prevents dialogue from appearing before the diary page is visible
+                StartCoroutine(ShowCombinationDialogueAfterDelay());
             }
         }
 
@@ -261,6 +261,38 @@ public class GlobalDiaryManager : MonoBehaviour
     {
         AddDiaryPage("diary_page_1");
     }
+
+    /// <summary>
+    /// Coroutine to show combination dialogue AFTER a delay.
+    /// This ensures the diary UI has time to show the page before dialogue appears.
+    /// </summary>
+    private IEnumerator ShowCombinationDialogueAfterDelay()
+    {
+        // Wait for item notification to finish (if showing)
+        while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+        {
+            yield return null;
+        }
+
+        // Additional small delay to ensure diary UI is visible
+        yield return new WaitForSeconds(0.5f);
+
+        // Now show the dialogue
+        if (DialogueSystemV2.Instance != null)
+        {
+            DialogueSystemV2.Instance.StartDialogue(
+                "These pages fit together... I can now read them in my diary.",
+                "Lisa"
+            );
+            
+            Debug.Log("[GlobalDiaryManager] Combination dialogue started after notification");
+        }
+        else
+        {
+            Debug.LogWarning("[GlobalDiaryManager] DialogueSystemV2.Instance is null!");
+        }
+    }
+
     public Sprite GetSpriteForPageId(string pageId)
     {
         if (string.IsNullOrEmpty(pageId)) return null;

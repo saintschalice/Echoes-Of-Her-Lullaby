@@ -331,8 +331,15 @@ public class ItemExaminationHandler : MonoBehaviour
         // 3. Disable Controls
         GameObject joystick = GameObject.Find("Joystick");
         GameObject inventoryUIObj = GameObject.Find("InventoryUI");
+        bool joystickWasActive = joystick != null && joystick.activeSelf;
+        bool inventoryWasActive = inventoryUIObj != null && inventoryUIObj.activeSelf;
+        
         if (joystick != null) joystick.SetActive(false);
         if (inventoryUIObj != null) inventoryUIObj.SetActive(false);
+
+        // Pause Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
 
         // Fade out to black for the memory
         if (fadeScreen != null)
@@ -398,8 +405,29 @@ public class ItemExaminationHandler : MonoBehaviour
 
         DialogueSystemV2.Instance?.EndDialogue();
 
-        if (joystick != null) joystick.SetActive(true);
-        if (inventoryUIObj != null) inventoryUIObj.SetActive(true);
+        // Re-enable controls - use the stored references
+        if (joystick != null && joystickWasActive)
+        {
+            joystick.SetActive(true);
+            Debug.Log("[Lullaby] Re-enabled Joystick");
+        }
+        
+        if (inventoryUIObj != null && inventoryWasActive)
+        {
+            inventoryUIObj.SetActive(true);
+            Debug.Log("[Lullaby] Re-enabled InventoryUI");
+        }
+
+        // Re-enable player controller
+        JoystickPlayerController playerController = FindFirstObjectByType<JoystickPlayerController>();
+        if (playerController != null)
+        {
+            playerController.enabled = true;
+            Debug.Log("[Lullaby] Re-enabled PlayerController");
+        }
+
+        // Resume Emily AI
+        if (emilyAI != null) emilyAI.isPaused = false;
 
         if (fadeScreen != null)
             fadeScreen.FadeIn(2f);

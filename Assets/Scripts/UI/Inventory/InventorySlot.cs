@@ -12,16 +12,19 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
     public Image keyItemIndicator;
     public GameObject quantityPanel;
     public TextMeshProUGUI quantityText;
+    public Image newItemHighlight; // NEW: Yellow circle highlight for new items
 
     [Header("Visual States")]
     public Color normalColor = Color.white;
     public Color hoverColor = new Color(1f, 1f, 1f, 0.8f);
     public Color keyItemColor = new Color(1f, 0.8f, 0.2f);
     public Color emptySlotColor = new Color(0.5f, 0.5f, 0.5f, 0.3f);
+    public Color newItemHighlightColor = new Color(1f, 1f, 0f, 0.8f); // Yellow
 
     private InventoryItem currentItem;
     private InventoryUI inventoryUI;
     private bool isEmpty = true;
+    private bool isNewItem = false; // Track if this is a newly obtained item
 
     // --- MANUAL DOUBLE TAP VARIABLES ---
     private float lastTapTime = -1f; // Initialize to -1 so the first click at time 0 doesn't trigger it
@@ -48,6 +51,51 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
         else
         {
             SetFilledState();
+        }
+    }
+
+    public void SetItem(InventoryItem item, bool markAsNew)
+    {
+        SetItem(item);
+        if (markAsNew && !isEmpty)
+        {
+            ShowNewItemHighlight();
+        }
+    }
+
+    public void ShowNewItemHighlight()
+    {
+        isNewItem = true;
+        if (newItemHighlight != null)
+        {
+            newItemHighlight.gameObject.SetActive(true);
+            newItemHighlight.color = newItemHighlightColor;
+            StartCoroutine(PulseHighlight());
+        }
+    }
+
+    public void HideNewItemHighlight()
+    {
+        isNewItem = false;
+        if (newItemHighlight != null)
+        {
+            newItemHighlight.gameObject.SetActive(false);
+        }
+    }
+
+    System.Collections.IEnumerator PulseHighlight()
+    {
+        if (newItemHighlight == null) yield break;
+
+        float time = 0f;
+        while (isNewItem && newItemHighlight.gameObject.activeSelf)
+        {
+            time += Time.deltaTime * 2f;
+            float alpha = 0.5f + Mathf.Sin(time) * 0.3f; // Pulse between 0.2 and 0.8
+            Color color = newItemHighlightColor;
+            color.a = alpha;
+            newItemHighlight.color = color;
+            yield return null;
         }
     }
 
@@ -107,6 +155,12 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
             // Clicked an empty slot, hide any active tooltip
             inventoryUI.HideItemTooltip();
             return;
+        }
+
+        // Hide new item highlight when clicked
+        if (isNewItem)
+        {
+            HideNewItemHighlight();
         }
 
         // We use Time.unscaledTime to handle pausing correctly (if UI works while paused)

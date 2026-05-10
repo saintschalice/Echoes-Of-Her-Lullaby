@@ -70,6 +70,22 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Clears all items from inventory - called when starting a new game
+    /// </summary>
+    public void ClearAllItems()
+    {
+        if (SaveSystem.Instance == null) return;
+
+        GameSaveData saveData = SaveSystem.Instance.GetCurrentSaveData();
+        if (saveData != null && saveData.inventoryItems != null)
+        {
+            saveData.inventoryItems.Clear();
+            RefreshUI();
+            Debug.Log("[InventoryManager] All items cleared for new game");
+        }
+    }
+
     public void NotifyActionStarted()
     {
         // Check if we are currently waiting to reopen.
@@ -203,8 +219,42 @@ public class InventoryManager : MonoBehaviour
 
         RefreshUI();
 
+        // Mark item as new in inventory (for yellow highlight)
+        if (inventoryUI != null)
+        {
+            inventoryUI.MarkItemAsNew(itemId);
+        }
+
+        // Show notification badge on inventory button
+        if (InventoryButtonNotifier.Instance != null)
+        {
+            InventoryButtonNotifier.Instance.ShowNewItemNotification();
+        }
+
         Debug.Log($"Added item to inventory: {item.itemName}");
         return true;
+    }
+
+    /// <summary>
+    /// Add item and show notification (player must click to see it)
+    /// </summary>
+    public bool AddItemWithNotification(string itemId, string customDescription = "")
+    {
+        // First add the item to inventory
+        bool success = AddItem(itemId);
+        
+        if (success)
+        {
+            InventoryItem item = GetItem(itemId);
+            if (item != null && ItemNotificationUI.Instance != null)
+            {
+                // Use custom description if provided, otherwise use item's description
+                string description = !string.IsNullOrEmpty(customDescription) ? customDescription : item.description;
+                ItemNotificationUI.Instance.ShowItemNotification(item.itemName, description, item.itemIcon);
+            }
+        }
+        
+        return success;
     }
 
     public bool RemoveItem(string itemId)

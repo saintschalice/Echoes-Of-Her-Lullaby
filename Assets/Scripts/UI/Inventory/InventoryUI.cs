@@ -234,6 +234,12 @@ public class InventoryUI : MonoBehaviour
         SetVisible(true);
         RefreshInventory();
 
+        // Hide notification badge on inventory button
+        if (InventoryButtonNotifier.Instance != null)
+        {
+            InventoryButtonNotifier.Instance.HideNotification();
+        }
+
         if (!hasNotifiedTutorial && TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnInventoryOpened();
@@ -273,6 +279,22 @@ public class InventoryUI : MonoBehaviour
             {
                 slots[i].SetItem(null);
                 slots[i].gameObject.SetActive(true);
+            }
+        }
+    }
+
+    public void MarkItemAsNew(string itemId)
+    {
+        if (inventoryManager == null || slots.Count == 0) return;
+
+        List<InventoryItem> items = inventoryManager.GetAllItems();
+        for (int i = 0; i < items.Count && i < slots.Count; i++)
+        {
+            if (items[i] != null && items[i].itemId == itemId)
+            {
+                slots[i].ShowNewItemHighlight();
+                Debug.Log($"[InventoryUI] Marked {itemId} as new in slot {i}");
+                break;
             }
         }
     }

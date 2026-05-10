@@ -553,6 +553,10 @@ public class CutsceneManager : MonoBehaviour
             joystickUI.SetActive(false);
         }
 
+        // Pause Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
+
         // Notify systems
         if (InventoryManager.Instance != null)
         {
@@ -578,6 +582,10 @@ public class CutsceneManager : MonoBehaviour
         {
             joystickUI.SetActive(true);
         }
+
+        // Resume Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = false;
 
         // Notify systems
         if (InventoryManager.Instance != null)

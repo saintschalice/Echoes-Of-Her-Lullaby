@@ -33,23 +33,20 @@ public class FridgeInteractable : KitchenBaseInteractable
             // Post-Recipe Collection
             ShowDialogue("There's eggs here... and some chocolate. I bet they're inedible.");
 
-            // Give both items
-            AddItemToInventory(eggItemId);
-            AddItemToInventory(chocolateItemId);
+            // FIX: Use AddItemWithNotification instead of AddItem
+            // Give both items with notifications
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.AddItemWithNotification(eggItemId, "Rotten eggs from the fridge.");
+                // Small delay between notifications
+                StartCoroutine(AddSecondItemAfterDelay(chocolateItemId));
+            }
 
             // Notify Controller for both
             NotifyKitchenController(eggItemId);
             NotifyKitchenController(chocolateItemId);
 
-            // Mark collected (Fridge remains visible usually, so we override MarkAsCollected slightly to NOT disable renderer if we want it to stay)
-            // But base class MarkAsCollected disables visuals. 
-            // For a Fridge, we probably want the fridge to stay visible, just "collected".
-            // So we call the logic manually without disabling visuals if we want the fridge sprite to remain.
-
-            // NOTE: Assuming Fridge Sprite is the OPEN fridge or Closed fridge. 
-            // If it's the whole fridge object, we DON'T want to disable it.
-            // We'll modify the behavior here:
-
+            // Mark collected
             isCollected = true;
             if (SaveSystem.Instance != null)
             {
@@ -63,6 +60,22 @@ public class FridgeInteractable : KitchenBaseInteractable
                 }
             }
             // DO NOT call DisableVisuals() for the fridge, assuming it's a large static object.
+        }
+    }
+
+    System.Collections.IEnumerator AddSecondItemAfterDelay(string itemId)
+    {
+        // Wait for first notification to finish
+        while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+        {
+            yield return null;
+        }
+        
+        yield return new WaitForSeconds(0.3f);
+        
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.AddItemWithNotification(itemId, "Moldy chocolate from the fridge.");
         }
     }
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class LockedDoor : MonoBehaviour, IInteractable
 {
@@ -33,6 +34,11 @@ public class LockedDoor : MonoBehaviour, IInteractable
     [Header("Animation")]
     public Animator doorAnimator;
     public string openTrigger = "Open";
+    
+    [Header("Transition")]
+    public float fadeOutDuration = 0.8f;
+    public float fadeInDuration = 0.8f;
+    public bool useFadeTransition = true;
 
     [Header("Messages")]
     public string lockedMessage = "The door is locked.";
@@ -191,7 +197,45 @@ public class LockedDoor : MonoBehaviour, IInteractable
             doorAnimator.SetTrigger(openTrigger);
         }
 
-        Invoke(nameof(LoadNextScene), 1.5f);
+        // Use fade transition
+        if (useFadeTransition && ScreenFader.Instance != null)
+        {
+            StartCoroutine(FadeAndLoadScene());
+        }
+        else
+        {
+            Invoke(nameof(LoadNextScene), 1.5f);
+        }
+    }
+    
+    IEnumerator FadeAndLoadScene()
+    {
+        // Wait a bit for door animation
+        yield return new WaitForSeconds(0.5f);
+        
+        // Disable player movement
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            JoystickPlayerController playerController = player.GetComponent<JoystickPlayerController>();
+            if (playerController != null)
+            {
+                playerController.enabled = false;
+            }
+            
+            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
+        }
+        
+        // Fade out
+        ScreenFader.Instance.FadeOut(fadeOutDuration);
+        yield return new WaitForSeconds(fadeOutDuration);
+        
+        // Load scene
+        LoadNextScene();
     }
 
     void LoadNextScene()

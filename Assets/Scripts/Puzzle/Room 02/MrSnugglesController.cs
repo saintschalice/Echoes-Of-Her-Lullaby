@@ -158,16 +158,30 @@ public class MrSnugglesController : MonoBehaviour, IInteractable
         SaveSystem.Instance?.TriggerDialogue(FLAG_KEY_GIVEN);
         SaveSystem.Instance?.OnStoryProgressMade();
 
-        // Add to inventory
-        InventoryManager.Instance?.AddItem(windingKeyId);
+        // Add to inventory WITH NOTIFICATION
+        InventoryManager.Instance?.AddItemWithNotification(windingKeyId);
 
-        // Add to save system
+        // Add to save system (AddItemWithNotification already does this, but keep for safety)
         if (SaveSystem.Instance != null && !SaveSystem.Instance.HasItem(windingKeyId))
         {
             SaveSystem.Instance.AddInventoryItem(windingKeyId);
         }
 
-        // 6. & 7. Dialogue and item get
+        // Dialogue after notification
+        StartCoroutine(ShowWindingKeyDialogue());
+    }
+    
+    System.Collections.IEnumerator ShowWindingKeyDialogue()
+    {
+        // Wait for notification to finish
+        while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+        {
+            yield return null;
+        }
+        
+        yield return new WaitForSeconds(0.3f);
+        
+        // Show dialogue after notification
         Say("Wait... there's something between the cushions! I got the winding key!");
     }
 

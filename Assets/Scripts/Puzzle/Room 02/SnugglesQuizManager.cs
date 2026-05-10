@@ -163,6 +163,10 @@ public class SnugglesQuizManager : MonoBehaviour
         if (playerController != null)
             playerController.enabled = false;
 
+        // Pause Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
+
         // Show quiz panel using CanvasGroup or SetActive
         if (panelCanvasGroup != null)
         {
@@ -208,6 +212,10 @@ public class SnugglesQuizManager : MonoBehaviour
         // Re-enable player controls
         if (playerController != null)
             playerController.enabled = true;
+
+        // Resume Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = false;
 
         if (choice == 3) // Correct answer
         {

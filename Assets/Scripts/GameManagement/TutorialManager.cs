@@ -208,8 +208,15 @@ public class TutorialManager : MonoBehaviour
     // 6. Shows prompt to open inventory
     IEnumerator ShowInventoryTutorial()
     {
-        // Small delay to allow the "Item Added" dialogue to finish or settle
-        yield return new WaitForSeconds(0.5f);
+        // CRITICAL FIX: Wait for item notification to finish FIRST
+        // Don't show tutorial until player dismisses the notification
+        while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+        {
+            yield return null;
+        }
+
+        // Additional small delay to ensure notification is fully closed
+        yield return new WaitForSeconds(0.3f);
 
         // Combined instructions here
         ShowTutorialStep(

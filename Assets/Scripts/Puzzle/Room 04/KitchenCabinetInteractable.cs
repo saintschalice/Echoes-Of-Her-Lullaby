@@ -40,8 +40,12 @@ public class KitchenCabinetInteractable : KitchenBaseInteractable
         }
 
         // 3. Collection Logic
-        ShowDialogue(foundDialogue);
-        AddItemToInventory(ingredientItemId);
+        // FIX: Use AddItemWithNotification instead of AddItem
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.AddItemWithNotification(ingredientItemId, foundDialogue);
+        }
+        
         NotifyKitchenController(ingredientItemId);
         MarkAsCollected();
     }

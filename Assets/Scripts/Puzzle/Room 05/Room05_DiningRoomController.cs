@@ -18,8 +18,8 @@ public class Room05_DiningRoomController : MonoBehaviour
     private NavMeshAgent emilyAgent;
 
     [Header("UI Blocking (Auto-Find)")]
-    private GameObject dynamicJoystick; 
-    private bool isGamePausedForUI = false; // Flag para pigilan si Emily mag-update
+    private GameObject dynamicJoystick;
+    private bool isGamePausedForUI = false;
 
     [Header("Cabinet Puzzle System")]
     public CabinetPuzzleUI cabinetPuzzleLogic;
@@ -92,7 +92,6 @@ public class Room05_DiningRoomController : MonoBehaviour
         if (tablePanel != null) tablePanel.SetActive(false);
         if (emilyEnemy != null) emilyEnemy.SetActive(false);
 
-        // AUTO-FIND NG JOYSTICK MULA SA PERSISTENT SCENE
         dynamicJoystick = GameObject.Find("Joystick");
 
         GameObject playerObj = GameObject.FindWithTag("Player");
@@ -113,7 +112,6 @@ public class Room05_DiningRoomController : MonoBehaviour
 
     void Update()
     {
-        // KUNG NAKA-PAUSE DAHIL MAY UI, WAG PAGALAWIN SI EMILY!
         if (isGamePausedForUI) return;
 
         if (isEmilyHunting && emilyEnemy != null && emilyEnemy.activeInHierarchy)
@@ -143,32 +141,29 @@ public class Room05_DiningRoomController : MonoBehaviour
     }
 
     // ==========================================
-    // --- FAKE PAUSE LOGIC ---
+    // --- SAFE PAUSE LOGIC ---
     // ==========================================
     public void PauseGameForUI()
     {
         isGamePausedForUI = true;
 
-        // 1. Itago ang Joystick para walang mapindot
         if (dynamicJoystick != null) dynamicJoystick.SetActive(false);
 
-        // 2. I-freeze si Lisa
         if (playerTransform != null)
         {
             MonoBehaviour playerController = playerTransform.GetComponent("JoystickPlayerController") as MonoBehaviour;
             if (playerController != null) playerController.enabled = false;
-            
-            if (playerRb != null) 
+
+            if (playerRb != null)
             {
-                playerRb.linearVelocity = Vector2.zero; // Stop sliding
+                playerRb.linearVelocity = Vector2.zero;
                 playerRb.angularVelocity = 0f;
             }
-            
+
             Animator anim = playerTransform.GetComponent<Animator>();
             if (anim != null) anim.SetFloat("Speed", 0f);
         }
 
-        // 3. I-freeze si Emily
         if (emilyEnemy != null && emilyEnemy.activeInHierarchy)
         {
             if (emilyAgent != null && emilyAgent.isActiveAndEnabled && emilyAgent.isOnNavMesh)
@@ -176,9 +171,9 @@ public class Room05_DiningRoomController : MonoBehaviour
                 emilyAgent.isStopped = true;
                 emilyAgent.velocity = Vector3.zero;
             }
-            // Patayin din ang EmilyGhost script niya pansamantala
-            MonoBehaviour emilyScript = emilyEnemy.GetComponent("EmilyGhost") as MonoBehaviour;
-            if (emilyScript != null) emilyScript.enabled = false;
+
+            EmilyGhost emilyScript = emilyEnemy.GetComponent<EmilyGhost>();
+            if (emilyScript != null) emilyScript.isPaused = true;
         }
     }
 
@@ -186,61 +181,54 @@ public class Room05_DiningRoomController : MonoBehaviour
     {
         isGamePausedForUI = false;
 
-        // 1. Ibalik ang Joystick
         if (dynamicJoystick != null) dynamicJoystick.SetActive(true);
 
-        // 2. I-unfreeze si Lisa
         if (playerTransform != null)
         {
             MonoBehaviour playerController = playerTransform.GetComponent("JoystickPlayerController") as MonoBehaviour;
             if (playerController != null) playerController.enabled = true;
         }
 
-        // 3. I-unfreeze si Emily
         if (emilyEnemy != null && emilyEnemy.activeInHierarchy)
         {
             if (emilyAgent != null && emilyAgent.isActiveAndEnabled && emilyAgent.isOnNavMesh)
             {
                 emilyAgent.isStopped = false;
             }
-            MonoBehaviour emilyScript = emilyEnemy.GetComponent("EmilyGhost") as MonoBehaviour;
-            if (emilyScript != null) emilyScript.enabled = true;
+
+            EmilyGhost emilyScript = emilyEnemy.GetComponent<EmilyGhost>();
+            if (emilyScript != null) emilyScript.isPaused = false;
         }
     }
 
     // ==========================================
-    // --- PHASE 1: CALENDAR CLUE & INITIAL CHASE ---
+    // --- PUZZLE INTERACTION METHODS ---
     // ==========================================
     public void OnCalendarInteract()
     {
         isCalendarSeen = true; PlayerPrefs.Save();
-        
         if (calendarViewerUI != null) calendarViewerUI.OpenCalendar();
-        
-        PauseGameForUI(); 
-        TryShowDialogue("Dates are marked in red... it looks like a code.");
+        PauseGameForUI();
+        TryShowDialogue(EnhancedGameDialogues.R05_CALENDAR);
     }
 
-    // ITO YUNG PARA SA BACK BUTTON NG CALENDAR MO
     public void CloseCalendarUI()
     {
         if (calendarViewerUI != null) calendarViewerUI.gameObject.SetActive(false);
-        
-        ResumeGameFromUI(); 
-
-        if (!isEmilyHunting && !puzzleCompleted) 
+        ResumeGameFromUI();
+        if (!isEmilyHunting && !puzzleCompleted)
         {
             StartCoroutine(EmilyGetsAngrySequence());
         }
     }
 
-    IEnumerator EmilyGetsAngrySequence()
+    public IEnumerator EmilyGetsAngrySequence()
     {
         yield return new WaitForSeconds(0.5f);
         if (roomAudioSource != null && introJumpscareSFX != null) roomAudioSource.PlayOneShot(introJumpscareSFX);
         if (playerRb != null) StartCoroutine(ApplyKnockbackRoutine());
 
-        TryShowDialogue("Lisa: What is that?! She's coming! I need to solve this NOW!");
+        TryShowDialogue(EnhancedGameDialogues.R05_ANGRY_2);
         yield return new WaitForSeconds(introKnockbackDuration);
 
         isEmilyHunting = true;
@@ -272,30 +260,27 @@ public class Room05_DiningRoomController : MonoBehaviour
         playerRb.linearVelocity = Vector2.zero;
     }
 
-    // ==========================================
-    // --- PHASE 2: HIDING & GETTING THE KEY ---
-    // ==========================================
     public void OnCutleryInteract()
     {
-        if (chairsFixed < 3) { TryShowDialogue("The chairs are empty. It's not yet time for dinner."); return; }
+        if (chairsFixed < 3) { TryShowDialogue(EnhancedGameDialogues.R05_TABLE_EMPTY); return; }
 
         if (!isSpoonPlaced)
         {
             bool playerHasSpoon = hasSpoon || (InventoryManager.Instance != null && InventoryManager.Instance.HasItem("spoon"));
             if (playerHasSpoon)
             {
-                if (tablePanel != null) { 
-                    tablePanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero; 
-                    tablePanel.SetActive(true); 
-                    PauseGameForUI(); 
+                if (tablePanel != null)
+                {
+                    tablePanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                    tablePanel.SetActive(true);
+                    PauseGameForUI();
                 }
             }
-            else { TryShowDialogue("Something is missing from this table setting. A silver tool, perhaps?"); }
+            else { TryShowDialogue(EnhancedGameDialogues.R05_TABLE_MISSING); }
         }
         else { TryShowDialogue("The table is already set."); }
     }
 
-    // ITO YUNG PARA SA BACK/CANCEL BUTTON NG TABLE SPOON PANEL
     public void CloseTableUI()
     {
         if (tablePanel != null) tablePanel.SetActive(false);
@@ -306,9 +291,9 @@ public class Room05_DiningRoomController : MonoBehaviour
     {
         isSpoonPlaced = true; PlayerPrefs.Save();
         if (tablePanel != null) tablePanel.SetActive(false);
-        
-        ResumeGameFromUI(); 
-        TryShowDialogue("The table is set. I need to hide underneath it before she gets me!");
+
+        ResumeGameFromUI();
+        TryShowDialogue(EnhancedGameDialogues.R05_TABLE_COMPLETE);
     }
 
     public void OnTableInteract()
@@ -317,7 +302,7 @@ public class Room05_DiningRoomController : MonoBehaviour
         {
             if (!isFirstTimeHidingDone)
             {
-                TryShowDialogue("She's furious! I need to stay under here until she leaves!");
+                TryShowDialogue(EnhancedGameDialogues.R05_HIDING_1);
                 isFirstTimeHidingDone = true; PlayerPrefs.Save();
             }
             StartCoroutine(EmilyDisappearsSequence());
@@ -363,12 +348,9 @@ public class Room05_DiningRoomController : MonoBehaviour
             InventoryManager.Instance.AddItem("bedroom_key");
         }
 
-        TryShowDialogue("Lisa: ...Is she gone? Wait... what's this? I found a key under here! Time to get out.");
+        TryShowDialogue(EnhancedGameDialogues.R05_EMILY_GONE_1);
     }
 
-    // ==========================================
-    // --- PHASE 3: THE FINAL EXIT CHASE ---
-    // ==========================================
     public void OnTriggerExitRoom()
     {
         if (puzzleCompleted && !isEmilyHunting)
@@ -379,7 +361,7 @@ public class Room05_DiningRoomController : MonoBehaviour
 
     IEnumerator FinalChaseSequence()
     {
-        TryShowDialogue("Lisa: Almost out...");
+        TryShowDialogue(EnhancedGameDialogues.R05_FINAL_CHASE_1);
         yield return new WaitForSeconds(0.5f);
 
         if (roomAudioSource != null && introJumpscareSFX != null)
@@ -397,8 +379,8 @@ public class Room05_DiningRoomController : MonoBehaviour
 
             if (emilyAgent != null)
             {
-                emilyAgent.enabled = true; 
-                if (spawnPt != null) emilyAgent.Warp(spawnPt.position); 
+                emilyAgent.enabled = true;
+                if (spawnPt != null) emilyAgent.Warp(spawnPt.position);
                 emilyAgent.speed = finalChaseSpeed;
             }
 
@@ -406,59 +388,57 @@ public class Room05_DiningRoomController : MonoBehaviour
         }
 
         isEmilyHunting = true;
-        TryShowDialogue("Lisa: SHE'S FASTER NOW! RUN!!");
+        TryShowDialogue(EnhancedGameDialogues.R05_FINAL_CHASE_2);
     }
 
-    // ==========================================
-    // --- STANDARD PUZZLE METHODS (CABINET) ---
-    // ==========================================
     public void OnCabinetInteract()
     {
-        if (isCabinetOpen) { TryShowDialogue("The sideboard is open."); return; }
-        if (!isCalendarSeen) TryShowDialogue("It's locked. I need a clue.");
+        if (isCabinetOpen) { TryShowDialogue(EnhancedGameDialogues.R05_CABINET_OPEN); return; }
+        if (!isCalendarSeen) TryShowDialogue(EnhancedGameDialogues.R05_CABINET_LOCKED);
         else StartCoroutine(ShowCabinetUISequence_Cabinet());
     }
 
     IEnumerator ShowCabinetUISequence_Cabinet()
     {
         yield return new WaitForSeconds(0.5f);
-        if (cabinetUIPanel != null) { 
-            cabinetUIPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero; 
-            cabinetUIPanel.SetActive(true); 
-            PauseGameForUI(); 
+        if (cabinetUIPanel != null)
+        {
+            cabinetUIPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            cabinetUIPanel.SetActive(true);
+            PauseGameForUI();
         }
     }
 
-    // ITO YUNG PARA SA CLOSE O X BUTTON NG CABINET MO
-    public void CloseCabinetUI() 
+    public void CloseCabinetUI()
     {
         if (cabinetUIPanel != null) cabinetUIPanel.SetActive(false);
-        ResumeGameFromUI(); 
+        ResumeGameFromUI();
     }
 
     public void OnEnterPressed()
     {
         if (cabinetPuzzleLogic.GetEnteredCode() == correctCode)
         {
-            isCabinetOpen = true; PlayerPrefs.Save(); 
-            
-            ResumeGameFromUI(); 
+            isCabinetOpen = true; PlayerPrefs.Save();
+
+            ResumeGameFromUI();
             StartCoroutine(UnlockSequence());
         }
-        else { 
-            CloseCabinetUI(); 
-            TryShowDialogue("Wrong combination."); 
+        else
+        {
+            CloseCabinetUI();
+            TryShowDialogue(EnhancedGameDialogues.R05_CABINET_WRONG);
         }
     }
 
     IEnumerator UnlockSequence()
     {
         cabinetPuzzleLogic.ShowUnlockVisual();
-        yield return new WaitForSeconds(1.5f); 
-        SyncRoomState(); 
-        
+        yield return new WaitForSeconds(1.5f);
+        SyncRoomState();
+
         if (cabinetUIPanel != null) cabinetUIPanel.SetActive(false);
-        TryShowDialogue("The cabinet is now open.");
+        TryShowDialogue(EnhancedGameDialogues.R05_CABINET_OPEN);
     }
 
     public void OnSpoonInteract()
@@ -466,13 +446,13 @@ public class Room05_DiningRoomController : MonoBehaviour
         hasSpoon = true; PlayerPrefs.Save();
         if (spoonPickup != null) spoonPickup.SetActive(false);
         if (InventoryManager.Instance != null) InventoryManager.Instance.AddItem("spoon");
-        TryShowDialogue("Got the silver spoon.");
+        TryShowDialogue(EnhancedGameDialogues.R05_SPOON);
     }
 
     public void FixChair(string type)
     {
         bool playerHasSpoon = hasSpoon || (InventoryManager.Instance != null && InventoryManager.Instance.HasItem("spoon"));
-        if (!playerHasSpoon) { TryShowDialogue("The chair won't move. I need a sign."); return; }
+        if (!playerHasSpoon) { TryShowDialogue(EnhancedGameDialogues.R05_CHAIR_LOCKED); return; }
 
         GameObject targetObj = null; Vector3 targetPos = Vector3.zero;
 
@@ -481,7 +461,7 @@ public class Room05_DiningRoomController : MonoBehaviour
         else if (type == "Father") { if (isFatherChairFixed) return; targetObj = fatherChairObj; targetPos = fatherChairTarget; isFatherChairFixed = true; }
 
         PlayerPrefs.Save();
-        if (targetObj != null) { TryShowDialogue("The chair slid into place..."); StartCoroutine(MoveChairRoutine(targetObj, targetPos)); }
+        if (targetObj != null) { TryShowDialogue(EnhancedGameDialogues.R05_CHAIR_MOVED); StartCoroutine(MoveChairRoutine(targetObj, targetPos)); }
     }
 
     IEnumerator MoveChairRoutine(GameObject chair, Vector3 target)

@@ -19,24 +19,43 @@ public class ItemPickupRoom07 : MonoBehaviour, IInteractable
     {
         if (InventoryManager.Instance != null)
         {
-            // 1. Idagdag sa Inventory
-            InventoryManager.Instance.AddItem(itemId);
+            // 1. Show dialogue first (if any)
+            if (!string.IsNullOrEmpty(pickupMessage))
+            {
+                DialogueSystemV2.Instance?.StartDialogue(pickupMessage, "Lisa");
+            }
 
-            // 2. Magpakita ng dialogue
-            string fullMessage = string.IsNullOrEmpty(pickupMessage)
-                ? $"Picked up {itemName}."
-                : pickupMessage;
+            // 2. Add to inventory with notification (will wait for dialogue to finish)
+            StartCoroutine(AddItemAfterDialogue());
 
-            DialogueSystemV2.Instance?.StartDialogue(fullMessage, "Lisa");
-
-            Debug.Log($"[Pickup] {itemName} added to inventory.");
-
-            // 3. Burahin ang object sa scene dahil nasa bulsa na ni Lisa
-            Destroy(gameObject);
+            Debug.Log($"[Pickup] {itemName} will be added to inventory after dialogue.");
         }
         else
         {
             Debug.LogError("InventoryManager instance not found in the scene!");
         }
+    }
+
+    private System.Collections.IEnumerator AddItemAfterDialogue()
+    {
+        // Wait for dialogue to finish first
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+        {
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(0.3f);
+
+        // Add item with notification
+        InventoryManager.Instance?.AddItemWithNotification(itemId);
+
+        // Wait for notification to finish before destroying object
+        while (ItemNotificationUI.Instance != null && ItemNotificationUI.Instance.IsShowing())
+        {
+            yield return null;
+        }
+
+        // Destroy the object after notification is done
+        Destroy(gameObject);
     }
 }

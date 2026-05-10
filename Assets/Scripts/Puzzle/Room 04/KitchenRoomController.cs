@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class KitchenRoomController : MonoBehaviour
 {
@@ -10,16 +11,7 @@ public class KitchenRoomController : MonoBehaviour
     public string puzzleId = "kitchen_cookie_puzzle";
     public string roomName = "Room04_KitchenDining";
 
-    [Header("Ingredient GameObjects (To Hide)")]
-    // I-drag dito ang mga objects sa Hierarchy para mawala sila pag nakuha na
-    public GameObject flourObject;
-    public GameObject sugarObject;
-    public GameObject vanillaObject;
-    public GameObject chocolateObject;
-    public GameObject eggObject;
-    public GameObject saltObject;
-
-    [Header("Puzzle Flags (Persistent)")]
+    [Header("Puzzle Flags (Read Only)")]
     public bool recipeRead;
     public bool hasFlour;
     public bool hasSugar;
@@ -66,30 +58,33 @@ public class KitchenRoomController : MonoBehaviour
 
     private void Start()
     {
+        // Stop any lingering audio from previous scene
+        if (walkSource != null && walkSource.isPlaying)
+        {
+            walkSource.Stop();
+        }
+
         LoadRoomState();
-        SyncIngredientObjects(); // Itago ang mga nakuhang gamit
         CheckFirstVisit();
     }
 
     private void LoadRoomState()
     {
-        // 1. Load from PlayerPrefs para siguradong hindi na umuulit ang puzzle
-        bridgePlaced = PlayerPrefs.GetInt(puzzleId + "_bridge", 0) == 1;
-        doughMixed = PlayerPrefs.GetInt(puzzleId + "_dough", 0) == 1;
-        ovenSetCorrect = PlayerPrefs.GetInt(puzzleId + "_oven", 0) == 1;
-        cookiesBakedAndStored = PlayerPrefs.GetInt(puzzleId + "_cookies", 0) == 1;
-        emilyIntroDone = PlayerPrefs.GetInt("emily_kitchen_intro", 0) == 1;
+        if (SaveSystem.Instance == null)
+        {
+            Debug.LogWarning("[KitchenRoomController] SaveSystem missing. Using default state.");
+            return;
+        }
 
-        if (SaveSystem.Instance == null) return;
-
-        // 2. Load from SaveSystem for items and visit state
         RoomState state = SaveSystem.Instance.GetRoomState(roomName);
         if (state == null) return;
 
-        floorboardObtained = SaveSystem.Instance.HasItem("floorboard_bridge");
+        bridgePlaced = state.solvedPuzzles.Contains(puzzleId + "_bridge");
+        emilyIntroDone = state.solvedPuzzles.Contains("emily_kitchen_intro");
+        floorboardObtained = state.collectedItems.Contains("floorboard_bridge");
         recipeRead = SaveSystem.Instance.HasItem("recipe_book_kitchen");
 
-        // Sync flags based on Inventory
+        // FIX: Restore ingredient flags based on Inventory
         hasFlour = SaveSystem.Instance.HasItem("flour");
         hasSugar = SaveSystem.Instance.HasItem("sugar");
         hasVanilla = SaveSystem.Instance.HasItem("vanilla");
@@ -97,23 +92,13 @@ public class KitchenRoomController : MonoBehaviour
         hasEgg = SaveSystem.Instance.HasItem("egg");
         hasSalt = SaveSystem.Instance.HasItem("salt");
 
-        Debug.Log($"[KitchenRoomController] State Loaded. Bridge: {bridgePlaced}, Mixed: {doughMixed}");
-    }
-
-    private void SyncIngredientObjects()
-    {
-        // Kung nakuha na ni Lisa o tapos na ang mix, itago na ang physical objects sa scene
-        if (hasFlour || doughMixed) if (flourObject != null) flourObject.SetActive(false);
-        if (hasSugar || doughMixed) if (sugarObject != null) sugarObject.SetActive(false);
-        if (hasVanilla || doughMixed) if (vanillaObject != null) vanillaObject.SetActive(false);
-        if (hasChocolate || doughMixed) if (chocolateObject != null) chocolateObject.SetActive(false);
-        if (hasEgg || doughMixed) if (eggObject != null) eggObject.SetActive(false);
-        if (hasSalt || doughMixed) if (saltObject != null) saltObject.SetActive(false);
+        Debug.Log($"[KitchenRoomController] State Loaded. Intro Done: {emilyIntroDone}");
     }
 
     private void CheckFirstVisit()
     {
         if (SaveSystem.Instance == null) return;
+
         RoomState state = SaveSystem.Instance.GetRoomState(roomName);
         if (!state.hasBeenVisited)
         {
@@ -133,98 +118,105 @@ public class KitchenRoomController : MonoBehaviour
         }
     }
 
+    public void OnRecipeBookRead()
+    {
+        recipeRead = true;
+    }
+
     public void OnIngredientCollected(string itemId)
     {
         switch (itemId)
         {
-            case "flour": hasFlour = true; if (flourObject != null) flourObject.SetActive(false); break;
-            case "sugar": hasSugar = true; if (sugarObject != null) sugarObject.SetActive(false); break;
-            case "vanilla": hasVanilla = true; if (vanillaObject != null) vanillaObject.SetActive(false); break;
-            case "chocolate": hasChocolate = true; if (chocolateObject != null) chocolateObject.SetActive(false); break;
-            case "egg": hasEgg = true; if (eggObject != null) eggObject.SetActive(false); break;
-            case "salt": hasSalt = true; if (saltObject != null) saltObject.SetActive(false); break;
+            case "flour": hasFlour = true; break;
+            case "sugar": hasSugar = true; break;
+            case "vanilla": hasVanilla = true; break;
+            case "chocolate": hasChocolate = true; break;
+            case "egg": hasEgg = true; break;
+            case "salt": hasSalt = true; break;
         }
+        // No logic needed here, MixingBowlInteractable checks flags directly
     }
 
-    public void OnDoughMixed()
-    {
-        doughMixed = true;
-        PlayerPrefs.SetInt(puzzleId + "_dough", 1);
-        PlayerPrefs.Save();
-        SyncIngredientObjects(); // Siguradong mawawala ang mga gamit sa counter
-    }
-
-    public void OnOvenSetCorrect()
-    {
-        ovenSetCorrect = true;
-        PlayerPrefs.SetInt(puzzleId + "_oven", 1);
-        PlayerPrefs.Save();
-    }
-
-    public void OnCookiesBakedAndStored()
-    {
-        cookiesBakedAndStored = true;
-        PlayerPrefs.SetInt(puzzleId + "_cookies", 1);
-        PlayerPrefs.Save();
-    }
+    public void OnDoughMixed() { doughMixed = true; }
+    public void OnOvenSetCorrect() { ovenSetCorrect = true; }
+    public void OnCookiesBakedAndStored() { cookiesBakedAndStored = true; }
+    public void OnFloorboardObtained() { floorboardObtained = true; }
 
     public void OnBridgePlaced()
     {
         bridgePlaced = true;
-        PlayerPrefs.SetInt(puzzleId + "_bridge", 1);
-        PlayerPrefs.Save();
-
         if (SaveSystem.Instance != null)
         {
+            SaveSystem.Instance.MarkPuzzleSolved(puzzleId);
             SaveSystem.Instance.MarkPuzzleSolved(puzzleId + "_bridge");
         }
     }
-    public void OnRecipeBookRead()
-    {
-        recipeRead = true;
-        // Optional: I-save sa memory kung gusto mong permanent
-        PlayerPrefs.SetInt(puzzleId + "_recipe", 1);
-        PlayerPrefs.Save();
-    }
 
-    public void OnFloorboardObtained()
-    {
-        floorboardObtained = true;
-        // Optional: I-save sa memory kung gusto mong permanent
-        PlayerPrefs.SetInt(puzzleId + "_floorboard", 1);
-        PlayerPrefs.Save();
-    }
-
-    void Update()
-    {
-        // Pindutin ang 'R' habang naka-Play para i-reset ang buong kusina
-        if (Application.isEditor && Input.GetKeyDown(KeyCode.R))
-        {
-            PlayerPrefs.DeleteKey(puzzleId + "_bridge");
-            PlayerPrefs.DeleteKey(puzzleId + "_dough");
-            PlayerPrefs.DeleteKey(puzzleId + "_oven");
-            PlayerPrefs.DeleteKey(puzzleId + "_cookies");
-            PlayerPrefs.DeleteKey("emily_kitchen_intro");
-            PlayerPrefs.Save();
-
-            Debug.Log("DEBUG: Kitchen States Cleared! Please restart the scene.");
-        }
-    }
-
-    // --- EMILY INTRO LOGIC ---
-
-    public void StartEmilyKitchenIntro(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint)
+    public void StartEmilyKitchenIntro(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint, EmilyGhost existingEmily = null)
     {
         if (emilyIntroDone) return;
-        StartCoroutine(EmilyIntroRoutine(player, emilyPrefab, emilySpawnPoint));
+        StartCoroutine(EmilyIntroRoutine(player, emilyPrefab, emilySpawnPoint, existingEmily));
     }
 
-    private IEnumerator EmilyIntroRoutine(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint)
+    private IEnumerator EmilyIntroRoutine(Transform player, EmilyGhost emilyPrefab, Transform emilySpawnPoint, EmilyGhost existingEmily = null)
     {
+        Debug.Log("[KitchenRoomController] Starting Emily Intro Sequence...");
         introInProgress = true;
+
         JoystickPlayerController playerController = player.GetComponent<JoystickPlayerController>();
 
-        EmilyGhost emilyInstance = Instantiate(emilyPrefab, emilySpawnPoint.position, emilySpawnPoint.rotation);
+        // CRITICAL FIX: Use existing Emily if provided, otherwise spawn new one
+        EmilyGhost emilyInstance;
+        if (existingEmily != null)
+        {
+            Debug.Log("[KitchenController] Using existing Emily instance");
+            emilyInstance = existingEmily;
+            
+            // CRITICAL: Properly reset existing Emily
+            // Disable AI temporarily
+            emilyInstance.enabled = false;
+            
+            // Get and disable NavMeshAgent
+            UnityEngine.AI.NavMeshAgent existingAgent = emilyInstance.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (existingAgent != null)
+            {
+                existingAgent.enabled = false;
+            }
+            
+            // Move to spawn point
+            emilyInstance.transform.position = emilySpawnPoint.position;
+            emilyInstance.transform.rotation = emilySpawnPoint.rotation;
+            
+            // Re-enable agent and warp to position
+            if (existingAgent != null)
+            {
+                existingAgent.enabled = true;
+                existingAgent.Warp(emilySpawnPoint.position);
+            }
+            
+            Debug.Log($"[KitchenController] Existing Emily reset and moved to: {emilySpawnPoint.position}");
+        }
+        else
+        {
+            // Verify prefab is not null before spawning
+            if (emilyPrefab == null)
+            {
+                Debug.LogError("[KitchenController] Emily Prefab is NULL! Cannot spawn Emily. Aborting intro.");
+                introInProgress = false;
+                yield break;
+            }
+            
+            Debug.Log("[KitchenController] Spawning new Emily instance from prefab");
+            emilyInstance = Instantiate(emilyPrefab, emilySpawnPoint.position, emilySpawnPoint.rotation);
+            
+            if (emilyInstance == null)
+            {
+                Debug.LogError("[KitchenController] Failed to instantiate Emily! Aborting intro.");
+                introInProgress = false;
+                yield break;
+            }
+        }
+        
         Animator emilyAnim = emilyInstance.GetComponentInChildren<Animator>();
 
         if (AudioManager.Instance != null && introJumpscareSFX != null)
@@ -232,6 +224,7 @@ public class KitchenRoomController : MonoBehaviour
             AudioManager.Instance.PlaySFX(introJumpscareSFX);
         }
 
+        // Disable Emily for intro sequence (applies to both new and existing)
         emilyInstance.enabled = false;
         UnityEngine.AI.NavMeshAgent emilyAgent = emilyInstance.GetComponent<UnityEngine.AI.NavMeshAgent>();
         if (emilyAgent != null) emilyAgent.enabled = false;
@@ -246,11 +239,18 @@ public class KitchenRoomController : MonoBehaviour
             DialogueSystemV2.Instance.StartDialogue("I need to hide under the island!", "Lisa");
             while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
         }
+        else
+        {
+            yield return new WaitForSeconds(2f);
+        }
 
         Vector2[] path = new Vector2[] { new Vector2(2.5f, 1.2f), new Vector2(-2.5f, 1.2f) };
+
         StartCoroutine(FadeWalkSound(true, 1.0f));
         yield return StartCoroutine(MoveEmilyAlongPath(emilyInstance.transform, emilyAnim, path, 1.8f));
         StartCoroutine(FadeWalkSound(false, 1.0f));
+
+        yield return new WaitForSeconds(0.8f);
 
         if (isPlayerHidden)
         {
@@ -258,62 +258,93 @@ public class KitchenRoomController : MonoBehaviour
             {
                 DialogueSystemV2.Instance.StartDialogue("I WILL FIND YOU!", "Emily");
                 while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+                yield return new WaitForSeconds(0.1f);
                 DialogueSystemV2.Instance.StartDialogue("I need to keep quiet...", "Lisa");
                 while (DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
             }
         }
 
+        // CRITICAL FIX: Properly enable Emily AI with frame delays
         if (emilyAgent != null)
         {
             emilyAgent.enabled = true;
             emilyAgent.Warp(emilyInstance.transform.position);
+            
+            // Wait for agent to be fully ready on NavMesh
+            yield return new WaitForEndOfFrame();
         }
 
+        // NOW enable Emily AI component
         emilyInstance.enabled = true;
-        emilyInstance.SetStateExternal(isPlayerHidden ? EmilyGhost.State.Search : EmilyGhost.State.Hunt);
+<<<<<<< Updated upstream
+
+        if (isPlayerHidden) emilyInstance.SetStateExternal(EmilyGhost.State.Search);
+        else emilyInstance.SetStateExternal(EmilyGhost.State.Hunt);
+=======
+        
+        // CRITICAL: Wait for Emily's OnEnable to complete initialization
+        yield return new WaitForEndOfFrame();
+
+        // NOW set the state - Emily is fully ready
+        EmilyGhost.State targetState = isPlayerHidden ? EmilyGhost.State.Search : EmilyGhost.State.Hunt;
+        emilyInstance.SetStateExternal(targetState);
+        
+        Debug.Log($"[KitchenController] Emily AI fully enabled. State: {targetState}");
+>>>>>>> Stashed changes
 
         emilyIntroDone = true;
         introInProgress = false;
-        PlayerPrefs.SetInt("emily_kitchen_intro", 1);
-        PlayerPrefs.Save();
-    }
 
-    // --- HELPER METHODS ---
+        if (SaveSystem.Instance != null)
+        {
+            SaveSystem.Instance.MarkPuzzleSolved("emily_kitchen_intro");
+            SaveSystem.Instance.SaveGame(0);
+        }
+    }
 
     private IEnumerator FadeWalkSound(bool fadeIn, float duration)
     {
         if (scriptedWalkSFX == null || walkSource == null) yield break;
+
         walkSource.clip = scriptedWalkSFX;
         if (fadeIn && !walkSource.isPlaying) walkSource.Play();
 
         float start = walkSource.volume;
         float target = fadeIn ? 1.0f : 0.0f;
         float elapsed = 0f;
+
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             walkSource.volume = Mathf.Lerp(start, target, elapsed / duration);
             yield return null;
         }
+        walkSource.volume = target;
         if (!fadeIn) walkSource.Stop();
     }
 
     private IEnumerator PushLisaToPosition(Transform playerTransform, JoystickPlayerController controller, Vector2 targetPos, float duration)
     {
         if (controller != null) controller.enabled = false;
+
         Rigidbody2D rb = playerTransform.GetComponent<Rigidbody2D>();
+        if (rb != null) rb.linearVelocity = Vector2.zero;
+
         Vector3 startPos = playerTransform.position;
         float timer = 0f;
-        while (timer < duration)
+        try
         {
-            timer += Time.deltaTime;
-            float t = Mathf.Sin((timer / duration) * Mathf.PI * 0.5f);
-            Vector3 newPos = Vector3.Lerp(startPos, new Vector3(targetPos.x, targetPos.y, 0), t);
-            if (rb != null) rb.MovePosition(newPos);
-            else playerTransform.position = newPos;
-            yield return null;
+            while (timer < duration)
+            {
+                timer += Time.deltaTime;
+                float t = Mathf.Sin((timer / duration) * Mathf.PI * 0.5f);
+                Vector3 newPos = Vector3.Lerp(startPos, new Vector3(targetPos.x, targetPos.y, 0), t);
+                if (rb != null) rb.MovePosition(newPos);
+                else playerTransform.position = newPos;
+                yield return null;
+            }
         }
-        if (controller != null) controller.enabled = true;
+        finally { if (controller != null) controller.enabled = true; }
     }
 
     private IEnumerator MoveEmilyAlongPath(Transform emilyTransform, Animator anim, Vector2[] waypoints, float speed)
@@ -324,21 +355,32 @@ public class KitchenRoomController : MonoBehaviour
             {
                 Vector3 dir = ((Vector3)target - emilyTransform.position).normalized;
                 emilyTransform.position += dir * speed * Time.deltaTime;
+
                 if (anim != null)
                 {
                     anim.SetBool("isWalking", true);
                     anim.SetFloat("InputX", dir.x);
                     anim.SetFloat("InputY", dir.y);
+                    anim.SetFloat("MoveX", dir.x);
+                    anim.SetFloat("MoveY", dir.y);
                 }
                 yield return null;
             }
         }
         if (anim != null) anim.SetBool("isWalking", false);
     }
+<<<<<<< Updated upstream
+=======
 
     [ContextMenu("Reset Kitchen Puzzle")]
     public void ResetPuzzle()
     {
+        // Stop any playing audio first
+        if (walkSource != null && walkSource.isPlaying)
+        {
+            walkSource.Stop();
+        }
+
         PlayerPrefs.DeleteKey(puzzleId + "_bridge");
         PlayerPrefs.DeleteKey(puzzleId + "_dough");
         PlayerPrefs.DeleteKey(puzzleId + "_oven");
@@ -373,4 +415,5 @@ public class KitchenRoomController : MonoBehaviour
 
         Debug.Log("DEBUG: Kitchen Puzzle Reset! (NOTE: Kung nasa SaveSystem pa rin ang items mo, baka kailangan mong i-clear din ang main save data mo).");
     }
+>>>>>>> Stashed changes
 }

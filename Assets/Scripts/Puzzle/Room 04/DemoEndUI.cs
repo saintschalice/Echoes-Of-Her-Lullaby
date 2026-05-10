@@ -55,6 +55,10 @@ public class DemoEndUI : MonoBehaviour
             if (rb != null) rb.linearVelocity = Vector2.zero;
         }
 
+        // Pause Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
+
         // 2. Close other UIs
         if (InventoryManager.Instance != null) InventoryManager.Instance.CloseInventoryUI();
         if (RecipeBookUI.Instance != null) RecipeBookUI.Instance.CloseBook();

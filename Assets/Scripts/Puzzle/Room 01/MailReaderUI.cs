@@ -106,6 +106,10 @@ Break the surface to reveal what lies beneath.
         // Pause game
         Time.timeScale = 0f;
 
+        // Pause Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = true;
+
         Debug.Log("[MailReader] Mail opened and read!");
     }
 
@@ -124,6 +128,10 @@ Break the surface to reveal what lies beneath.
 
         // Resume game
         Time.timeScale = 1f;
+
+        // Resume Emily AI
+        EmilyGhost emilyAI = FindFirstObjectByType<EmilyGhost>();
+        if (emilyAI != null) emilyAI.isPaused = false;
 
         Debug.Log("[MailReader] Mail closed");
 

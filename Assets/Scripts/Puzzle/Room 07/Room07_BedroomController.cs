@@ -19,8 +19,9 @@ public class Room07_BedroomController : MonoBehaviour
 
     void Start()
     {
-        // Nakatago ang salamin hangga't hindi tapos ang puzzle
-        if (mirrorTrigger != null) mirrorTrigger.SetActive(false);
+        // DISABLED: Now using Room07_FlowController instead
+        // Mirror should be visible from the start
+        // if (mirrorTrigger != null) mirrorTrigger.SetActive(false);
     }
 
     public void CheckPuzzleProgress()
@@ -36,6 +37,7 @@ public class Room07_BedroomController : MonoBehaviour
     {
         Debug.Log("Puzzle Complete! Check the mirror...");
         if (roomAudio != null && lullabyClip != null) roomAudio.PlayOneShot(lullabyClip);
-        if (mirrorTrigger != null) mirrorTrigger.SetActive(true);
+        // DISABLED: Mirror is always visible now
+        // if (mirrorTrigger != null) mirrorTrigger.SetActive(true);
     }
 }

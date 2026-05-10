@@ -20,23 +20,28 @@ public class SimpleKitchenPickup : KitchenBaseInteractable
     // =================================================================================
     public override void Interact()
     {
-        // Always show the dialogue first
-        ShowDialogue(pickupDialogue);
+        // If already collected, don't do anything
+        if (isCollected && shouldPickupItem) return;
 
-        // If this is just an examine object (like the static bowl), stop here.
-        if (!shouldPickupItem)
+        // Standard Pickup Logic (for Salt and other items)
+        if (shouldPickupItem)
         {
-            return;
+            // FIX: Use AddItemWithNotification instead of AddItemToInventory
+            // This will show the notification UI
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.AddItemWithNotification(itemId, pickupDialogue);
+            }
+
+            // Notify controller
+            NotifyKitchenController(itemId);
+
+            MarkAsCollected(); // Disables the sprite
         }
-
-        // Standard Pickup Logic (for Salt)
-        if (isCollected) return;
-
-        AddItemToInventory(itemId);
-
-        // Notify controller
-        NotifyKitchenController(itemId);
-
-        MarkAsCollected(); // Disables the sprite
+        else
+        {
+            // If this is just an examine object (like the static bowl), just show dialogue
+            ShowDialogue(pickupDialogue);
+        }
     }
 }

@@ -125,6 +125,28 @@ public sealed class EmilyMovement : MonoBehaviour
         // happens here if we try to read _agent.isStopped before the agent is placed on the NavMesh.
         if (_agent == null || !_agent.isOnNavMesh)
         {
+            // SAFETY CHECK: If Emily is not on NavMesh, try to recover
+            if (_agent != null && _agent.enabled)
+            {
+                Debug.LogWarning("[Emily] Not on NavMesh! Attempting recovery...");
+                
+                // Try to find nearest NavMesh position
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
+                {
+                    // Teleport to nearest valid position
+                    transform.position = hit.position;
+                    if (_agent.isActiveAndEnabled)
+                    {
+                        _agent.Warp(hit.position);
+                        Debug.Log($"[Emily] Recovered to NavMesh position: {hit.position}");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("[Emily] Cannot find NavMesh! Emily is stuck!");
+                }
+            }
+            
             _rb.linearVelocity = Vector2.zero;
             return;
         }

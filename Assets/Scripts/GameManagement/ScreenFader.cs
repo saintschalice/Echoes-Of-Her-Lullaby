@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class ScreenFader : MonoBehaviour
@@ -12,6 +13,9 @@ public class ScreenFader : MonoBehaviour
     [Header("Auto Fade In on Start")]
     public bool fadeInOnStart = true;
     public float startDelay = 0.2f;
+
+    [Header("Auto Fade on Scene Load")]
+    public bool fadeInOnSceneLoad = true;
 
     private bool isFading = false;
     private Coroutine currentFadeCoroutine;
@@ -42,12 +46,36 @@ public class ScreenFader : MonoBehaviour
             fadeImage.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 1f); // Start fully black
             fadeImage.raycastTarget = false; // Don't block raycasts when invisible
         }
+
+        // CRITICAL FIX: Subscribe to scene loaded event
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        // Unsubscribe when destroyed
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     void Start()
     {
         if (fadeInOnStart)
         {
+            Invoke(nameof(FadeInOnStart), startDelay);
+        }
+    }
+
+    // CRITICAL FIX: Fade in automatically when a new scene loads
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (fadeInOnSceneLoad && fadeImage != null)
+        {
+            Debug.Log($"[ScreenFader] Scene loaded: {scene.name}, fading in...");
+            
+            // Make sure we start from black
+            fadeImage.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 1f);
+            
+            // Fade in after a short delay
             Invoke(nameof(FadeInOnStart), startDelay);
         }
     }

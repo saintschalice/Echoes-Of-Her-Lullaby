@@ -63,18 +63,45 @@ public class KitchenChaseTrigger : MonoBehaviour
 
         hasTriggered = true;
 
-        // Check if an Emily already exists to avoid duplicates (defensive programming)
+        // CRITICAL FIX: Check if Emily already exists in scene
         EmilyGhost existingEmily = FindFirstObjectByType<EmilyGhost>();
         if (existingEmily != null)
         {
-            Debug.LogWarning("[KitchenChaseTrigger] Emily already exists in scene. Using existing instance instead of spawning new.");
-            // We pass the existing prefab logic, but the Controller might need adaptation if we strictly want to reuse.
-            // Based on Phase 1 Controller, it instantiates. Let's strictly follow the instruction to "Spawn if she doesn't exist".
-            // However, the Controller's method signature expects a PREFAB to instantiate. 
-            // We will proceed with the standard flow, assuming the Controller handles the instantiation.
+            Debug.Log("[KitchenChaseTrigger] Emily already exists in scene. Moving to spawn point and starting intro.");
+            
+            // Disable Emily temporarily
+            existingEmily.enabled = false;
+            var agent = existingEmily.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null) agent.enabled = false;
+            
+            // Move to spawn point
+            if (emilySpawnPoint != null)
+            {
+                existingEmily.transform.position = emilySpawnPoint.position;
+                existingEmily.transform.rotation = emilySpawnPoint.rotation;
+                Debug.Log($"[KitchenChaseTrigger] Moved existing Emily to spawn point: {emilySpawnPoint.position}");
+            }
+            
+            // Re-enable agent
+            if (agent != null) agent.enabled = true;
+            
+            // Start intro with existing Emily
+            KitchenRoomController.Instance.StartEmilyKitchenIntro(other.transform, null, emilySpawnPoint, existingEmily);
         }
-
-        KitchenRoomController.Instance.StartEmilyKitchenIntro(other.transform, emilyPrefab, emilySpawnPoint);
+        else
+        {
+            Debug.Log("[KitchenChaseTrigger] No existing Emily found. Spawning new Emily from prefab.");
+            
+            // Verify prefab is assigned
+            if (emilyPrefab == null)
+            {
+                Debug.LogError("[KitchenChaseTrigger] Emily Prefab is NULL! Cannot spawn Emily. Check Inspector.");
+                return;
+            }
+            
+            // Spawn new Emily via controller
+            KitchenRoomController.Instance.StartEmilyKitchenIntro(other.transform, emilyPrefab, emilySpawnPoint);
+        }
 
         // 5. Cleanup
         // Disable the collider so it cannot be triggered again physically

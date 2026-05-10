@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿// Developer: Jhon Jellar Z. Miranda
+using UnityEngine;
 using UnityEngine.AI;
+using System.Collections; // Needed for IEnumerator
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(NavMeshAgent))]
@@ -27,6 +29,9 @@ public sealed class EmilyGhost : MonoBehaviour
 
     // NEW FLAG: Prevents the "Catch" logic from running infinite times
     bool _hasCaughtPlayer = false;
+
+    // NEW FLAG: Allows the Room Controller to freeze Emily during UI interactions
+    public bool isPaused = false;
 
     EmilyPerception _perception;
     EmilyMovement _move;
@@ -63,7 +68,8 @@ public sealed class EmilyGhost : MonoBehaviour
 
         Debug.Log("[EMILY] Awake on " + gameObject.name);
 
-        SetState(State.Patrol);
+        // Removed SetState(State.Patrol) from here to prevent early NavMesh calls.
+        // OnEnable will handle the initial state safely.
     }
 
 
@@ -71,7 +77,15 @@ public sealed class EmilyGhost : MonoBehaviour
     {
         Debug.Log("[EMILY] Enabled");
         _hasCaughtPlayer = false; // Reset catch state
-        SetState(State.Patrol); // start wandering immediately
+
+        // Delay initialization by 1 frame to prevent NavMesh crash
+        StartCoroutine(InitializeStateNextFrame());
+    }
+
+    private IEnumerator InitializeStateNextFrame()
+    {
+        yield return null; // Wait exactly 1 frame
+        SetState(State.Patrol); // Start wandering safely once NavMesh is ready
     }
 
     void LateUpdate()
@@ -83,7 +97,10 @@ public sealed class EmilyGhost : MonoBehaviour
 
     void Update()
     {
-        // CRITICAL FIX: If we already caught the player, stop updating logic immediately.
+        // CRITICAL FIX 1: If paused by UI, stop thinking entirely
+        if (isPaused) return;
+
+        // CRITICAL FIX 2: If we already caught the player, stop updating logic immediately.
         // This prevents the infinite loop of "Catch Triggered" messages while the game is frozen.
         if (_hasCaughtPlayer) return;
 

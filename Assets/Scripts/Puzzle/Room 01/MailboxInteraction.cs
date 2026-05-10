@@ -182,17 +182,16 @@ public class MailboxInteraction : MonoBehaviour, IInteractable
             SaveSystem.Instance.MarkObjectExamined(MAILBOX_OPENED_ID);
         }
 
+        // FIX: Use AddItemWithNotification instead of AddItem
         if (InventoryManager.Instance != null)
         {
-            InventoryManager.Instance.AddItem(MAIL_ITEM_ID);
+            InventoryManager.Instance.AddItemWithNotification(MAIL_ITEM_ID, "A sealed letter from the mailbox.");
         }
 
         if (TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnMailTaken();
         }
-
-        ShowDialogue("There's a letter inside! I took it and put it in my inventory.");
 
         Debug.Log("Mail added directly to inventory!");
     }

@@ -185,7 +185,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &25882824
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -231,7 +230,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 34ba57a0ceb003b4d845de55006af843, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -241,6 +239,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &25882825
 RectTransform:
@@ -306,13 +305,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenRoomController
   puzzleId: kitchen_cookie_puzzle
-  roomName: Room04_KitchenDining
-  flourObject: {fileID: 719478544}
-  sugarObject: {fileID: 1907774859}
-  vanillaObject: {fileID: 1714008291}
-  chocolateObject: {fileID: 1741958467}
-  eggObject: {fileID: 1741958467}
-  saltObject: {fileID: 754286120}
+  roomName: Room04_Kitchen
   recipeRead: 0
   hasFlour: 0
   hasSugar: 0
@@ -331,57 +324,7 @@ MonoBehaviour:
   introKnockbackDuration: 0.5
   introKnockbackTarget: {x: 2.5, y: 1.2}
   introJumpscareSFX: {fileID: 8300000, guid: 218e6040e060b7946b3b50ebb3c8b0c4, type: 3}
-  scriptedWalkSFX: {fileID: 8300000, guid: ed635f4066c92ee4cb754fea36517fd7, type: 3}
---- !u!1 &114230232
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 114230234}
-  - component: {fileID: 114230233}
-  m_Layer: 0
-  m_Name: SpawnPoint_FromDining
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &114230233
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 114230232}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c86595f0edbbdc40812e6adae5f9a4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoomSpawnPoint
-  roomName: Room04_Kitchen
-  isDefaultSpawnPoint: 0
-  spawnPointID: Room05_DiningRoom
-  matchRotation: 0
-  gizmoColor: {r: 0, g: 1, b: 0, a: 1}
-  gizmoRadius: 0.5
---- !u!4 &114230234
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 114230232}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.53, y: -0.45, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  scriptedWalkSFX: {fileID: 8300000, guid: 828a336dcab0caa4095e072417bbd09f, type: 3}
 --- !u!1 &194147695
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,7 +337,6 @@ GameObject:
   - component: {fileID: 194147696}
   - component: {fileID: 194147698}
   - component: {fileID: 194147699}
-  - component: {fileID: 194147700}
   m_Layer: 0
   m_Name: BridgePlacementTrigger
   m_TagString: Untagged
@@ -404,7 +346,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &194147696
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -450,7 +391,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -460,6 +400,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &194147697
 Transform:
@@ -534,29 +475,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87e7ab374b65ccb40afcd9378b71e711, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BridgePlacement
-  objectId: floorboard_bridge
+  objectId: kitchen_bridge_gap
   interactionRadius: 2
   visualRenderer: {fileID: 0}
   gapBlocker: {fileID: 567864612}
   bridgeVisual: {fileID: 1430568409}
   requiredItemId: floorboard_bridge
-  bridgeSaveID: Room04_Bridge_Completed
-  placeBridgeSound: {fileID: 8300000, guid: 34f9bfada0de28448b1afb00d2c93fe3, type: 3}
---- !u!114 &194147700
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 194147695}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fc20ac1039f4e245adf91e05bbf93b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  bridgeVisual: {fileID: 1430568409}
-  gapBlocker: {fileID: 567864612}
-  uniqueID: Room04_Bridge_Fixed
+  placeBridgeSound: {fileID: 8300000, guid: e20c2bd79b9854c46aff4ce09113cb19, type: 3}
 --- !u!1 &206105266
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,7 +548,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &206105268
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -669,7 +593,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -679,6 +602,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &206105269
 RectTransform:
@@ -765,7 +689,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &291961086
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -811,7 +734,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -821,6 +743,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &291961087
 RectTransform:
@@ -862,7 +785,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &476541642
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -908,7 +830,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 4
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 554ee97aed5e3f942bf2907a9f4cd47d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -918,6 +839,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &476541643
 RectTransform:
@@ -1021,7 +943,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &567864613
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1067,7 +988,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -1077,6 +997,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &567864614
 Transform:
@@ -1205,7 +1126,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &657975785
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1251,7 +1171,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -1261,6 +1180,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &657975786
 RectTransform:
@@ -1302,7 +1222,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &719478546
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1348,7 +1267,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -1358,6 +1276,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &719478547
 RectTransform:
@@ -1463,7 +1382,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &754286122
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1509,7 +1427,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 4
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 5930a955ea736f342bcbf90a77be1b74, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -1519,6 +1436,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &754286123
 RectTransform:
@@ -1634,7 +1552,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &819652066
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1680,7 +1597,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 8888bcf61f27d644484c677d4cae4f4a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -1690,6 +1606,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &819652067
 RectTransform:
@@ -1822,7 +1739,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &1016582357
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1868,7 +1784,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -1878,6 +1793,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1016582358
 RectTransform:
@@ -2166,7 +2082,6 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!483693784 &1329959255
 TilemapRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -2212,7 +2127,6 @@ TilemapRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
@@ -2220,6 +2134,7 @@ TilemapRenderer:
   m_SortOrder: 0
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
+  m_MaskInteraction: 0
 --- !u!1839735485 &1329959256
 Tilemap:
   m_ObjectHideFlags: 0
@@ -4536,7 +4451,7 @@ Transform:
   m_GameObject: {fileID: 1430568409}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.5, y: -0.5, z: 0}
+  m_LocalPosition: {x: 5.5, y: -0.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4544,7 +4459,6 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1430568411
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4590,7 +4504,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 6289eca60c2ef374eb73bf1314e3e861, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4600,6 +4513,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1443452253
 GameObject:
@@ -4622,7 +4536,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &1443452255
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4668,7 +4581,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 4
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 3c6d354cdf97c8046b0f8c8e91db8edb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4678,6 +4590,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1443452256
 RectTransform:
@@ -4828,7 +4741,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &1462650508
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4874,7 +4786,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -4884,6 +4795,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1462650509
 Transform:
@@ -4909,10 +4821,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1462650506}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c738f22ecd57b64418647fe1670877d3, type: 3}
+  m_Script: {fileID: 11500000, guid: ce8b33620d1fc904a83b83ba781172d5, type: 3}
   m_Name: 
+<<<<<<< Updated upstream
+  m_EditorClassIdentifier: Assembly-CSharp::DemoEndTrigger
+=======
   m_EditorClassIdentifier: Assembly-CSharp::RoomExit
   nextSceneName: Room05_DiningRoom
+  targetSpawnPointID: DiningRoom
+  fadeOutDuration: 0.8
+  fadeInDuration: 0.8
+  disablePlayerDuringTransition: 1
+>>>>>>> Stashed changes
 --- !u!1 &1627786646
 GameObject:
   m_ObjectHideFlags: 0
@@ -5030,7 +4950,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &1696361141
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5076,7 +4995,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 23a5131bc24094c4abeb1e949decaec4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -5086,6 +5004,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1696361142
 RectTransform:
@@ -5118,15 +5037,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
-  targetSceneName: Room06_ReturnToHallway
+  targetSceneName: Room03_Hallway
   doorID: Door_Kitchen_Dining_To_Hallway
-  startsLocked: 0
+  startsLocked: 1
   requiredItemId: kitchen_key
   requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 0
-  requireRoom5PuzzleComplete: 1
-  incompletePuzzleMessage: I can't leave yet. I need to finish setting the table.
   targetSpawnPointID: FromKitchen
   spawnOffset: {x: 0, y: 0, z: 0}
   interactionRadius: 1.5
@@ -5135,8 +5052,8 @@ MonoBehaviour:
   lockedIndicator: {fileID: 0}
   interactionPrompt: {fileID: 0}
   lockedDoorSound: {fileID: 8300000, guid: 0fe64e4d5e490b147a5c0fc184e2a80a, type: 3}
-  unlockDoorSound: {fileID: 8300000, guid: 7feb924835950af479b310dc77eb0397, type: 3}
-  doorOpenSound: {fileID: 8300000, guid: 04057423e9d43b74889ba9f534b03aec, type: 3}
+  unlockDoorSound: {fileID: 0}
+  doorOpenSound: {fileID: 0}
   doorAnimator: {fileID: 0}
   openTrigger: Open
   transitionDelay: 1.5
@@ -5162,7 +5079,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &1714008292
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5208,7 +5124,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -5218,6 +5133,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1714008293
 RectTransform:
@@ -5320,7 +5236,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &1715172121
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5366,7 +5281,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: a7ccf36e73eef4c47b2f2816a8f6779b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5376,6 +5290,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1715172122
 Transform:
@@ -5459,7 +5374,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &1735144559
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5505,7 +5419,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 8888bcf61f27d644484c677d4cae4f4a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
@@ -5515,6 +5428,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1735144560
 RectTransform:
@@ -5577,7 +5491,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &1741958468
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5623,7 +5536,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -5633,6 +5545,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1741958469
 RectTransform:
@@ -5737,7 +5650,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &1743719871
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5783,7 +5695,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -5793,6 +5704,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1743719872
 RectTransform:
@@ -5910,7 +5822,6 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!483693784 &1846786874
 TilemapRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5956,7 +5867,6 @@ TilemapRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
@@ -5964,6 +5874,7 @@ TilemapRenderer:
   m_SortOrder: 0
   m_Mode: 0
   m_DetectChunkCullingBounds: 0
+  m_MaskInteraction: 0
 --- !u!1839735485 &1846786875
 Tilemap:
   m_ObjectHideFlags: 0
@@ -10221,7 +10132,7 @@ GameObject:
   - component: {fileID: 1856008054}
   - component: {fileID: 1856008053}
   - component: {fileID: 1856008052}
-  - component: {fileID: 1856008057}
+  - component: {fileID: 1856008055}
   m_Layer: 0
   m_Name: Trigger_EmilyChase
   m_TagString: Untagged
@@ -10277,7 +10188,6 @@ BoxCollider2D:
   m_EdgeRadius: 0
 --- !u!212 &1856008053
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -10323,7 +10233,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 8
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -10333,6 +10242,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &1856008054
 Transform:
@@ -10349,7 +10259,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1856008057
+--- !u!114 &1856008055
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10360,7 +10270,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c98d7b2d95f78494893c87c399a7c1ce, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KitchenChaseTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::EmilyChaseTrigger
   emilyPrefab: {fileID: 5862906431052648368, guid: 03df2e4908104da4188c7392eb963e88, type: 3}
   emilySpawnPoint: {fileID: 1328745560}
   hasTriggered: 0
@@ -10385,7 +10295,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &1907774861
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -10431,7 +10340,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f6e5041d112065446889d500687a5ad9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -10441,6 +10349,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &1907774862
 RectTransform:
@@ -10543,7 +10452,6 @@ GameObject:
   m_IsActive: 1
 --- !u!212 &2034927233
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -10589,7 +10497,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 4
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 8b00926e62ab50844acada3e5925657a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -10599,6 +10506,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!224 &2034927234
 RectTransform:
@@ -10659,7 +10567,6 @@ MonoBehaviour:
   m_AffectedAgents: ffffffff
 --- !u!212 &2077772124
 SpriteRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -10705,7 +10612,6 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
@@ -10715,6 +10621,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &2077772125
 Transform:
@@ -10928,7 +10835,6 @@ SceneRoots:
   - {fileID: 1352800461}
   - {fileID: 1094184460}
   - {fileID: 1627786648}
-  - {fileID: 114230234}
   - {fileID: 1696361142}
   - {fileID: 819652067}
   - {fileID: 1735144560}
