@@ -76,4 +76,39 @@ public static class Room09_Dialogues
     // ==================== PREREQUISITES ====================
     public static readonly string NEED_SOLVE_MIRRORS = "I need to solve all four mirrors to unlock the master bedroom.";
     public static readonly string MIRROR_INCOMPLETE = "This mirror isn't complete yet. I need to finish the puzzle.";
+    
+    // ==================== ENDING CUTSCENE (20 DIALOGUES) ====================
+    // Final realization (1-3)
+    public static readonly string ENDING_1 = "All four mirrors... they show the complete truth.";
+    public static readonly string ENDING_2 = "Mother planned everything. The medications. The note. The timeline. The execution.";
+    public static readonly string ENDING_3 = "She was going to kill me that night. And herself. A murder-suicide.";
+    
+    // Understanding Emily (4-6)
+    public static readonly string ENDING_4 = "Emily... she saved me. That night, she manifested fully to stop mother.";
+    public static readonly string ENDING_5 = "But every time she protected me, she absorbed more of mother's rage. Her methods. Her violence.";
+    public static readonly string ENDING_6 = "'I became what I fought against... to keep you alive.'";
+    
+    // Mother's plan revealed (7-9)
+    public static readonly string ENDING_7 = "The rope was to restrain me. The pills to sedate me. The knife to... end it.";
+    public static readonly string ENDING_8 = "Mother saw my defiance as a disease. Emily as a demon. Both needed to be eliminated.";
+    public static readonly string ENDING_9 = "She couldn't control me anymore. So she decided to end us both.";
+    
+    // Emily's sacrifice (10-12)
+    public static readonly string ENDING_10 = "'I stopped her that night. But I couldn't save her from herself. She took her own life after I intervened.'";
+    public static readonly string ENDING_11 = "Emily saved me... but at the cost of becoming a monster herself.";
+    public static readonly string ENDING_12 = "'Every scar you carry... I put there trying to protect you the only way I learned how.'";
+    
+    // Forgiveness (13-15)
+    public static readonly string ENDING_13 = "You were never the monster, Emily. You were a child too. Trying to save another child.";
+    public static readonly string ENDING_14 = "Mother's violence... it infected us both. But you fought it. You tried to break the cycle.";
+    public static readonly string ENDING_15 = "'Thank you... for finally understanding. For finally letting me rest.'";
+    
+    // Emily fades away (16-18)
+    public static readonly string ENDING_16 = "Emily's form... it's fading. Becoming light. Peaceful.";
+    public static readonly string ENDING_17 = "She's smiling. For the first time, she looks... free.";
+    public static readonly string ENDING_18 = "The bathroom is quiet now. The water still. The mirrors dark.";
+    
+    // Final words (19-20)
+    public static readonly string ENDING_19 = "I understand now. The echoes of her lullaby weren't a threat. They were a cry for help.";
+    public static readonly string ENDING_20 = "Rest now, Emily. You've protected me long enough. We're both free now.";
 }

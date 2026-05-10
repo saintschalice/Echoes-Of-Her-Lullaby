@@ -24,12 +24,11 @@ public class Room09_FlowController : MonoBehaviour
     public GameObject emilyManifestation; // Full power Emily
     public bool emilyHasCollapsed = false;
     
-    [Header("Master Bedroom Door")]
-    public GameObject masterBedroomDoor;
-    public bool canEnterMasterBedroom = false;
+    [Header("Ending Trigger")]
+    public bool canTriggerEnding = false;
     
     [Header("Scene Transition")]
-    public string nextSceneName = "Room10_MasterBedroom";
+    public string mainMenuSceneName = "MainMenu";
     
     [Header("Audio")]
     public AudioSource ambientAudio;
@@ -254,71 +253,134 @@ public class Room09_FlowController : MonoBehaviour
         
         yield return new WaitForSeconds(1f);
         
-        // Door unlocks
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.DOOR_UNLOCKS, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
+        yield return new WaitForSeconds(1f);
         
-        // Unlock door
-        isDoorLocked = false;
-        canEnterMasterBedroom = true;
-        
-        // Re-enable player
-        JoystickPlayerController player = JoystickPlayerController.Instance;
-        GameObject joystick = GameObject.Find("Joystick");
-        
-        if (player != null) player.enabled = true;
-        if (joystick != null) joystick.SetActive(true);
+        // Trigger ending cutscene automatically
+        canTriggerEnding = true;
+        StartCoroutine(EndingCutsceneSequence());
     }
 
-    // Called when player interacts with master bedroom door
-    public void EnterMasterBedroom()
+    // ENDING CUTSCENE - Final revelation and game completion
+    System.Collections.IEnumerator EndingCutsceneSequence()
     {
-        if (!canEnterMasterBedroom)
-        {
-            DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.NEED_SOLVE_MIRRORS, "Lisa");
-            return;
-        }
+        yield return new WaitForSeconds(1f);
         
-        StartCoroutine(TransitionToMasterBedroom());
-    }
-
-    System.Collections.IEnumerator TransitionToMasterBedroom()
-    {
-        // Disable player
-        JoystickPlayerController player = JoystickPlayerController.Instance;
-        GameObject joystick = GameObject.Find("Joystick");
+        // ENDING DIALOGUE SEQUENCE (20 lines)
         
-        if (player != null) player.enabled = false;
-        if (joystick != null) joystick.SetActive(false);
+        // 1-3: Final realization
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_1, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
         
-        // Final approach dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.APPROACH_DOOR_1, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_2, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
         
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.APPROACH_DOOR_2, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.APPROACH_DOOR_3, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_3, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
         
         yield return new WaitForSeconds(1f);
         
-        // Save progress
-        SaveSystem.Instance?.MarkPuzzleSolved("room09_all_mirrors");
+        // 4-6: Understanding Emily
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_4, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
         
-        // Load next scene
-        SceneManager.LoadScene(nextSceneName);
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_5, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_6, "Emily");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        yield return new WaitForSeconds(0.5f);
+        
+        // 7-9: Mother's plan revealed
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_7, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_8, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_9, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        yield return new WaitForSeconds(1f);
+        
+        // 10-12: Emily's sacrifice
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_10, "Emily");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_11, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_12, "Emily");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        yield return new WaitForSeconds(0.5f);
+        
+        // 13-15: Forgiveness
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_13, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_14, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_15, "Emily");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        yield return new WaitForSeconds(1f);
+        
+        // 16-18: Emily fades away
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_16, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        // Fade Emily completely
+        if (emilyManifestation != null)
+        {
+            SpriteRenderer sr = emilyManifestation.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                float elapsed = 0f;
+                Color c = sr.color;
+                while (elapsed < 3f)
+                {
+                    elapsed += Time.deltaTime;
+                    c.a = Mathf.Lerp(0.2f, 0f, elapsed / 3f);
+                    sr.color = c;
+                    yield return null;
+                }
+                emilyManifestation.SetActive(false);
+            }
+        }
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_17, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_18, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        yield return new WaitForSeconds(2f);
+        
+        // 19-20: Final words
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_19, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ENDING_20, "Lisa");
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive()) yield return null;
+        
+        yield return new WaitForSeconds(2f);
+        
+        // Fade to black
+        ScreenFader fader = ScreenFader.Instance;
+        if (fader != null)
+        {
+            fader.FadeOut(2f);
+            yield return new WaitForSeconds(2f);
+        }
+        
+        // Save game completion
+        SaveSystem.Instance?.MarkPuzzleSolved("game_complete");
+        
+        yield return new WaitForSeconds(1f);
+        
+        // Return to main menu
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 }

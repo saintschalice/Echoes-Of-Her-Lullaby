@@ -11,24 +11,24 @@
 - All merge conflicts resolved
 - All duplicate files removed
 - All compilation errors fixed
-- Room 09 and Room 10 scripts complete
+- **Room 09 is the FINAL ROOM with complete ending cutscene**
 - All documentation ready
 
 ### ⏳ WHAT NEEDS SETUP:
-- Room 09 scene (4 mirror puzzles)
-- Room 10 scene (final revelation)
+- Room 09 scene (4 mirror puzzles + ending cutscene)
 - Unity GameObjects and UI panels
+- Visual and audio assets
 
 ---
 
 ## 📁 PROJECT STRUCTURE
 
-### **ROOM 09: Master Bedroom's Bathroom** (4 Mirror Puzzles)
+### **ROOM 09: Master Bedroom's Bathroom** (FINAL ROOM)
 **Location**: `Assets/Scripts/Puzzle/Room 09/`
 
 **Scripts Available**:
-- ✅ `Room09_FlowController.cs` - Main controller
-- ✅ `Room09_Dialogues.cs` - All dialogues
+- ✅ `Room09_FlowController.cs` - Main controller with ending cutscene
+- ✅ `Room09_Dialogues.cs` - All dialogues + 20 ending dialogues
 - ✅ `Mirror1_MedicineCabinet.cs` - First puzzle
 
 **Scripts Needed**:
@@ -39,32 +39,20 @@
 
 **Documentation**:
 - ✅ `START_HERE.md` - Quick overview
+- ✅ `ROOM09_FINAL_ROOM_GUIDE_TAGALOG.md` ⭐ - **COMPLETE GUIDE (NEW!)**
 - ✅ `ROOM09_DESIGNER_FLOW_TAGALOG.md` - Detailed flow (Tagalog)
 - ✅ `ROOM09_COMPLETE_DESIGN.md` - Technical design
 - ✅ `ROOM09_SUMMARY.md` - Package summary
 - ✅ `ROOM09_ASSETS_AND_FLOW.md` - Assets and flow
 
-**Concept**: Lisa trapped in bathroom with full-power Emily. Must solve 4 mirror puzzles (60-90 seconds each) to reveal mother's murder plan. Emily attacks if timeout. All 4 complete → Emily breaks down → Door unlocks → Enter Room 10.
+**Concept**: Lisa trapped in bathroom with full-power Emily. Must solve 4 mirror puzzles (60-90 seconds each) to reveal mother's murder plan. Emily attacks if timeout. All 4 complete → Emily breaks down → **ENDING CUTSCENE (20 dialogues)** → Emily fades away → Fade to black → **RETURN TO MAIN MENU** → **GAME COMPLETE!**
 
 ---
 
-### **ROOM 10: Master Bedroom** (Final Revelation)
-**Location**: `Assets/Scripts/Puzzle/Room 10/`
-
-**Scripts Available**:
-- ✅ `Room10_FlowController.cs` - Main controller (10 phases)
-- ✅ `Room10_Dialogues.cs` - 60+ dialogues
-- ✅ `Room10_Interactable.cs` - Object interactions
-
-**Documentation**:
-- ✅ `START_HERE.md` - Quick overview
-- ✅ `ROOM10_DESIGNER_FLOW_TAGALOG.md` - Detailed flow (Tagalog)
-- ✅ `ROOM10_COMPLETE_DESIGN.md` - Technical design
-- ✅ `ROOM10_ASSETS_AND_FLOW.md` - Assets and flow
-- ✅ `ROOM10_VISUAL_FLOWCHART.md` - Visual flowchart
-- ✅ `ROOM10_PACKAGE_COMPLETE.md` - Package complete
-
-**Concept**: Final room. Lisa enters master bedroom, Emily blocks her, explores room, finds 4 objects (music box, diary, rope, knife), each triggers flashback revealing truth. Music box plays lullaby → Lisa forgives Emily → Emily fades → Game complete → Credits.
+### **⚠️ ROOM 10: DELETED / NOT USED**
+**Status**: Room 10 folder exists but is NOT used in the game
+**Reason**: Game ends after Room 09 with complete ending cutscene
+**Action**: Can be ignored or deleted
 
 ---
 
@@ -73,13 +61,16 @@
 ```
 Room 08 (Lisa's Bathroom)
     ↓
-Room 09 (Master Bedroom's Bathroom) - 4 Mirror Puzzles
+Room 09 (Master Bedroom's Bathroom) - FINAL ROOM
+    ├─ 4 Mirror Puzzles
+    ├─ Emily's Breakdown
+    └─ Ending Cutscene (20 dialogues)
     ↓
-Room 10 (Master Bedroom) - Final Revelation
-    ↓
-Ending Cutscene / Credits
+Fade to Black
     ↓
 Main Menu
+    ↓
+GAME COMPLETE! 🎉
 ```
 
 ---
@@ -155,23 +146,18 @@ Unity shows warning about missing `PhotoFrame_Manager` script because:
 
 ## 📚 DOCUMENTATION AVAILABLE
 
-### Room 09 Guides:
-1. **START_HERE.md** ⭐ - Read this first!
-2. **ROOM09_DESIGNER_FLOW_TAGALOG.md** ⭐ - For designer (detailed, Tagalog)
-3. **ROOM09_COMPLETE_DESIGN.md** - Technical specs
-4. **ROOM09_SUMMARY.md** - Package summary
-5. **ROOM09_ASSETS_AND_FLOW.md** - Assets and flow
+### Room 09 Guides (FINAL ROOM):
+1. **ROOM09_FINAL_ROOM_GUIDE_TAGALOG.md** ⭐⭐⭐ - **READ THIS FIRST!** (Complete guide, Tagalog)
+2. **START_HERE.md** ⭐ - Quick overview
+3. **ROOM09_DESIGNER_FLOW_TAGALOG.md** - Detailed puzzle flow (Tagalog)
+4. **ROOM09_COMPLETE_DESIGN.md** - Technical specs
+5. **ROOM09_SUMMARY.md** - Package summary
+6. **ROOM09_ASSETS_AND_FLOW.md** - Assets and flow
 
-### Room 10 Guides:
-1. **START_HERE.md** ⭐ - Read this first!
-2. **ROOM10_DESIGNER_FLOW_TAGALOG.md** ⭐ - For designer (detailed, Tagalog)
-3. **ROOM10_COMPLETE_DESIGN.md** - Technical specs
-4. **ROOM10_VISUAL_FLOWCHART.md** - Visual flowchart
-5. **ROOM10_ASSETS_AND_FLOW.md** - Assets and flow
-
-### Combined Guides:
-1. **ROOM_09_10_QUICK_REFERENCE.md** - Side-by-side comparison
-2. **ROOM_09_10_COMBINED_SUMMARY.md** - Combined overview
+### ⚠️ Room 10 Guides (NOT USED):
+- Room 10 documentation exists but is NOT part of the game
+- Game ends after Room 09
+- Can be ignored
 
 ---
 
@@ -185,34 +171,19 @@ Unity shows warning about missing `PhotoFrame_Manager` script because:
 4. If PhotoFrame warning appears, restart Unity (it will auto-fix)
 ```
 
-### **STEP 2: Choose Which Room to Complete First**
+### **STEP 2: Read the Complete Guide**
 
-**Option A: Room 10 First** (Easier - scripts complete)
-```
-1. Read: Assets/Scripts/Puzzle/Room 10/START_HERE.md
-2. Follow setup guide
-3. Create GameObjects and UI
-4. Test complete flow
-5. Then tackle Room 09
-```
+**READ THIS**: `Assets/Scripts/Puzzle/Room 09/ROOM09_FINAL_ROOM_GUIDE_TAGALOG.md` ⭐⭐⭐
 
-**Option B: Room 09 First** (Harder - needs more scripts)
-```
-1. Read: Assets/Scripts/Puzzle/Room 09/START_HERE.md
-2. Request remaining 3 mirror puzzle scripts
-3. Create GameObjects and UI panels
-4. Test all 4 puzzles
-5. Then do Room 10
-```
+This guide contains:
+- Complete Room 09 flow
+- All 4 puzzle details
+- Ending cutscene breakdown (20 dialogues)
+- Unity setup steps
+- Asset requirements
+- Everything you need!
 
-**Option C: Parallel** (If you have multiple people)
-```
-1. One person: Room 09 puzzles
-2. Another person: Room 10 assets
-3. Combine and test together
-```
-
-### **STEP 3: Request Missing Scripts** (If doing Room 09 first)
+### **STEP 3: Request Missing Scripts**
 ```
 Tell me: "Create remaining Room 09 scripts"
 
@@ -226,15 +197,15 @@ I will create:
 ### **STEP 4: Gather Assets**
 ```
 Visual Assets:
-- Emily sprites (full power, translucent)
+- Emily sprites (full power, translucent, fading)
 - Mirror sprites (4 different mirrors)
 - Puzzle items (bottles, notes, diary pages, evidence)
-- Flashback images (9 images for Room 10)
+- Flashback images (4 images for evidence sequence)
 - UI panels
 
 Audio Assets:
-- Tense music
-- Lullaby music
+- Tense music (puzzle phase)
+- Peaceful music (ending cutscene)
 - Puzzle sounds
 - Emily sounds
 - Success/failure sounds
@@ -242,33 +213,30 @@ Audio Assets:
 
 ### **STEP 5: Setup in Unity**
 ```
-1. Create GameObjects
-2. Assign scripts
-3. Setup UI panels
-4. Assign references
-5. Test each puzzle/phase
-6. Balance difficulty
-7. Polish
+1. Create Room09 scene
+2. Create GameObjects
+3. Assign scripts
+4. Setup UI panels
+5. Assign references
+6. Test puzzles
+7. Test ending cutscene
+8. Polish
 ```
 
 ### **STEP 6: Test Complete Game**
 ```
-1. Play from Room 01 to Room 10
+1. Play from Room 01 to Room 09
 2. Test all puzzles
-3. Test all dialogues
-4. Test save/load
-5. Test Emily AI
-6. Fix bugs
+3. Test ending cutscene
+4. Verify return to main menu
+5. Fix bugs
 ```
 
-### **STEP 7: Polish and Release**
+### **STEP 7: Release!**
 ```
-1. Add sound effects
-2. Add music
-3. Add visual effects
-4. Balance difficulty
-5. Test with real players
-6. BUILD AND RELEASE! 🚀
+1. Final polish
+2. Test with real players
+3. BUILD AND RELEASE! 🚀
 ```
 
 ---
@@ -281,42 +249,37 @@ Audio Assets:
 - Camera follows player automatically
 - All UI should be in Persistent Scene or room-specific Canvas
 
-### **About Room Flow:**
+### **About Game Flow**:
 ```
-Room 08 → Room 09 → Room 10 → Ending → Main Menu
+Room 08 → Room 09 (FINAL) → Ending Cutscene → Main Menu
 ```
 
-### **About Emily:**
+### **About Emily**:
 - Room 09: Full power, solid, terrifying
-- Room 10: Blocks player, then becomes translucent, finally fades away
+- After puzzles: Translucent, collapsed
+- Ending: Fades into light, peaceful
 
-### **About Puzzles:**
-- Room 09: 4 mirror puzzles (60-90 seconds each)
-- Room 10: No puzzles, story-driven exploration
-
-### **About Ending:**
-- Room 10 ends with Emily fading away
+### **About Ending**:
+- Room 09 ends with 20-dialogue ending cutscene
 - Lisa forgives Emily
-- Game complete
-- Credits roll
+- Emily fades away peacefully
+- Fade to black
 - Return to Main Menu
+- **GAME COMPLETE!**
 
 ---
 
 ## 📊 COMPLETION STATUS
 
 ### Scripts:
-- Room 09: **40% complete** (1 of 4 puzzle scripts + controller)
-- Room 10: **100% complete** ✅ (all scripts ready)
+- Room 09: **50% complete** (2 of 5 scripts: controller + dialogues with ending)
 - Other Rooms: **100% complete** ✅
 
 ### Documentation:
-- Room 09: **100% complete** ✅
-- Room 10: **100% complete** ✅
+- Room 09: **100% complete** ✅ (including final room guide)
 
 ### Unity Setup:
 - Room 09: **0% complete** ⏳ (needs scene setup)
-- Room 10: **0% complete** ⏳ (needs scene setup)
 
 ### Assets:
 - Visual: **0% complete** ⏳ (needs creation)
@@ -331,13 +294,8 @@ Room 08 → Room 09 → Room 10 → Ending → Main Menu
 Tell me: "Create remaining Room 09 scripts"
 Or: "Explain Room 09 puzzle [number]"
 Or: "How to setup Room 09 in Unity"
-```
-
-### For Room 10:
-```
-Tell me: "Explain Room 10 flow"
-Or: "How to setup Room 10 in Unity"
-Or: "What are the 9 flashback images"
+Or: "Show me ending cutscene details"
+Or: "What are the 20 ending dialogues"
 ```
 
 ### For Errors:
@@ -355,25 +313,26 @@ Or: "PhotoFrame warning won't go away"
 - ✅ All compilation errors fixed
 - ✅ All merge conflicts resolved
 - ✅ All duplicate files removed
-- ✅ Room 09 partially complete (needs 3 more puzzle scripts)
-- ✅ Room 10 fully complete (all scripts ready)
-- ✅ All documentation ready
+- ✅ **Room 09 is now FINAL ROOM with complete ending cutscene**
+- ✅ Room09_FlowController updated with 20-dialogue ending
+- ✅ Room09_Dialogues updated with ending dialogues
+- ✅ Complete guide created (ROOM09_FINAL_ROOM_GUIDE_TAGALOG.md)
+- ⏳ Room 09 needs 3 more puzzle scripts
 
 ### **What You Need to Do**:
 1. Restart Unity (to clear PhotoFrame warning)
-2. Choose which room to complete first
-3. Request remaining scripts if needed
+2. **Read**: `ROOM09_FINAL_ROOM_GUIDE_TAGALOG.md` ⭐
+3. Request remaining 3 puzzle scripts
 4. Gather visual/audio assets
-5. Setup scenes in Unity
+5. Setup Room 09 scene in Unity
 6. Test and polish
 7. Release! 🚀
 
 ### **Estimated Time to Complete**:
-- Room 09 setup: 4-6 hours
-- Room 10 setup: 2-3 hours
+- Room 09 setup: 6-8 hours
 - Asset creation: 8-12 hours
 - Testing and polish: 4-6 hours
-- **Total: 18-27 hours**
+- **Total: 18-26 hours**
 
 ---
 
@@ -390,10 +349,20 @@ Just need to setup the final two rooms and you're ready to release! 🚀
 **To continue working:**
 ```
 "Create remaining Room 09 scripts"
-"Explain Room 10 setup"
+"Explain Room 09 ending cutscene"
 "Show me Room 09 puzzle [1-4] details"
-"How to create flashback panel"
-"What assets do I need for Room [09/10]"
+"How to create puzzle panels"
+"What assets do I need for Room 09"
+"Show me the 20 ending dialogues"
 ```
 
 **Ready when you are!** 🎮
+
+---
+
+**🎉 YOUR GAME IS ALMOST COMPLETE! 🎉**
+
+Room 09 is the final room with a beautiful ending cutscene. Just need to create the remaining puzzle scripts and setup the scene!
+
+**KAYA MO YAN!** 💪✨🚀
+
