@@ -267,30 +267,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 32290617}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6002db8e9548af0478eab658a5104cea, type: 3}
+  m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
+  m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
   targetSceneName: Room07_Lisa'sBedroom
-  doorID: Door_Hallway_To_LisaBedroom
+  doorID: Hallway_To_Lisa'sBedroom
   startsLocked: 1
   requiredItemId: bedroom_key
-  consumeKeyOnUse: 1
+  requiredItemName: 
+  consumeKeyOnUse: 0
   unlockPermanently: 1
-  requirePhotoInteraction: 1
-  photoPrefsKey: R06_PhotoInteracted
-  lockedDialogue: Lisa's Bedroom? It's locked...
-  missingPhotoDialogue: It's locked. But I feel like I should look around this hallway
-    first...
-  successDialogue: The key fits! The door is unlocked.
+  requireRoom5PuzzleComplete: 0
+  incompletePuzzleMessage: I can't leave yet. I need to finish setting the table.
   targetSpawnPointID: Main
   spawnOffset: {x: 0, y: 0, z: 0}
   interactionRadius: 1.5
   requiredTag: Player
+  usePhysicalCollider: 1
   lockedIndicator: {fileID: 0}
   interactionPrompt: {fileID: 0}
-  lockedDoorSound: {fileID: 8300000, guid: 0fe64e4d5e490b147a5c0fc184e2a80a, type: 3}
-  unlockDoorSound: {fileID: 8300000, guid: 7feb924835950af479b310dc77eb0397, type: 3}
+  lockedDoorSound: {fileID: 0}
+  unlockDoorSound: {fileID: 0}
   doorOpenSound: {fileID: 0}
+  doorAnimator: {fileID: 0}
+  openTrigger: Open
   transitionDelay: 1.5
   useFadeTransition: 1
 --- !u!1 &101973299
@@ -11383,7 +11383,6 @@ GameObject:
   - component: {fileID: 1870391632}
   - component: {fileID: 1870391631}
   - component: {fileID: 1870391630}
-  - component: {fileID: 1870391629}
   m_Layer: 10
   m_Name: PhotoFrame_Trigger
   m_TagString: Untagged
@@ -11391,27 +11390,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1870391629
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1870391628}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93b558661c84a9145bfed598b61bbe34, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  interactionRange: 2
-  photoUIPanel: {fileID: 422897939}
-  photoUIImage: {fileID: 1692421386}
-  normalPhoto: {fileID: -4945901881068298925, guid: 4d9e715fc755de94a900dbbc484bde54, type: 3}
-  distortedPhoto: {fileID: -5698186591133975730, guid: e2ae67684b043e9449becb7cc7ec7192, type: 3}
-  dialogueBeforeScare: ...This Place. I remember this.
-  dialogueDuringScare: No... that's not right.
-  dialogueAfterScare: It's getting worse...
-  transformationSound: {fileID: 0}
 --- !u!61 &1870391630
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -11446,7 +11424,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -1.6660478}
+  m_Offset: {x: 0, y: -0.473675}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -11456,7 +11434,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.37, y: 5.9920955}
+  m_Size: {x: 3.37, y: 3.6073499}
   m_EdgeRadius: 0
 --- !u!212 &1870391631
 SpriteRenderer:

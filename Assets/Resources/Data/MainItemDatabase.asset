@@ -262,8 +262,6 @@ MonoBehaviour:
     triggersMemory: 0
     memoryFragmentId: 
     requiredForPuzzle: kitchen_cookie_puzzle
-<<<<<<< Updated upstream
-=======
   - itemId: spoon
     itemName: Silver Spoon
     description: A shiny spoon from the cabinet.
@@ -407,4 +405,3 @@ MonoBehaviour:
     triggersMemory: 0
     memoryFragmentId: 
     requiredForPuzzle: 
->>>>>>> Stashed changes

@@ -276,11 +276,6 @@ public class KitchenRoomController : MonoBehaviour
 
         // NOW enable Emily AI component
         emilyInstance.enabled = true;
-<<<<<<< Updated upstream
-
-        if (isPlayerHidden) emilyInstance.SetStateExternal(EmilyGhost.State.Search);
-        else emilyInstance.SetStateExternal(EmilyGhost.State.Hunt);
-=======
         
         // CRITICAL: Wait for Emily's OnEnable to complete initialization
         yield return new WaitForEndOfFrame();
@@ -290,7 +285,6 @@ public class KitchenRoomController : MonoBehaviour
         emilyInstance.SetStateExternal(targetState);
         
         Debug.Log($"[KitchenController] Emily AI fully enabled. State: {targetState}");
->>>>>>> Stashed changes
 
         emilyIntroDone = true;
         introInProgress = false;
@@ -369,8 +363,6 @@ public class KitchenRoomController : MonoBehaviour
         }
         if (anim != null) anim.SetBool("isWalking", false);
     }
-<<<<<<< Updated upstream
-=======
 
     [ContextMenu("Reset Kitchen Puzzle")]
     public void ResetPuzzle()
@@ -406,14 +398,6 @@ public class KitchenRoomController : MonoBehaviour
         isPlayerHidden = false;
         introInProgress = false;
 
-        if (flourObject != null) flourObject.SetActive(true);
-        if (sugarObject != null) sugarObject.SetActive(true);
-        if (vanillaObject != null) vanillaObject.SetActive(true);
-        if (chocolateObject != null) chocolateObject.SetActive(true);
-        if (eggObject != null) eggObject.SetActive(true);
-        if (saltObject != null) saltObject.SetActive(true);
-
-        Debug.Log("DEBUG: Kitchen Puzzle Reset! (NOTE: Kung nasa SaveSystem pa rin ang items mo, baka kailangan mong i-clear din ang main save data mo).");
+        Debug.Log("DEBUG: Kitchen Puzzle Reset!");
     }
->>>>>>> Stashed changes
 }
