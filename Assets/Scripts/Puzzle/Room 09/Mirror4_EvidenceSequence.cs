@@ -37,7 +37,7 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
     private bool isPuzzleSolved = false;
     
     // Correct sequence: Rope → Pills → Knife → BloodyTowel
-    private string[] correctSequence = { "Rope", "Pills", "Knife", "BloodyTowel" };
+    private string[] correctSequence = { "Evidence_Rope", "Evidence_Pills", "Evidence_Knife", "Evidence_Towel" };
     private Dictionary<int, string> frameContents = new Dictionary<int, string>(); // frameIndex → itemName
     
     // Currently dragging
@@ -329,6 +329,58 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
         
         // Hide flashback
         flashbackImage.gameObject.SetActive(false);
+    }
+
+    // Called by DraggableItem system (puzzleNumber = 4)
+    public void OnItemPlacedInFrame(GameObject slot, string itemId)
+    {
+        Debug.Log($"[Mirror4] OnItemPlacedInFrame: {itemId} → {slot.name}");
+
+        // Find which frame index this slot corresponds to
+        int frameIndex = -1;
+        for (int i = 0; i < pictureFrames.Length; i++)
+        {
+            if (pictureFrames[i] != null && pictureFrames[i].gameObject == slot)
+            {
+                frameIndex = i;
+                break;
+            }
+        }
+
+        if (frameIndex == -1)
+        {
+            Debug.LogWarning($"[Mirror4] Slot '{slot.name}' not found in pictureFrames array!");
+            return;
+        }
+
+        // If another item was already in this frame, remove it from tracking
+        if (!string.IsNullOrEmpty(frameContents[frameIndex]))
+        {
+            Debug.Log($"[Mirror4] Replacing '{frameContents[frameIndex]}' in Frame {frameIndex} with '{itemId}'");
+        }
+
+        // Update frame contents
+        frameContents[frameIndex] = itemId;
+
+        // Play sound
+        if (itemPlaceSound != null)
+        {
+            AudioManager.Instance?.PlaySFX(itemPlaceSound);
+        }
+
+        // Show flashback if correct placement
+        if (IsCorrectPlacement(frameIndex, itemId))
+        {
+            Debug.Log($"[Mirror4] ✅ Correct! {itemId} in Frame {frameIndex}");
+            StartCoroutine(ShowFlashback(frameIndex));
+        }
+        else
+        {
+            Debug.Log($"[Mirror4] ❌ Wrong placement: {itemId} in Frame {frameIndex}");
+        }
+
+        // Check if puzzle is solved
+        CheckSolution();
     }
 
     void CheckSolution()
