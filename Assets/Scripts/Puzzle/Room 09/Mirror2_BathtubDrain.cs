@@ -20,6 +20,8 @@ public class Mirror2_BathtubDrain : MonoBehaviour
     public GameObject puzzlePanel;
     public TextMeshProUGUI timerText;
     public Button drainCoverButton; // DrainCover_Button
+    public GameObject bathtubContainer; // Container with bathtub + button (will hide after draining)
+    public GameObject notePiecesContainer; // Container with torn pages (will show after draining)
     public Transform[] assemblySlots; // 4 slots for note pieces (Slot_1 to Slot_4)
     
     [Header("Puzzle Settings")]
@@ -48,7 +50,7 @@ public class Mirror2_BathtubDrain : MonoBehaviour
 
     private void Start()
     {
-        // Hide panel at start
+        // Hide ENTIRE panel at start (including bathtub)
         if (puzzlePanel != null) puzzlePanel.SetActive(false);
         
         // Setup drain cover button
@@ -98,8 +100,12 @@ public class Mirror2_BathtubDrain : MonoBehaviour
         currentTime = timeLimit;
         drainCoverRemoved = false;
         
-        // Show panel
+        // Show panel (with bathtub visible, notes hidden)
         if (puzzlePanel != null) puzzlePanel.SetActive(true);
+        
+        // Show bathtub, hide notes at start
+        if (bathtubContainer != null) bathtubContainer.SetActive(true);
+        if (notePiecesContainer != null) notePiecesContainer.SetActive(false);
         
         // Disable player movement
         PauseGame();
@@ -163,7 +169,7 @@ public class Mirror2_BathtubDrain : MonoBehaviour
             Debug.Log("[Mirror2] Bathtub sprite changed to empty");
         }
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(1.5f);
         
         // Show dialogue about finding torn notes
         DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.MIRROR2_DRAIN_OPEN, "Lisa");
@@ -176,6 +182,21 @@ public class Mirror2_BathtubDrain : MonoBehaviour
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             yield return null;
+        }
+        
+        yield return new WaitForSeconds(0.5f);
+        
+        // HIDE BATHTUB, SHOW TORN PAGES
+        Debug.Log("[Mirror2] Hiding bathtub, showing torn pages");
+        
+        if (bathtubContainer != null)
+        {
+            bathtubContainer.SetActive(false); // Hide entire bathtub
+        }
+        
+        if (notePiecesContainer != null)
+        {
+            notePiecesContainer.SetActive(true); // Show torn pages
         }
         
         Debug.Log("[Mirror2] Water drained! Now assemble the torn notes.");
@@ -281,7 +302,12 @@ public class Mirror2_BathtubDrain : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         
         // Close panel
-        if (puzzlePanel != null) puzzlePanel.SetActive(false);
+        Debug.Log("[Mirror2] Hiding puzzle panel...");
+        if (puzzlePanel != null)
+        {
+            puzzlePanel.SetActive(false);
+            Debug.Log("[Mirror2] ✅ Panel hidden");
+        }
         
         // Resume game
         ResumeGame();

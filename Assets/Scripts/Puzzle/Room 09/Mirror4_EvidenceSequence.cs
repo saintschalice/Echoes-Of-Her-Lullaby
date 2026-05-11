@@ -6,28 +6,25 @@ using TMPro;
 
 /// <summary>
 /// Mirror 4: Evidence Sequence Puzzle
-/// Player arranges 4 evidence items in correct order: Rope → Pills → Knife → Towel
-/// Each correct placement shows a flashback
-/// Time limit: 60 seconds
+/// Arrange 4 evidence items in correct order showing mother's murder plan
+/// Time limit: 90 seconds
 /// </summary>
 public class Mirror4_EvidenceSequence : MonoBehaviour
 {
     [Header("UI References")]
     public GameObject puzzlePanel;
     public TextMeshProUGUI timerText;
-    public GameObject[] pictureFrames; // 4 frames numbered 1-4
-    public GameObject[] evidenceItems; // 4 items: rope, pills, knife, towel
+    public Transform[] pictureFrames; // 4 frames (Frame_1 to Frame_4)
+    public GameObject[] evidenceItems; // 4 items (Rope, Pills, Knife, BloodyTowel)
+    
+    [Header("Flashback System")]
     public Image flashbackImage; // Shows flashback when item placed correctly
+    public Sprite[] flashbackSprites; // 4 flashback images (one per item)
+    public float flashbackDuration = 2f; // How long flashback shows
     
-    [Header("Flashback Sprites")]
-    public Sprite flashback_Rope; // Mother buying rope
-    public Sprite flashback_Pills; // Mother crushing pills
-    public Sprite flashback_Knife; // Mother sharpening knife
-    public Sprite flashback_Towel; // Mother preparing cleanup
-    
-    [Header("Puzzle Settings")]
-    public float timeLimit = 60f;
-    public float flashbackDuration = 2f;
+    [Header("Settings")]
+    public float timeLimit = 90f;
+    public float snapDistance = 200f; // How close to snap to frame
     
     [Header("Audio")]
     public AudioClip itemPlaceSound;
@@ -39,12 +36,16 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
     private bool isPuzzleActive = false;
     private bool isPuzzleSolved = false;
     
-    // Correct sequence: rope → pills → knife → towel
-    private string[] correctSequence = { "rope", "pills", "knife", "towel" };
-    private Dictionary<GameObject, string> frameContents = new Dictionary<GameObject, string>();
-    private bool isShowingFlashback = false;
+    // Correct sequence: Rope → Pills → Knife → BloodyTowel
+    private string[] correctSequence = { "Rope", "Pills", "Knife", "BloodyTowel" };
+    private Dictionary<int, string> frameContents = new Dictionary<int, string>(); // frameIndex → itemName
+    
+    // Currently dragging
+    private int draggingItemIndex = -1;
+    private Vector2 dragOffset;
+    private Vector3[] originalPositions; // Store original positions for reset
 
-    private void Start()
+    void Start()
     {
         // Hide panel at start
         if (puzzlePanel != null) puzzlePanel.SetActive(false);
@@ -53,41 +54,18 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
         if (flashbackImage != null) flashbackImage.gameObject.SetActive(false);
         
         // Initialize frame contents
-        foreach (GameObject frame in pictureFrames)
+        for (int i = 0; i < pictureFrames.Length; i++)
         {
-            frameContents[frame] = "";
+            frameContents[i] = ""; // Empty at start
         }
-    }
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Player") && !isPuzzleSolved)
+        
+        // Store original positions
+        originalPositions = new Vector3[evidenceItems.Length];
+        for (int i = 0; i < evidenceItems.Length; i++)
         {
-            // Show interaction prompt (optional - can use UI text)
-            // InteractionPromptHelper.Instance?.ShowPrompt("Press E to examine large mirror");
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            // Hide interaction prompt
-            // InteractionPromptHelper.Instance?.HidePrompt();
-        }
-    }
-
-    private void Update()
-    {
-        // Update timer if puzzle active
-        if (isPuzzleActive && !isPuzzleSolved && !isShowingFlashback)
-        {
-            currentTime -= Time.deltaTime;
-            UpdateTimerDisplay();
-            
-            if (currentTime <= 0)
+            if (evidenceItems[i] != null)
             {
-                OnPuzzleFailed();
+                originalPositions[i] = evidenceItems[i].transform.position;
             }
         }
     }
@@ -96,188 +74,328 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
     {
         if (isPuzzleActive || isPuzzleSolved) return;
         
+        Debug.Log("[Mirror4] Starting Evidence Sequence puzzle");
+        
         isPuzzleActive = true;
         currentTime = timeLimit;
         
-        // Show panel
         if (puzzlePanel != null) puzzlePanel.SetActive(true);
         
-        // Disable player movement
-        JoystickPlayerController player = JoystickPlayerController.Instance;
-        if (player != null) player.enabled = false;
+        // Reset items to original positions
+        ResetItems();
         
-        GameObject joystick = GameObject.Find("Joystick");
-        if (joystick != null) joystick.SetActive(false);
-        
-        // Randomize evidence item positions
-        foreach (GameObject item in evidenceItems)
+        // Clear frame contents
+        for (int i = 0; i < pictureFrames.Length; i++)
         {
-            if (item != null)
-            {
-                RectTransform rt = item.GetComponent<RectTransform>();
-                if (rt != null)
-                {
-                    float randomX = Random.Range(-250f, 250f);
-                    float randomY = Random.Range(-150f, -300f);
-                    rt.anchoredPosition = new Vector2(randomX, randomY);
-                }
-            }
+            frameContents[i] = "";
         }
         
-        // Show dialogue
+        PauseGame();
+        
         DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.MIRROR4_EXAMINE, "Lisa");
     }
 
-    // Called by draggable items when placed in frame
-    public void OnItemPlacedInFrame(GameObject frame, string itemId)
+    void Update()
     {
-        // Get frame index
-        int frameIndex = System.Array.IndexOf(pictureFrames, frame);
-        if (frameIndex < 0) return;
+        if (!isPuzzleActive || isPuzzleSolved) return;
         
-        // Check if correct item for this frame
-        string correctItem = correctSequence[frameIndex];
+        // Update timer
+        currentTime -= Time.unscaledDeltaTime;
+        UpdateTimerDisplay();
         
-        if (itemId == correctItem)
+        if (currentTime <= 0)
         {
-            // Correct placement!
-            frameContents[frame] = itemId;
-            
-            // Play sound
-            if (itemPlaceSound != null)
-            {
-                AudioSource.PlayClipAtPoint(itemPlaceSound, Camera.main.transform.position, 0.7f);
-            }
-            
-            // Show flashback
-            StartCoroutine(ShowFlashback(itemId));
-        }
-        else
-        {
-            // Wrong placement - item returns to original position
-            // (handled by drag system)
+            StartCoroutine(TimeOut());
         }
         
-        // Check if puzzle solved
-        CheckPuzzleSolution();
+        // Handle drag input
+        HandleDragInput();
     }
 
-    private System.Collections.IEnumerator ShowFlashback(string itemId)
+    void HandleDragInput()
     {
-        isShowingFlashback = true;
-        
-        // Get flashback sprite
-        Sprite flashbackSprite = null;
-        switch (itemId)
+        // Touch or mouse input
+        if (Input.GetMouseButtonDown(0))
         {
-            case "rope":
-                flashbackSprite = flashback_Rope;
-                break;
-            case "pills":
-                flashbackSprite = flashback_Pills;
-                break;
-            case "knife":
-                flashbackSprite = flashback_Knife;
-                break;
-            case "towel":
-                flashbackSprite = flashback_Towel;
-                break;
+            Vector2 inputPos = Input.mousePosition;
+            int itemIndex = GetItemAtPosition(inputPos);
+            
+            if (itemIndex >= 0)
+            {
+                draggingItemIndex = itemIndex;
+                
+                // Calculate offset
+                RectTransform itemRect = evidenceItems[itemIndex].GetComponent<RectTransform>();
+                Vector2 localPoint;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    puzzlePanel.GetComponent<RectTransform>(),
+                    inputPos,
+                    null,
+                    out localPoint
+                );
+                dragOffset = itemRect.anchoredPosition - localPoint;
+                
+                // Make semi-transparent
+                SetItemAlpha(itemIndex, 0.6f);
+                
+                // Remove from frame if it was in one
+                RemoveItemFromFrames(GetItemName(itemIndex));
+                
+                Debug.Log($"[Mirror4] Started dragging {GetItemName(itemIndex)}");
+            }
         }
-        
-        if (flashbackSprite != null && flashbackImage != null)
+        else if (Input.GetMouseButton(0) && draggingItemIndex >= 0)
         {
-            // Show flashback
-            flashbackImage.sprite = flashbackSprite;
-            flashbackImage.gameObject.SetActive(true);
+            // Drag the item
+            Vector2 inputPos = Input.mousePosition;
+            RectTransform itemRect = evidenceItems[draggingItemIndex].GetComponent<RectTransform>();
             
-            // Play sound
-            if (flashbackSound != null)
-            {
-                AudioSource.PlayClipAtPoint(flashbackSound, Camera.main.transform.position, 0.5f);
-            }
+            Vector2 localPoint;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                puzzlePanel.GetComponent<RectTransform>(),
+                inputPos,
+                null,
+                out localPoint
+            );
             
-            // Fade in
-            Color c = flashbackImage.color;
-            c.a = 0f;
-            flashbackImage.color = c;
-            
-            float elapsed = 0f;
-            while (elapsed < 0.5f)
-            {
-                elapsed += Time.deltaTime;
-                c.a = Mathf.Lerp(0f, 1f, elapsed / 0.5f);
-                flashbackImage.color = c;
-                yield return null;
-            }
-            
-            // Hold
-            yield return new WaitForSeconds(flashbackDuration);
-            
-            // Fade out
-            elapsed = 0f;
-            while (elapsed < 0.5f)
-            {
-                elapsed += Time.deltaTime;
-                c.a = Mathf.Lerp(1f, 0f, elapsed / 0.5f);
-                flashbackImage.color = c;
-                yield return null;
-            }
-            
-            flashbackImage.gameObject.SetActive(false);
+            itemRect.anchoredPosition = localPoint + dragOffset;
         }
-        
-        isShowingFlashback = false;
+        else if (Input.GetMouseButtonUp(0) && draggingItemIndex >= 0)
+        {
+            // Drop the item
+            Vector2 inputPos = Input.mousePosition;
+            int targetFrameIndex = GetFrameAtPosition(inputPos);
+            
+            SetItemAlpha(draggingItemIndex, 1f);
+            
+            if (targetFrameIndex >= 0)
+            {
+                // Place in frame
+                string itemName = GetItemName(draggingItemIndex);
+                PlaceItemInFrame(draggingItemIndex, targetFrameIndex);
+                frameContents[targetFrameIndex] = itemName;
+                
+                // Play sound
+                if (itemPlaceSound != null)
+                {
+                    AudioManager.Instance?.PlaySFX(itemPlaceSound);
+                }
+                
+                // Check if correct placement
+                if (IsCorrectPlacement(targetFrameIndex, itemName))
+                {
+                    Debug.Log($"[Mirror4] ✅ Correct! {itemName} in Frame {targetFrameIndex}");
+                    
+                    // Show flashback
+                    StartCoroutine(ShowFlashback(targetFrameIndex));
+                }
+                else
+                {
+                    Debug.Log($"[Mirror4] ❌ Wrong placement: {itemName} in Frame {targetFrameIndex}");
+                }
+                
+                // Check if puzzle solved
+                CheckSolution();
+            }
+            else
+            {
+                // No frame found, return to original position
+                ResetItem(draggingItemIndex);
+            }
+            
+            draggingItemIndex = -1;
+        }
     }
 
-    private void CheckPuzzleSolution()
+    int GetItemAtPosition(Vector2 screenPos)
     {
+        for (int i = 0; i < evidenceItems.Length; i++)
+        {
+            if (evidenceItems[i] == null) continue;
+            
+            RectTransform rect = evidenceItems[i].GetComponent<RectTransform>();
+            if (RectTransformUtility.RectangleContainsScreenPoint(rect, screenPos, null))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    int GetFrameAtPosition(Vector2 screenPos)
+    {
+        float closestDistance = snapDistance;
+        int closestFrame = -1;
+        
+        for (int i = 0; i < pictureFrames.Length; i++)
+        {
+            if (pictureFrames[i] == null) continue;
+            
+            RectTransform rect = pictureFrames[i].GetComponent<RectTransform>();
+            float distance = Vector2.Distance(rect.position, screenPos);
+            
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestFrame = i;
+            }
+        }
+        
+        return closestFrame;
+    }
+
+    void PlaceItemInFrame(int itemIndex, int frameIndex)
+    {
+        if (itemIndex < 0 || itemIndex >= evidenceItems.Length) return;
+        if (frameIndex < 0 || frameIndex >= pictureFrames.Length) return;
+        
+        RectTransform itemRect = evidenceItems[itemIndex].GetComponent<RectTransform>();
+        RectTransform frameRect = pictureFrames[frameIndex].GetComponent<RectTransform>();
+        
+        itemRect.SetParent(frameRect);
+        itemRect.anchoredPosition = Vector2.zero;
+        itemRect.localScale = Vector3.one;
+    }
+
+    void ResetItem(int itemIndex)
+    {
+        if (itemIndex < 0 || itemIndex >= evidenceItems.Length) return;
+        
+        evidenceItems[itemIndex].transform.position = originalPositions[itemIndex];
+        evidenceItems[itemIndex].transform.SetParent(puzzlePanel.transform);
+    }
+
+    void ResetItems()
+    {
+        for (int i = 0; i < evidenceItems.Length; i++)
+        {
+            ResetItem(i);
+        }
+    }
+
+    void SetItemAlpha(int itemIndex, float alpha)
+    {
+        if (itemIndex < 0 || itemIndex >= evidenceItems.Length) return;
+        
+        Image img = evidenceItems[itemIndex].GetComponent<Image>();
+        if (img != null)
+        {
+            Color c = img.color;
+            c.a = alpha;
+            img.color = c;
+        }
+    }
+
+    string GetItemName(int itemIndex)
+    {
+        if (itemIndex < 0 || itemIndex >= evidenceItems.Length) return "";
+        return evidenceItems[itemIndex].name;
+    }
+
+    void RemoveItemFromFrames(string itemName)
+    {
+        foreach (var kvp in frameContents)
+        {
+            if (kvp.Value == itemName)
+            {
+                frameContents[kvp.Key] = "";
+                break;
+            }
+        }
+    }
+
+    bool IsCorrectPlacement(int frameIndex, string itemName)
+    {
+        if (frameIndex < 0 || frameIndex >= correctSequence.Length) return false;
+        return correctSequence[frameIndex] == itemName;
+    }
+
+    IEnumerator ShowFlashback(int frameIndex)
+    {
+        if (flashbackImage == null || flashbackSprites == null) yield break;
+        if (frameIndex < 0 || frameIndex >= flashbackSprites.Length) yield break;
+        
+        // Play sound
+        if (flashbackSound != null)
+        {
+            AudioManager.Instance?.PlaySFX(flashbackSound);
+        }
+        
+        // Show flashback
+        flashbackImage.sprite = flashbackSprites[frameIndex];
+        flashbackImage.gameObject.SetActive(true);
+        
+        yield return new WaitForSeconds(flashbackDuration);
+        
+        // Hide flashback
+        flashbackImage.gameObject.SetActive(false);
+    }
+
+    void CheckSolution()
+    {
+        Debug.Log("[Mirror4] Checking solution...");
+        
         // Check if all frames filled
+        int filledFrames = 0;
         foreach (var content in frameContents.Values)
         {
-            if (string.IsNullOrEmpty(content)) return;
+            if (!string.IsNullOrEmpty(content))
+            {
+                filledFrames++;
+            }
+        }
+        
+        Debug.Log($"[Mirror4] Filled frames: {filledFrames}/4");
+        
+        if (filledFrames < 4)
+        {
+            Debug.Log("[Mirror4] Not all frames filled yet");
+            return;
         }
         
         // Check if correct sequence
         bool isCorrect = true;
         for (int i = 0; i < pictureFrames.Length; i++)
         {
-            if (frameContents[pictureFrames[i]] != correctSequence[i])
+            string expected = correctSequence[i];
+            string actual = frameContents[i];
+            
+            Debug.Log($"[Mirror4] Frame {i}: Expected={expected}, Actual={actual}");
+            
+            if (actual != expected)
             {
                 isCorrect = false;
-                break;
             }
         }
         
         if (isCorrect)
         {
-            OnPuzzleSolved();
+            Debug.Log("[Mirror4] ✅ PUZZLE SOLVED!");
+            StartCoroutine(PuzzleSuccess());
+        }
+        else
+        {
+            Debug.Log("[Mirror4] ❌ Wrong order! Keep trying...");
         }
     }
 
-    private void OnPuzzleSolved()
+    IEnumerator PuzzleSuccess()
     {
         isPuzzleSolved = true;
         isPuzzleActive = false;
         
-        // Play success sound
         if (successSound != null)
         {
-            AudioSource.PlayClipAtPoint(successSound, Camera.main.transform.position);
+            AudioManager.Instance?.PlaySFX(successSound);
         }
         
-        StartCoroutine(PuzzleSolvedSequence());
-    }
-
-    private System.Collections.IEnumerator PuzzleSolvedSequence()
-    {
-        // Show success dialogue
+        yield return new WaitForSeconds(1f);
+        
         DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.MIRROR4_SUCCESS_1, "Lisa");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             yield return null;
         }
-        
-        yield return new WaitForSeconds(0.5f);
         
         DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.MIRROR4_SUCCESS_2, "Lisa");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
@@ -285,56 +403,32 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
             yield return null;
         }
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         
         // Close panel
-        if (puzzlePanel != null) puzzlePanel.SetActive(false);
-        
-        // Re-enable player
-        JoystickPlayerController player = JoystickPlayerController.Instance;
-        if (player != null) player.enabled = true;
-        
-        GameObject joystick = GameObject.Find("Joystick");
-        if (joystick != null) joystick.SetActive(true);
-        
-        // Notify flow controller
-        Room09_FlowController.Instance?.OnMirrorComplete(4);
-        
-        // Visual feedback (glow effect)
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
+        Debug.Log("[Mirror4] Hiding puzzle panel...");
+        if (puzzlePanel != null)
         {
-            sr.color = Color.green;
+            puzzlePanel.SetActive(false);
+            Debug.Log("[Mirror4] ✅ Panel hidden");
         }
+        
+        ResumeGame();
+        
+        Room09_FlowController.Instance?.OnMirrorComplete(4);
     }
 
-    private void OnPuzzleFailed()
+    IEnumerator TimeOut()
     {
         isPuzzleActive = false;
         
-        // Play fail sound
         if (failSound != null)
         {
-            AudioSource.PlayClipAtPoint(failSound, Camera.main.transform.position);
+            AudioManager.Instance?.PlaySFX(failSound);
         }
         
-        StartCoroutine(PuzzleFailedSequence());
-    }
-
-    private System.Collections.IEnumerator PuzzleFailedSequence()
-    {
-        // Show Emily jumpscare
-        GameObject jumpscarePanel = GameObject.Find("Emily_Jumpscare_Panel");
-        if (jumpscarePanel != null)
-        {
-            jumpscarePanel.SetActive(true);
-            
-            // Play Emily scream
-            AudioSource emilyAudio = jumpscarePanel.GetComponent<AudioSource>();
-            if (emilyAudio != null) emilyAudio.Play();
-        }
+        yield return new WaitForSeconds(0.5f);
         
-        // Show failure dialogue
         DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.EMILY_ATTACK_1, "Lisa");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
@@ -347,15 +441,36 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
             yield return null;
         }
         
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
         
-        // Reload scene (game over)
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
         );
     }
 
-    private void UpdateTimerDisplay()
+    void PauseGame()
+    {
+        Time.timeScale = 1f;
+        
+        JoystickPlayerController player = JoystickPlayerController.Instance;
+        if (player != null) player.enabled = false;
+
+        GameObject joystick = GameObject.Find("Joystick");
+        if (joystick != null) joystick.SetActive(false);
+    }
+
+    void ResumeGame()
+    {
+        Time.timeScale = 1f;
+        
+        JoystickPlayerController player = JoystickPlayerController.Instance;
+        if (player != null) player.enabled = true;
+
+        GameObject joystick = GameObject.Find("Joystick");
+        if (joystick != null) joystick.SetActive(true);
+    }
+
+    void UpdateTimerDisplay()
     {
         if (timerText == null) return;
         
@@ -363,12 +478,11 @@ public class Mirror4_EvidenceSequence : MonoBehaviour
         int seconds = Mathf.FloorToInt(currentTime % 60f);
         timerText.text = string.Format("{0}:{1:00}", minutes, seconds);
         
-        // Change color when time is low
-        if (currentTime <= 10f)
+        if (currentTime <= 15f)
         {
             timerText.color = Color.red;
         }
-        else if (currentTime <= 20f)
+        else if (currentTime <= 30f)
         {
             timerText.color = Color.yellow;
         }

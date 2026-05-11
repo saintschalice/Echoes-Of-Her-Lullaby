@@ -21,6 +21,8 @@ public class Room09_Interactable : MonoBehaviour, IInteractable
     private Mirror1_MedicineCabinet mirror1;
     private Mirror2_BathtubDrain mirror2;
     private Mirror3_VanityTerror mirror3;
+    private Mirror3_VanityTerror_Simple mirror3Simple; // Simple version
+    private Mirror3_DiaryArrangement mirror3Diary; // NEW: Simplest version
     private Mirror4_EvidenceSequence mirror4;
 
     private void Start()
@@ -50,10 +52,26 @@ public class Room09_Interactable : MonoBehaviour, IInteractable
                 }
                 break;
             case 3:
+                // Try to find any version of Mirror3
                 mirror3 = GetComponent<Mirror3_VanityTerror>();
-                if (mirror3 == null)
+                mirror3Simple = GetComponent<Mirror3_VanityTerror_Simple>();
+                mirror3Diary = GetComponent<Mirror3_DiaryArrangement>();
+                
+                if (mirror3 == null && mirror3Simple == null && mirror3Diary == null)
                 {
-                    Debug.LogError($"[Room09] Mirror {mirrorNumber} missing Mirror3_VanityTerror component!");
+                    Debug.LogError($"[Room09] Mirror {mirrorNumber} missing Mirror3 component! Need either Mirror3_VanityTerror, Mirror3_VanityTerror_Simple, or Mirror3_DiaryArrangement!");
+                }
+                else if (mirror3Diary != null)
+                {
+                    Debug.Log($"[Room09] Using Mirror3_DiaryArrangement (newest version)");
+                }
+                else if (mirror3Simple != null)
+                {
+                    Debug.Log($"[Room09] Using Mirror3_VanityTerror_Simple");
+                }
+                else
+                {
+                    Debug.Log($"[Room09] Using Mirror3_VanityTerror (old version)");
                 }
                 break;
             case 4:
@@ -113,13 +131,22 @@ public class Room09_Interactable : MonoBehaviour, IInteractable
                 break;
                 
             case 3:
-                if (mirror3 != null)
+                // Try newest version first, then older versions
+                if (mirror3Diary != null)
+                {
+                    mirror3Diary.StartPuzzle();
+                }
+                else if (mirror3Simple != null)
+                {
+                    mirror3Simple.StartPuzzle();
+                }
+                else if (mirror3 != null)
                 {
                     mirror3.StartPuzzle();
                 }
                 else
                 {
-                    Debug.LogError("[Room09] Mirror3_VanityTerror component not found!");
+                    Debug.LogError("[Room09] Mirror3 component not found! Need either Mirror3_DiaryArrangement, Mirror3_VanityTerror_Simple, or Mirror3_VanityTerror!");
                 }
                 break;
                 

@@ -23,6 +23,9 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     [Tooltip("Detection radius - higher = easier to snap to slots")]
     public float detectionRadius = 150f; // Adjust in Inspector!
     
+    [Tooltip("For Mirror 3: Keep item in puzzle panel (don't move to Canvas root)")]
+    public bool stayInPanel = false; // Set to TRUE for Mirror 3 items!
+    
     [Header("Visual Feedback")]
     [Tooltip("Make semi-transparent while dragging")]
     public bool fadeWhileDragging = true;
@@ -72,9 +75,21 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         // Disable raycast blocking so we can detect slots underneath
         canvasGroup.blocksRaycasts = false;
         
-        // Move to top of hierarchy for rendering on top
-        transform.SetParent(canvas.transform);
-        transform.SetAsLastSibling();
+        // For Mirror 3 (stayInPanel = true), don't move to Canvas root
+        // This prevents items from going outside the puzzle panel
+        if (stayInPanel)
+        {
+            // Just move to last sibling for rendering on top, but stay in current parent
+            transform.SetAsLastSibling();
+            Debug.Log($"[DraggableItem] {itemId} staying in panel (stayInPanel=true)");
+        }
+        else
+        {
+            // Move to canvas root for free movement
+            transform.SetParent(canvas.transform);
+            transform.SetAsLastSibling();
+            Debug.Log($"[DraggableItem] {itemId} moved to Canvas root");
+        }
         
         Debug.Log($"[DraggableItem] Started dragging: {itemId}");
     }
@@ -105,20 +120,16 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         {
             Debug.Log($"[DraggableItem] {itemId} dropped on {droppedSlot.name}");
             
-            // Try to notify puzzle script - it will validate if placement is correct
+            // Notify puzzle script - it will handle the placement/swap
             bool placementAccepted = NotifyPuzzleScript(droppedSlot);
             
-            if (placementAccepted)
-            {
-                // Valid placement - place item in slot
-                PlaceInSlot(droppedSlot);
-            }
-            else
+            if (!placementAccepted)
             {
                 // Invalid placement - return to original position
                 Debug.Log($"[DraggableItem] {itemId} placement rejected - returning to original position");
                 ReturnToOriginalPosition();
             }
+            // If accepted, puzzle script already moved the item, so we don't need to do anything
         }
         else
         {
@@ -268,7 +279,10 @@ public class DraggableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
                 }
                 
             default:
-                Debug.LogError($"[DraggableItem] Invalid puzzle number: {puzzleNumber}");
+                Debug.LogError($"[DraggableItem] ❌ INVALID PUZZLE NUMBER on GameObject '{gameObject.name}'!");
+                Debug.LogError($"[DraggableItem] Item ID: '{itemId}', Puzzle Number: {puzzleNumber}");
+                Debug.LogError($"[DraggableItem] Valid puzzle numbers are: 1 (Medicine), 2 (Bathtub), 3 (Vanity), 4 (Evidence)");
+                Debug.LogError($"[DraggableItem] Please check the Inspector for '{gameObject.name}' and set Puzzle Number to 1, 2, 3, or 4");
                 return false;
         }
     }

@@ -42,11 +42,24 @@ public class Mirror1_MedicineCabinet : MonoBehaviour
     private bool puzzleComplete = false;
     private int mistakeCount = 0; // Track wrong placements
 
+    void Start()
+    {
+        // Hide panel at start - only show when puzzle is activated
+        if (puzzlePanel != null)
+        {
+            puzzlePanel.SetActive(false);
+        }
+        
+        Debug.Log("[Mirror1] Medicine Cabinet puzzle initialized - panel hidden");
+    }
+
     public void StartPuzzle()
     {
         if (puzzleComplete) return;
         
-        // Show panel
+        Debug.Log("[Mirror1] Starting Medicine Cabinet puzzle");
+        
+        // Show panel (items should be children of panel)
         if (puzzlePanel != null) puzzlePanel.SetActive(true);
         
         // Initialize slot tracking
@@ -375,8 +388,13 @@ public class Mirror1_MedicineCabinet : MonoBehaviour
         
         yield return new WaitForSeconds(0.5f);
         
-        // Hide panel
-        if (puzzlePanel != null) puzzlePanel.SetActive(false);
+        // Hide panel (items should hide with it if they're children)
+        Debug.Log("[Mirror1] Hiding puzzle panel...");
+        if (puzzlePanel != null)
+        {
+            puzzlePanel.SetActive(false);
+            Debug.Log("[Mirror1] ✅ Panel hidden");
+        }
         
         // Resume game
         ResumeGame();
