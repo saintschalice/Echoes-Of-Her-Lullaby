@@ -22,6 +22,7 @@ public class Room09_FlowController : MonoBehaviour
     
     [Header("Emily State")]
     public GameObject emilyManifestation; // Full power Emily
+    public Transform emilyIdlePosition; // Where Emily stands (center of room)
     public bool emilyHasCollapsed = false;
     
     [Header("Ending Trigger")]
@@ -42,6 +43,9 @@ public class Room09_FlowController : MonoBehaviour
 
     private void Start()
     {
+        // Position Emily at idle position (center of room)
+        PositionEmilyAtIdleSpot();
+        
         // Show Emily at full power
         if (emilyManifestation != null) emilyManifestation.SetActive(true);
         
@@ -55,6 +59,22 @@ public class Room09_FlowController : MonoBehaviour
         
         // Trigger intro sequence
         Invoke(nameof(PlayIntro), 1f);
+    }
+
+    void PositionEmilyAtIdleSpot()
+    {
+        if (emilyManifestation == null) return;
+        
+        // Position Emily at idle position (center of room)
+        if (emilyIdlePosition != null)
+        {
+            emilyManifestation.transform.position = emilyIdlePosition.position;
+            Debug.Log($"[Room09] Emily positioned at idle spot: {emilyIdlePosition.position}");
+        }
+        else
+        {
+            Debug.LogWarning("[Room09] No idle position set for Emily!");
+        }
     }
 
     private void PlayIntro()
@@ -152,14 +172,28 @@ public class Room09_FlowController : MonoBehaviour
                 break;
         }
         
+        Debug.Log($"[Room09] Mirror {mirrorNumber} complete! Total: {GetCompletedMirrorCount()}/4");
+        
         // Check if all mirrors complete
         if (AreAllMirrorsComplete())
         {
-            StartCoroutine(AllMirrorsCompleteSequence());
+            // All 4 mirrors done → EMILY ATTACKS! → Final sequence
+            StartCoroutine(FinalEmilyAttackSequence());
         }
+        // If not all complete, just continue to next puzzle (no attack)
     }
 
-    System.Collections.IEnumerator AllMirrorsCompleteSequence()
+    int GetCompletedMirrorCount()
+    {
+        int count = 0;
+        if (mirror1Complete) count++;
+        if (mirror2Complete) count++;
+        if (mirror3Complete) count++;
+        if (mirror4Complete) count++;
+        return count;
+    }
+
+    System.Collections.IEnumerator FinalEmilyAttackSequence()
     {
         // Disable player
         JoystickPlayerController player = JoystickPlayerController.Instance;
@@ -168,101 +202,46 @@ public class Room09_FlowController : MonoBehaviour
         if (player != null) player.enabled = false;
         if (joystick != null) joystick.SetActive(false);
         
-        yield return new WaitForSeconds(1f);
+        // Short pause (build tension)
+        yield return new WaitForSeconds(0.3f);
         
-        // All mirrors complete
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.ALL_MIRRORS_COMPLETE, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+        // EMILY ATTACKS! (Jumpscare)
+        if (emilyScreamClip != null)
         {
-            yield return null;
+            AudioManager.Instance?.PlaySFX(emilyScreamClip);
         }
+        
+        // Quick flash or screen shake (optional)
+        // Add your jumpscare effect here
         
         yield return new WaitForSeconds(0.5f);
         
-        // Mother's voice
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.MOTHER_VOICE, "Mother");
+        // Emily attack dialogue (quick)
+        DialogueSystemV2.Instance?.StartDialogue("NO! You can't know the truth!", "Emily");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             yield return null;
         }
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.3f);
         
-        // Emily's breakdown
-        StartCoroutine(EmilyBreakdownSequence());
-    }
-
-    System.Collections.IEnumerator EmilyBreakdownSequence()
-    {
-        // Emily breakdown dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.EMILY_BREAKDOWN_1, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+        // Fade to black (quick)
+        ScreenFader fader = ScreenFader.Instance;
+        if (fader != null)
         {
-            yield return null;
+            fader.FadeOut(0.5f);
+            yield return new WaitForSeconds(0.5f);
         }
         
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.EMILY_BREAKDOWN_2, "Emily");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.EMILY_BREAKDOWN_3, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        yield return new WaitForSeconds(0.5f);
-        
-        // Emily collapses (fade out or animation)
-        if (emilyManifestation != null)
-        {
-            // Fade out Emily
-            SpriteRenderer sr = emilyManifestation.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                float elapsed = 0f;
-                Color c = sr.color;
-                while (elapsed < 2f)
-                {
-                    elapsed += Time.deltaTime;
-                    c.a = Mathf.Lerp(1f, 0.2f, elapsed / 2f);
-                    sr.color = c;
-                    yield return null;
-                }
-            }
-        }
-        
-        emilyHasCollapsed = true;
-        
-        yield return new WaitForSeconds(0.5f);
-        
-        // Emily's final words
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.EMILY_WHISPER_1, "Emily");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.EMILY_WHISPER_2, "Emily");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        yield return new WaitForSeconds(1f);
-        
-        yield return new WaitForSeconds(1f);
-        
-        // Trigger ending cutscene automatically
-        canTriggerEnding = true;
+        // Now start the ending cutscene
         StartCoroutine(EndingCutsceneSequence());
     }
 
     // ENDING CUTSCENE - Final revelation and game completion
     System.Collections.IEnumerator EndingCutsceneSequence()
     {
+        // Already faded to black from attack sequence
+        
         yield return new WaitForSeconds(1f);
         
         // ENDING DIALOGUE SEQUENCE (20 lines)

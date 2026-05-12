@@ -913,6 +913,8 @@ MonoBehaviour:
   requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 1
+  requireRoom5PuzzleComplete: 0
+  incompletePuzzleMessage: I can't leave yet. I need to finish setting the table.
   targetSpawnPointID: FromHallway
   spawnOffset: {x: 0, y: 0, z: 0}
   interactionRadius: 1.5
@@ -7409,6 +7411,8 @@ MonoBehaviour:
   requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 0
+  requireRoom5PuzzleComplete: 0
+  incompletePuzzleMessage: I can't leave yet. I need to finish setting the table.
   targetSpawnPointID: Main
   spawnOffset: {x: 0, y: 0, z: 0}
   interactionRadius: 1.5
@@ -7575,13 +7579,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
   targetSceneName: Room04_Kitchen
-  doorID: Door_Hallway_To_Kitchen
+  doorID: Vent_Hallway_To_Kitchen
   startsLocked: 0
   requiredItemId: 
   requiredItemName: 
   consumeKeyOnUse: 0
   unlockPermanently: 1
-  targetSpawnPointID: Main
+  requireRoom5PuzzleComplete: 0
+  incompletePuzzleMessage: I can't leave yet. I need to finish setting the table.
+  targetSpawnPointID: Vent_Hallway_To_Kitchen
   spawnOffset: {x: 0, y: 0, z: 0}
   interactionRadius: 1.5
   requiredTag: Player

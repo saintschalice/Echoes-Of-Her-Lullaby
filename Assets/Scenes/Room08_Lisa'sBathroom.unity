@@ -12516,7 +12516,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoomSpawnPoint
   roomName: Room08_Lisa'sBathroom
   isDefaultSpawnPoint: 1
-  spawnPointID: FromLisa'sBedroom
+  spawnPointID: Room08_Lisa'sBathroom
   matchRotation: 1
   gizmoColor: {r: 0, g: 1, b: 0, a: 1}
   gizmoRadius: 0.5

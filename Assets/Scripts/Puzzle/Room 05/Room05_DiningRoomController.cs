@@ -50,6 +50,10 @@ public class Room05_DiningRoomController : MonoBehaviour
     public Transform emilyFinalChaseSpawnPoint;
     public float initialChaseSpeed = 3.5f;
     public float finalChaseSpeed = 5.5f;
+    
+    [Header("Final Chase Trigger")]
+    [Tooltip("Trigger GameObject na mag-activate pag tapos na ang puzzle")]
+    public GameObject finalChaseTrigger;
 
     [Header("Jumpscare & Audio Settings")]
     public AudioSource roomAudioSource;
@@ -91,6 +95,9 @@ public class Room05_DiningRoomController : MonoBehaviour
         if (cabinetUIPanel != null) cabinetUIPanel.SetActive(false);
         if (tablePanel != null) tablePanel.SetActive(false);
         if (emilyEnemy != null) emilyEnemy.SetActive(false);
+        
+        // Disable final chase trigger initially (will activate after puzzle complete)
+        if (finalChaseTrigger != null) finalChaseTrigger.SetActive(false);
 
         dynamicJoystick = GameObject.Find("Joystick");
 
@@ -216,21 +223,39 @@ public class Room05_DiningRoomController : MonoBehaviour
     {
         if (calendarViewerUI != null) calendarViewerUI.gameObject.SetActive(false);
         ResumeGameFromUI();
-        if (!isEmilyHunting && !puzzleCompleted)
-        {
-            StartCoroutine(EmilyGetsAngrySequence());
-        }
+        
+        // Don't start chase here - let the trigger zone handle it
+        // Just mark calendar as seen so trigger can activate
     }
 
     public IEnumerator EmilyGetsAngrySequence()
     {
+        // INTRO DIALOGUE FIRST (before knockback)
+        TryShowDialogue(EnhancedGameDialogues.R05_ANGRY_1);
+        
+        // Wait for dialogue to finish
+        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
+        {
+            yield return null;
+        }
+        
         yield return new WaitForSeconds(0.5f);
-        if (roomAudioSource != null && introJumpscareSFX != null) roomAudioSource.PlayOneShot(introJumpscareSFX);
-        if (playerRb != null) StartCoroutine(ApplyKnockbackRoutine());
+        
+        // NOW the jumpscare and knockback
+        if (roomAudioSource != null && introJumpscareSFX != null) 
+        {
+            roomAudioSource.PlayOneShot(introJumpscareSFX);
+        }
+        
+        if (playerRb != null) 
+        {
+            StartCoroutine(ApplyKnockbackRoutine());
+        }
 
         TryShowDialogue(EnhancedGameDialogues.R05_ANGRY_2);
         yield return new WaitForSeconds(introKnockbackDuration);
 
+        // Start hunting
         isEmilyHunting = true;
         if (emilyEnemy != null)
         {
@@ -239,11 +264,16 @@ public class Room05_DiningRoomController : MonoBehaviour
             {
                 emilyAgent.enabled = true;
                 emilyAgent.speed = initialChaseSpeed;
-                if (emilyAngrySpawnPoint != null) emilyAgent.Warp(emilyAngrySpawnPoint.position);
+                if (emilyAngrySpawnPoint != null) 
+                {
+                    emilyAgent.Warp(emilyAngrySpawnPoint.position);
+                }
             }
             if (roomAudioSource != null && scriptedWalkSFX != null)
             {
-                roomAudioSource.clip = scriptedWalkSFX; roomAudioSource.loop = true; roomAudioSource.Play();
+                roomAudioSource.clip = scriptedWalkSFX; 
+                roomAudioSource.loop = true; 
+                roomAudioSource.Play();
             }
         }
     }
@@ -347,6 +377,13 @@ public class Room05_DiningRoomController : MonoBehaviour
         {
             InventoryManager.Instance.AddItem("bedroom_key");
         }
+        
+        // ACTIVATE FINAL CHASE TRIGGER (pag tapos na ang puzzle)
+        if (finalChaseTrigger != null)
+        {
+            finalChaseTrigger.SetActive(true);
+            Debug.Log("[Room05] Final Chase Trigger activated - puzzle complete!");
+        }
 
         TryShowDialogue(EnhancedGameDialogues.R05_EMILY_GONE_1);
     }
@@ -361,12 +398,16 @@ public class Room05_DiningRoomController : MonoBehaviour
 
     IEnumerator FinalChaseSequence()
     {
-        TryShowDialogue(EnhancedGameDialogues.R05_FINAL_CHASE_1);
-        yield return new WaitForSeconds(0.5f);
-
+        // NO DIALOGUE - Pure hunt!
+        // Just quick jumpscare sound
         if (roomAudioSource != null && introJumpscareSFX != null)
+        {
             roomAudioSource.PlayOneShot(introJumpscareSFX);
-
+        }
+        
+        yield return new WaitForSeconds(0.2f); // Very short delay
+        
+        // Spawn Emily FAST
         if (emilyEnemy != null)
         {
             Transform spawnPt = emilyFinalChaseSpawnPoint != null ? emilyFinalChaseSpawnPoint : emilyAngrySpawnPoint;
@@ -381,13 +422,20 @@ public class Room05_DiningRoomController : MonoBehaviour
             {
                 emilyAgent.enabled = true;
                 if (spawnPt != null) emilyAgent.Warp(spawnPt.position);
-                emilyAgent.speed = finalChaseSpeed;
+                emilyAgent.speed = finalChaseSpeed; // Faster speed!
             }
 
-            if (roomAudioSource != null && scriptedWalkSFX != null) roomAudioSource.Play();
+            if (roomAudioSource != null && scriptedWalkSFX != null) 
+            {
+                roomAudioSource.clip = scriptedWalkSFX;
+                roomAudioSource.loop = true;
+                roomAudioSource.Play();
+            }
         }
 
         isEmilyHunting = true;
+        
+        // Optional: Quick warning dialogue (very short)
         TryShowDialogue(EnhancedGameDialogues.R05_FINAL_CHASE_2);
     }
 
@@ -445,7 +493,13 @@ public class Room05_DiningRoomController : MonoBehaviour
     {
         hasSpoon = true; PlayerPrefs.Save();
         if (spoonPickup != null) spoonPickup.SetActive(false);
-        if (InventoryManager.Instance != null) InventoryManager.Instance.AddItem("spoon");
+        
+        // Add to inventory with notification
+        if (InventoryManager.Instance != null) 
+        {
+            InventoryManager.Instance.AddItemWithNotification("spoon");
+        }
+        
         TryShowDialogue(EnhancedGameDialogues.R05_SPOON);
     }
 
@@ -481,8 +535,14 @@ public class Room05_DiningRoomController : MonoBehaviour
 
     public void OnKeyInteract()
     {
-        if (InventoryManager.Instance != null) InventoryManager.Instance.AddItem("bedroom_key");
         if (bedroomKey != null) bedroomKey.SetActive(false);
+        
+        // Add to inventory with notification
+        if (InventoryManager.Instance != null) 
+        {
+            InventoryManager.Instance.AddItemWithNotification("bedroom_key");
+        }
+        
         TryShowDialogue("I got the key. Time to get out of here.");
     }
 

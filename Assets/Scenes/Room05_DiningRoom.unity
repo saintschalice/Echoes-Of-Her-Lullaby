@@ -317,13 +317,16 @@ MonoBehaviour:
   spawnPoint: {fileID: 1213909228}
   spawnState: 1
   spawnFacing: {x: 1, y: 1}
+  emilyChaseSpeed: 3.5
+  catchDistance: 1
   pushForce: 3
   shoveFriction: 5
   resumeDelay: 0.3
   jumpscareClip: {fileID: 8300000, guid: 218e6040e060b7946b3b50ebb3c8b0c4, type: 3}
   emilyShout: YOU NEED TO GET OUT!
-  lisaPanic: Holy- I need to hide!
+  lisaPanic: AH SH*T, HERE WE GO AGAIN!
   triggerID: Room05_EmilySpawn_Intro
+  debugMode: 1
 --- !u!1 &108657768
 GameObject:
   m_ObjectHideFlags: 0
@@ -4897,87 +4900,12 @@ Transform:
   m_GameObject: {fileID: 141007638}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.71, y: -1.53, z: 0}
+  m_LocalPosition: {x: -3.56, y: -1.06, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &181562669
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 181562670}
-  - component: {fileID: 181562672}
-  - component: {fileID: 181562671}
-  m_Layer: 5
-  m_Name: Table_Background
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &181562670
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 181562669}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1083614344}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000030517578, y: -0.000015258789}
-  m_SizeDelta: {x: 797, y: 362}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &181562671
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 181562669}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.5754717, g: 0.5510413, b: 0.5510413, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: -4970208289350789510, guid: 7551a130a7ab96d49a6a03f215ebb642, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &181562672
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 181562669}
-  m_CullTransparentMesh: 1
 --- !u!1 &216360088
 GameObject:
   m_ObjectHideFlags: 0
@@ -5877,11 +5805,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 492303966}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84560e68a5fb49f47ac9f6ec328bf773, type: 3}
+  m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SceneTransfer
-  sceneToLoad: Room04_Kitchen
-  targetSpawnID: Room05_DiningRoom
+  m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
+  targetSceneName: Room04_Kitchen
+  doorID: FromDiningRoom
+  startsLocked: 0
+  requiredItemId: 
+  requiredItemName: 
+  consumeKeyOnUse: 0
+  unlockPermanently: 1
+  requireRoom5PuzzleComplete: 0
+  incompletePuzzleMessage: 
+  targetSpawnPointID: FromDiningRoom
+  spawnOffset: {x: 0, y: 0, z: 0}
+  interactionRadius: 1.5
+  requiredTag: Player
+  usePhysicalCollider: 1
+  lockedIndicator: {fileID: 0}
+  interactionPrompt: {fileID: 0}
+  lockedDoorSound: {fileID: 0}
+  unlockDoorSound: {fileID: 0}
+  doorOpenSound: {fileID: 0}
+  doorAnimator: {fileID: 0}
+  openTrigger: Open
+  transitionDelay: 1.5
+  useFadeTransition: 1
 --- !u!1 &568428994
 GameObject:
   m_ObjectHideFlags: 0
@@ -6589,6 +6538,7 @@ GameObject:
   - component: {fileID: 825420860}
   - component: {fileID: 825420859}
   - component: {fileID: 825420862}
+  - component: {fileID: 825420863}
   m_Layer: 10
   m_Name: Mother_Chair
   m_TagString: Untagged
@@ -6730,6 +6680,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DiningRoomInteractable
   type: 1
   interactionRange: 2
+--- !u!114 &825420863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825420857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9809bf1345abc5648af68b3a82653f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NavMeshPlus::NavMeshPlus.Components.NavMeshModifier
+  m_OverrideArea: 1
+  m_Area: 1
+  m_IgnoreFromBuild: 0
+  m_AffectedAgents: ffffffff
 --- !u!1 &858850778
 GameObject:
   m_ObjectHideFlags: 0
@@ -7420,7 +7386,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 181562670}
   - {fileID: 934140140}
   - {fileID: 1370327003}
   - {fileID: 297494183}
@@ -7482,6 +7447,7 @@ GameObject:
   - component: {fileID: 1093787783}
   - component: {fileID: 1093787782}
   - component: {fileID: 1093787786}
+  - component: {fileID: 1093787787}
   m_Layer: 10
   m_Name: SideBoardDrawer
   m_TagString: Untagged
@@ -7623,6 +7589,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DiningRoomInteractable
   type: 4
   interactionRange: 2
+--- !u!114 &1093787787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093787781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9809bf1345abc5648af68b3a82653f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NavMeshPlus::NavMeshPlus.Components.NavMeshModifier
+  m_OverrideArea: 1
+  m_Area: 1
+  m_IgnoreFromBuild: 0
+  m_AffectedAgents: ffffffff
 --- !u!1001 &1154794946
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8143,7 +8125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eab28c88365f1764685729afc9cc3bef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneAmbientPlayer
-  sceneAmbientConfig: {fileID: 11400000, guid: 7d775fcc1b8db4b4a8b6e2e65819d50f, type: 2}
+  sceneAmbientConfig: {fileID: 11400000, guid: 53e58c51c62da5c47a60513baa391f9e, type: 2}
 --- !u!4 &1240721236
 Transform:
   m_ObjectHideFlags: 0
@@ -8737,6 +8719,7 @@ MonoBehaviour:
   emilyFinalChaseSpawnPoint: {fileID: 141007639}
   initialChaseSpeed: 2
   finalChaseSpeed: 2.3
+  finalChaseTrigger: {fileID: 2138678895}
   roomAudioSource: {fileID: 0}
   introJumpscareSFX: {fileID: 8300000, guid: 218e6040e060b7946b3b50ebb3c8b0c4, type: 3}
   scriptedWalkSFX: {fileID: 8300000, guid: ed635f4066c92ee4cb754fea36517fd7, type: 3}
@@ -8888,6 +8871,7 @@ GameObject:
   - component: {fileID: 1431671941}
   - component: {fileID: 1431671940}
   - component: {fileID: 1431671943}
+  - component: {fileID: 1431671944}
   m_Layer: 10
   m_Name: Father_Chair
   m_TagString: Untagged
@@ -9029,6 +9013,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DiningRoomInteractable
   type: 2
   interactionRange: 2
+--- !u!114 &1431671944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1431671938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9809bf1345abc5648af68b3a82653f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NavMeshPlus::NavMeshPlus.Components.NavMeshModifier
+  m_OverrideArea: 1
+  m_Area: 1
+  m_IgnoreFromBuild: 0
+  m_AffectedAgents: ffffffff
 --- !u!1 &1500987375
 GameObject:
   m_ObjectHideFlags: 0
@@ -12852,6 +12852,7 @@ GameObject:
   - component: {fileID: 2135496533}
   - component: {fileID: 2135496532}
   - component: {fileID: 2135496536}
+  - component: {fileID: 2135496537}
   m_Layer: 10
   m_Name: Child_Chair
   m_TagString: Untagged
@@ -12993,6 +12994,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DiningRoomInteractable
   type: 0
   interactionRange: 2
+--- !u!114 &2135496537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2135496530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9809bf1345abc5648af68b3a82653f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NavMeshPlus::NavMeshPlus.Components.NavMeshModifier
+  m_OverrideArea: 1
+  m_Area: 1
+  m_IgnoreFromBuild: 0
+  m_AffectedAgents: ffffffff
 --- !u!1 &2138678895
 GameObject:
   m_ObjectHideFlags: 0
@@ -13004,7 +13021,7 @@ GameObject:
   - component: {fileID: 2138678901}
   - component: {fileID: 2138678900}
   - component: {fileID: 2138678899}
-  - component: {fileID: 2138678896}
+  - component: {fileID: 2138678902}
   m_Layer: 0
   m_Name: 'Trigger_FinalEmilyChase '
   m_TagString: Untagged
@@ -13012,18 +13029,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2138678896
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2138678895}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8ff2484a4ae08b43906f24c5f1c2e49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!61 &2138678899
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -13138,12 +13143,41 @@ Transform:
   m_GameObject: {fileID: 2138678895}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.7093858, w: 0.70482045}
-  m_LocalPosition: {x: -3.78, y: -1.46, z: 0}
+  m_LocalPosition: {x: -3.5, y: -1.44, z: 0}
   m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90.37}
+--- !u!114 &2138678902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2138678895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcc658558d91b66439666165782a9231, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Room05_CinematicChaseTrigger
+  spawnPoint: {fileID: 141007639}
+  spawnState: 2
+  spawnFacing: {x: 1, y: 0}
+  emilyChaseSpeed: 4
+  catchDistance: 1
+  pushForce: 10
+  shoveFriction: 10
+  resumeDelay: 0.3
+  jumpscareClip: {fileID: 0}
+  emilyShout: 'YOU CAN''T GO UPSTAIRS
+
+'
+  lisaPanic: 'AAAAA!!
+
+'
+  triggerID: Room05_EmilySpawn_Intro
+  debugMode: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

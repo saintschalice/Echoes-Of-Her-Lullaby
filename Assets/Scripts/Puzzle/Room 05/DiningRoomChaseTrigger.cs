@@ -46,11 +46,10 @@ public class DiningRoomChaseTrigger : MonoBehaviour
         // and the puzzle isn't finished yet.
         if (!Room05_DiningRoomController.Instance.isEmilyHunting && !Room05_DiningRoomController.Instance.puzzleCompleted)
         {
-            Debug.Log("[DiningRoomChaseTrigger] Player hit trigger. Starting Phase 1 Chase.");
+            Debug.Log("[DiningRoomChaseTrigger] Player hit trigger. Starting Emily chase sequence.");
             hasTriggered = true;
 
-            // Directly start the angry sequence instead of calling OnCalendarInteract
-            // because the calendar was already seen
+            // Start the chase sequence (with intro dialogue first)
             StartCoroutine(Room05_DiningRoomController.Instance.EmilyGetsAngrySequence());
 
             // Disable the collider

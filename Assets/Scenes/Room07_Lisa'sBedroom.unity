@@ -1364,7 +1364,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.040697575, y: 0.023954451}
+  m_Offset: {x: -0.01744771, y: -0.022997499}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -1374,7 +1374,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.7526506, y: 0.4798516}
+  m_Size: {x: 0.7061509, y: 0.22779417}
   m_EdgeRadius: 0
 --- !u!114 &436411412
 MonoBehaviour:
@@ -1426,7 +1426,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.0106166005, y: -0.01450821}
+  m_Offset: {x: 0.0079832375, y: -0.036748543}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -1436,7 +1436,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.76876676, y: 0.46715808}
+  m_Size: {x: 0.7315671, y: 0.21510062}
   m_EdgeRadius: 0
 --- !u!1 &445817427
 GameObject:
@@ -3012,6 +3012,9 @@ MonoBehaviour:
   toyboxPanel: {fileID: 1853319462}
   dollhousePanel: {fileID: 1558743194}
   blackScreenCutscene: {fileID: 1073865167}
+  curtainObject: {fileID: 1539740968}
+  closedCurtainSprite: {fileID: 2195497777362739323, guid: 74f4ec7387b7f9d4e9e265a40bb89df1, type: 3}
+  openCurtainSprite: {fileID: 5888040270664213544, guid: 81bf933a59d20cb45baf70a41a0ea4f8, type: 3}
 --- !u!114 &1011916247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9620,13 +9623,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3c77c7c42dc0284cafcb7bd3c4b25d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnifiedDoorInteraction
-  targetSceneName: Room02_LivingRoom
-  doorID: Door_Foyer_To_LivingRoom
+  targetSceneName: Room08_Lisa'sBathroom
+  doorID: Room08_Lisa'sBathroom
   startsLocked: 1
-  requiredItemId: house_key
+  requiredItemId: 
   requiredItemName: 
   consumeKeyOnUse: 0
-  unlockPermanently: 1
+  unlockPermanently: 0
   requireRoom5PuzzleComplete: 0
   incompletePuzzleMessage: I can't leave yet. I need to finish setting the table.
   targetSpawnPointID: Main
@@ -9845,7 +9848,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.08335176}
+  m_Offset: {x: 0.030141652, y: 0.17405358}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -9855,7 +9858,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.8, y: 0.3232965}
+  m_Size: {x: 0.73971665, y: 0.14189287}
   m_EdgeRadius: 0
 --- !u!1 &1853319462
 GameObject:

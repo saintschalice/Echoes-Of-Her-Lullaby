@@ -355,7 +355,7 @@ public class Room07_Interactable : MonoBehaviour, IInteractable
         Room07_FlowController.Instance.hasCheckedDiary = true;
     }
 
-    // Coroutine to handle doll pickup - NOTIFICATION ONLY, no duplicate dialogue
+    // Coroutine to handle doll pickup - Uses new cutscene controller
     System.Collections.IEnumerator PickupDollSequence()
     {
         // Add item with notification (notification will show automatically)
@@ -369,10 +369,19 @@ public class Room07_Interactable : MonoBehaviour, IInteractable
 
         yield return new WaitForSeconds(0.3f);
 
-        // Play cutscene after notification
-        if (uiManager != null)
+        // Play doll cutscene with new controller (includes fade and lullaby)
+        if (Room07_CutsceneController.Instance != null)
         {
-            uiManager.PlayCutscene(); // Play Cutscene 2 (Doll Memory)
+            yield return StartCoroutine(Room07_CutsceneController.Instance.PlayDollCutscene());
+        }
+        else
+        {
+            // Fallback to old system
+            Debug.LogWarning("[Room07] Cutscene controller not found, using fallback");
+            if (uiManager != null)
+            {
+                uiManager.PlayCutscene();
+            }
         }
     }
 

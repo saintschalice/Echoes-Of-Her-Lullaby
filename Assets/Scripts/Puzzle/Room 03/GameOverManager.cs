@@ -347,6 +347,8 @@ public class GameOverManager : MonoBehaviour
         Debug.Log("[GameOver] RestartLevel button clicked!");
         Time.timeScale = 1f;
         string currentRoomName = SceneManager.GetActiveScene().name;
+        Debug.Log($"[GameOver] Current scene name: {currentRoomName}");
+        Debug.Log($"[GameOver] Will restart scene: {currentRoomName}");
         StartCoroutine(RestartRoutine(currentRoomName));
     }
 
@@ -452,10 +454,19 @@ public class GameOverManager : MonoBehaviour
                 RemoveRoomItems(roomName, data);
 
                 data.currentScene = roomName;
+                
+                // === CRITICAL FIX: Ensure proper scene reload ===
+                // Clear all spawn/load flags to prevent redirect to wrong room
+                PlayerPrefs.SetString("TargetSpawnPoint", "");
+                PlayerPrefs.SetString("LoadingFromSave", "");
+                PlayerPrefs.Save();
+                Debug.Log($"[GameOver] Cleared spawn flags for retry in: {roomName}");
+                Debug.Log($"[GameOver] Set currentScene to: {roomName}");
             }
         }
 
         // 5. Load Scene
+        Debug.Log($"[GameOver] Loading scene: {roomName}");
         SceneManager.LoadScene(roomName);
 
         // UI Reset happens in OnSceneLoaded or here? 
@@ -523,8 +534,19 @@ public class GameOverManager : MonoBehaviour
 
             case "Room06_ReturnToHallway":
             case "Room06_ReturnToHallwayUpStairs":
-                PlayerPrefs.DeleteKey("R06_IntroPlayed");
-                PlayerPrefs.DeleteKey("R06_PhotoInteracted");
+                // Room 06 uses SaveSystem dialogue triggers, not PlayerPrefs
+                // Reset via SaveSystem instead
+                if (SaveSystem.Instance != null)
+                {
+                    GameSaveData data = SaveSystem.Instance.GetCurrentSaveData();
+                    if (data != null)
+                    {
+                        // Remove Room 06 specific dialogue triggers
+                        data.triggeredDialogues.Remove("Room06_Intro");
+                        data.triggeredDialogues.Remove("Room06_PhotoInteracted");
+                        Debug.Log("[GameOver] Room 06 dialogue triggers cleared from SaveSystem");
+                    }
+                }
                 break;
 
             case "Room07_Lisa'sBedroom":
@@ -590,6 +612,13 @@ public class GameOverManager : MonoBehaviour
             case "Room05_DiningRoom":
                 itemsToRemove.Add("spoon");
                 itemsToRemove.Add("calendar");
+                itemsToRemove.Add("bedroom_key");
+                break;
+
+            case "Room06_ReturnToHallway":
+            case "Room06_ReturnToHallwayUpStairs":
+                // Room 06 has no collectible items, only photo interaction
+                // No items to remove
                 break;
 
             case "Room07_Lisa'sBedroom":

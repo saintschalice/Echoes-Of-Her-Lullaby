@@ -4,11 +4,21 @@ public class Room07UIManager : MonoBehaviour
 {
     [Header("Puzzle Panels")]
     public GameObject curtainPanel;
-    public GameObject cabinetPanel; // NEW: Panel for getting Emily's Cup
+    public GameObject cabinetPanel;
     public GameObject teaPartyPanel;
     public GameObject toyboxPanel;
     public GameObject dollhousePanel;
-    public GameObject blackScreenCutscene;
+    public GameObject blackScreenCutscene; // Legacy - kept for compatibility
+
+    [Header("Curtain System")]
+    [Tooltip("Curtain GameObject in the scene")]
+    public GameObject curtainObject;
+    
+    [Tooltip("Closed curtain sprite (before puzzle)")]
+    public Sprite closedCurtainSprite;
+    
+    [Tooltip("Open curtain sprite (after puzzle)")]
+    public Sprite openCurtainSprite;
 
     public void HideAllPanels()
     {
@@ -94,6 +104,26 @@ public class Room07UIManager : MonoBehaviour
     {
         HideAllPanels();
         Room07_FlowController.Instance.areCurtainsOpened = true;
+        
+        // CHANGE CURTAIN SPRITE TO OPEN VERSION
+        if (curtainObject != null && openCurtainSprite != null)
+        {
+            SpriteRenderer sr = curtainObject.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.sprite = openCurtainSprite;
+                Debug.Log("[Room07] Curtain sprite changed to open version");
+            }
+            else
+            {
+                Debug.LogWarning("[Room07] Curtain object has no SpriteRenderer!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[Room07] Curtain object or open sprite not assigned!");
+        }
+        
         DialogueSystemV2.Instance?.StartDialogue(Room07_ShortDialogues_FINAL.CURTAINS_COMPLETION, "Lisa");
     }
 
@@ -105,38 +135,32 @@ public class Room07UIManager : MonoBehaviour
         
         Debug.Log("[Room07] Tea Party Solved! isTeaPartyDone = true");
         
-        // Start the cutscene sequence
+        // Start the cutscene sequence with NEW fade system
         StartCoroutine(TeaPartyCutsceneSequence());
     }
     
     System.Collections.IEnumerator TeaPartyCutsceneSequence()
     {
-        // 1. Show cutscene
-        if (blackScreenCutscene != null)
+        // Use new cutscene controller with fade transitions
+        if (Room07_CutsceneController.Instance != null)
         {
-            blackScreenCutscene.SetActive(true);
-            yield return new WaitForSeconds(3f); // Cutscene duration
-            blackScreenCutscene.SetActive(false);
+            yield return StartCoroutine(Room07_CutsceneController.Instance.PlayTeaPartyCutscene());
+        }
+        else
+        {
+            // Fallback to old system if cutscene controller not found
+            Debug.LogWarning("[Room07] Cutscene controller not found, using fallback");
+            if (blackScreenCutscene != null)
+            {
+                blackScreenCutscene.SetActive(true);
+                yield return new WaitForSeconds(3f);
+                blackScreenCutscene.SetActive(false);
+            }
         }
         
         yield return new WaitForSeconds(0.5f);
         
-        // 2. Show dialogue after cutscene (now 3 parts instead of 4)
-        yield return StartCoroutine(ShowDialogueSequence(
-            Room07_ShortDialogues_FINAL.TEA_PARTY_MEMORY_1,
-            Room07_ShortDialogues_FINAL.TEA_PARTY_MEMORY_2,
-            Room07_ShortDialogues_FINAL.TEA_PARTY_MEMORY_3
-        ));
-        
-        // Wait for dialogue to finish
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        yield return new WaitForSeconds(0.3f);
-        
-        // 3. Show progress message
+        // Only show completion message (NO DUPLICATE MEMORY DIALOGUE)
         DialogueSystemV2.Instance?.StartDialogue(Room07_ShortDialogues_FINAL.TEA_PARTY_COMPLETE, "Lisa");
     }
 
