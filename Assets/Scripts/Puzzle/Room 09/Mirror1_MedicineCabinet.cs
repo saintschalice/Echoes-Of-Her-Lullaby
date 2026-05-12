@@ -428,18 +428,26 @@ public class Mirror1_MedicineCabinet : MonoBehaviour
             yield return null;
         }
         
+        yield return new WaitForSeconds(0.3f);
+        
         DialogueSystemV2.Instance?.StartDialogue(Room09_Dialogues.EMILY_ATTACK_2, "Lisa");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             yield return null;
         }
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         
-        // Game over - reload scene or checkpoint
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
-        );
+        // Trigger jumpscare + game over
+        if (JumpscareManager.Instance != null)
+        {
+            JumpscareManager.Instance.TriggerJumpscare("Emily caught you...");
+        }
+        else
+        {
+            // Fallback to direct game over if jumpscare not available
+            GameOverManager.Instance?.TriggerGameOver("Emily caught you...");
+        }
     }
 
     void PauseGame()

@@ -159,8 +159,16 @@ public sealed class EmilyGhost : MonoBehaviour
             // Catch SFX
             _audio.PlayCatch();
 
-            // Game Over UI
-            FindAnyObjectByType<GameOverManager>()?.TriggerGameOver("Emily caught you…");
+            // Trigger jumpscare + game over
+            if (JumpscareManager.Instance != null)
+            {
+                JumpscareManager.Instance.TriggerJumpscare("Emily caught you...");
+            }
+            else
+            {
+                // Fallback to direct game over if jumpscare not available
+                FindAnyObjectByType<GameOverManager>()?.TriggerGameOver("Emily caught you…");
+            }
 
             return;
         }

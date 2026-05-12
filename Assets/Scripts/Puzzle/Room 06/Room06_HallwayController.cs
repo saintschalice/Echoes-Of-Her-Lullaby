@@ -431,11 +431,15 @@ public class Room06_HallwayController : MonoBehaviour
             roomAudioSource.Stop();
         }
         
-        // Trigger Game Over
-        GameOverManager gameOverManager = FindFirstObjectByType<GameOverManager>();
-        if (gameOverManager != null)
+        // Trigger jumpscare + game over
+        if (JumpscareManager.Instance != null)
         {
-            gameOverManager.TriggerGameOver("Emily caught you...");
+            JumpscareManager.Instance.TriggerJumpscare("Emily caught you...");
+        }
+        else
+        {
+            // Fallback to direct game over if jumpscare not available
+            GameOverManager.Instance?.TriggerGameOver("Emily caught you...");
         }
     }
     

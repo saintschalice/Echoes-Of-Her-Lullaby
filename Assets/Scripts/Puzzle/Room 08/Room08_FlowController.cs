@@ -18,9 +18,11 @@ public class Room08_FlowController : MonoBehaviour
     public bool hasCheckedMedicine = false;
     
     [Header("Evidence Collection")]
-    public bool hasFoundTornClothes = false;
-    public bool hasFoundApologyNote = false;
-    public bool hasFoundHammer = false;
+    public int totalEvidenceItems = 2; // Total evidence items in scene (torn dress + note)
+    public int evidenceCollected = 0; // Number of evidence items collected
+    public bool hasCollectedAllEvidence = false; // All evidence collected
+    public bool hasFoundHammer = false; // Found hammer in cabinet
+    public bool hasInteractedWithBathtub = false; // Interacted with bathtub
     
     [Header("Emily Hunt")]
     public bool isEmilyHunting = false;
@@ -33,11 +35,15 @@ public class Room08_FlowController : MonoBehaviour
     public bool hasBrokenMirror = false;
     public bool canClimbThrough = false;
     
-    [Header("Mirror Sprites")]
-    public SpriteRenderer mirrorSpriteRenderer; // The mirror object in scene
-    public Sprite mirrorNormalSprite; // Normal mirror before breaking
-    public Sprite mirrorBrokenSprite; // Broken mirror after QTE
-    public GameObject passageObject; // The passage behind mirror (initially hidden)
+    [Header("Mirror GameObject")]
+    [Tooltip("The mirror GameObject in scene (will change sprite and become passage)")]
+    public GameObject mirrorGameObject;
+    
+    [Tooltip("Normal mirror sprite (before breaking)")]
+    public Sprite mirrorNormalSprite;
+    
+    [Tooltip("Broken mirror sprite (after puzzle - shows passage)")]
+    public Sprite mirrorBrokenSprite;
     
     [Header("Emily AI (Outside)")]
     public AudioClip emilyHummingSound;
@@ -57,24 +63,14 @@ public class Room08_FlowController : MonoBehaviour
 
     private void Start()
     {
-        // Hide Emily AI initially
-        if (emilyAI != null) emilyAI.SetActive(false);
-        
-        // Hide passage initially
-        if (passageObject != null) passageObject.SetActive(false);
-        
-        // Set normal mirror sprite
-        if (mirrorSpriteRenderer != null && mirrorNormalSprite != null)
+        // Set normal mirror sprite at start
+        if (mirrorGameObject != null && mirrorNormalSprite != null)
         {
-            mirrorSpriteRenderer.sprite = mirrorNormalSprite;
-        }
-        
-        // Play Emily humming sound (looping, ambient) - she's outside
-        if (emilyHummingSound != null && emilyAudioSource != null)
-        {
-            emilyAudioSource.clip = emilyHummingSound;
-            emilyAudioSource.loop = true;
-            emilyAudioSource.Play();
+            SpriteRenderer sr = mirrorGameObject.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.sprite = mirrorNormalSprite;
+            }
         }
         
         // Trigger intro dialogue
@@ -132,77 +128,34 @@ public class Room08_FlowController : MonoBehaviour
         isIntroDone = true;
     }
 
-    // Check if all evidence has been found
-    public bool IsAllEvidenceFound()
+    // Called when an evidence item is collected
+    public void OnEvidenceCollected(string evidenceId)
     {
-        return hasFoundTornClothes && hasFoundApologyNote && hasFoundHammer;
+        evidenceCollected++;
+        
+        Debug.Log($"[Room08] Evidence collected: {evidenceId} ({evidenceCollected}/{totalEvidenceItems})");
+        
+        // Check if all evidence collected
+        if (evidenceCollected >= totalEvidenceItems)
+        {
+            hasCollectedAllEvidence = true;
+            Debug.Log("[Room08] All evidence collected!");
+            
+            // Show dialogue
+            StartCoroutine(ShowDialogueSequence(
+                "I've collected all the evidence I can find.",
+                "Now I should check the medicine cabinet."
+            ));
+        }
     }
-
-    // Check if ready for mirror QTE
+    
+    // Check if ready for mirror interaction
     public bool IsReadyForMirror()
     {
-        return IsAllEvidenceFound() && isEmilyHunting;
+        return hasCollectedAllEvidence && hasFoundHammer && hasInteractedWithBathtub;
     }
     
-    // Called when all evidence is collected - Emily enters and starts hunting
-    public void OnAllEvidenceCollected()
-    {
-        if (isEmilyHunting) return; // Already hunting
-        
-        StartCoroutine(EmilyEntersRoom());
-    }
-    
-    System.Collections.IEnumerator EmilyEntersRoom()
-    {
-        // Stop humming sound
-        if (emilyAudioSource != null && emilyAudioSource.isPlaying)
-        {
-            emilyAudioSource.Stop();
-        }
-        
-        yield return new WaitForSeconds(0.5f);
-        
-        // Play Emily enter sound
-        if (emilyEnterSound != null && emilyAudioSource != null)
-        {
-            emilyAudioSource.PlayOneShot(emilyEnterSound);
-        }
-        
-        // Show dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.EMILY_ENTERS, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        yield return new WaitForSeconds(0.5f);
-        
-        // Spawn Emily and start hunting
-        if (emilyAI != null)
-        {
-            if (emilySpawnPoint != null)
-            {
-                emilyAI.transform.position = emilySpawnPoint.position;
-            }
-            emilyAI.SetActive(true);
-            
-            // Enable Emily AI
-            EmilyGhost emilyScript = emilyAI.GetComponent<EmilyGhost>();
-            if (emilyScript != null)
-            {
-                emilyScript.enabled = true;
-            }
-        }
-        
-        isEmilyHunting = true;
-        
-        // Show hunting dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.EMILY_HUNTING, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-    }
+
     
     // Helper method for dialogue sequences
     System.Collections.IEnumerator ShowDialogueSequence(params string[] dialogues)
@@ -235,24 +188,15 @@ public class Room08_FlowController : MonoBehaviour
         hasBrokenMirror = true;
         canClimbThrough = true;
         
-        // Stop Emily hunting
-        if (emilyAI != null)
+        // Change mirror sprite to broken (shows passage)
+        if (mirrorGameObject != null && mirrorBrokenSprite != null)
         {
-            emilyAI.SetActive(false);
-        }
-        
-        isEmilyHunting = false;
-        
-        // Change mirror sprite to broken
-        if (mirrorSpriteRenderer != null && mirrorBrokenSprite != null)
-        {
-            mirrorSpriteRenderer.sprite = mirrorBrokenSprite;
-        }
-        
-        // Show passage
-        if (passageObject != null)
-        {
-            passageObject.SetActive(true);
+            SpriteRenderer sr = mirrorGameObject.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.sprite = mirrorBrokenSprite;
+                Debug.Log("[Room08] Mirror changed to broken sprite (passage visible)");
+            }
         }
         
         StartCoroutine(MirrorBrokenSequence());
@@ -261,35 +205,22 @@ public class Room08_FlowController : MonoBehaviour
     System.Collections.IEnumerator MirrorBrokenSequence()
     {
         // Show passage found dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.PASSAGE_FOUND_1, "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue("The mirror... it's shattered!", "Lisa");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             yield return null;
         }
         
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.PASSAGE_FOUND_2, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
+        yield return new WaitForSeconds(0.3f);
         
-        yield return new WaitForSeconds(0.5f);
-        
-        // Show final door dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.FINAL_DOOR_1, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.FINAL_DOOR_2, "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue("There's a passage behind it. I can climb through.", "Lisa");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             yield return null;
         }
     }
 
-    // Called when player interacts with passage to climb through
+    // Called when player interacts with broken mirror (passage)
     public void ClimbThroughPassage()
     {
         if (!canClimbThrough) return;
@@ -300,21 +231,22 @@ public class Room08_FlowController : MonoBehaviour
     System.Collections.IEnumerator TransitionToNextRoom()
     {
         // Show climb through dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.CLIMB_THROUGH, "Lisa");
+        DialogueSystemV2.Instance?.StartDialogue("Time to see what's on the other side...", "Lisa");
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
         {
             yield return null;
         }
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         
-        // Fade out and load next scene
-        // TODO: Add fade effect
-        
-        // Mark puzzle as solved
-        SaveSystem.Instance?.MarkPuzzleSolved("bathroom_mirror_qte");
+        // Fade out
+        if (ScreenFader.Instance != null)
+        {
+            ScreenFader.Instance.FadeOut(0.8f);
+            yield return new WaitForSeconds(0.8f);
+        }
         
         // Load next scene
-        SceneManager.LoadScene(nextSceneName);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(nextSceneName);
     }
 }

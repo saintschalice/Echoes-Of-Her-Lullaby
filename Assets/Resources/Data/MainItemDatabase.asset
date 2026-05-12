@@ -297,7 +297,7 @@ MonoBehaviour:
   - itemId: hammer
     itemName: Hammer
     description: A heavy hammer. Hidden in the medicine cabinet.
-    itemIcon: {fileID: 546939945, guid: d5d6dfbf6ade81445acf98620c3d1de3, type: 3}
+    itemIcon: {fileID: -4808731204046869354, guid: 3bc167991555afe4d8f119311d09ad8c, type: 3}
     isKeyItem: 1
     isUsable: 0
     isConsumable: 1

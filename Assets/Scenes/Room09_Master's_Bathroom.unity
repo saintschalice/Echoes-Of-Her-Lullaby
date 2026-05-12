@@ -10916,10 +10916,10 @@ MonoBehaviour:
   - {fileID: 705229189}
   flashbackImage: {fileID: 1806960954}
   flashbackSprites:
-  - {fileID: -2072219239512345854, guid: d23229a00fcb29c4a91d61aa3d99557b, type: 3}
-  - {fileID: 5616075518325981702, guid: 8137fd61593520b45861b7adb5b95f2f, type: 3}
-  - {fileID: -4855005889123944903, guid: 2b8478a12c5bec84590cf01166e74070, type: 3}
-  - {fileID: -6172548384692717979, guid: 64c3dc9c4ce917a45b219b34e63fc1e1, type: 3}
+  - {fileID: -347702476747834141, guid: 9dc49dbd2a1cbb34fad4a32c880c71ca, type: 3}
+  - {fileID: 2436689576485346197, guid: 3ff70a72df96f2e49a280dccf7565fc0, type: 3}
+  - {fileID: -8363144008919072003, guid: ea202135dee2fba42a926ba249b60a72, type: 3}
+  - {fileID: -7174583451156371245, guid: 32ed9875114a2514e8e179521fd4e1db, type: 3}
   flashbackDuration: 2
   timeLimit: 60
   snapDistance: 200

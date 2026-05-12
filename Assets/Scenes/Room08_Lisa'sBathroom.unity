@@ -419,6 +419,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 366919735}
+  - component: {fileID: 366919736}
   - component: {fileID: 366919734}
   m_Layer: 0
   m_Name: Passage
@@ -426,7 +427,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &366919734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -450,12 +451,71 @@ Transform:
   m_GameObject: {fileID: 366919733}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.0056422455, w: -0.9999841}
-  m_LocalPosition: {x: 13.48, y: 9.42, z: 0}
-  m_LocalScale: {x: 2.3545368, y: 2.1512752, z: 1}
+  m_LocalPosition: {x: 13.56, y: 9.555, z: 0}
+  m_LocalScale: {x: 1.2118968, y: 1.173057, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &366919736
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 366919733}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 2
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 4714086112600628916, guid: d511be6bc41113d41bbe68578218e89e, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1.59, y: 1.45}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
 --- !u!1 &476286772 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7409944623990111159, guid: 03df2e4908104da4188c7392eb963e88, type: 3}
@@ -10887,7 +10947,7 @@ GameObject:
   - component: {fileID: 656351615}
   - component: {fileID: 656351616}
   m_Layer: 0
-  m_Name: Cabinet
+  m_Name: Medicine Cabinet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11207,7 +11267,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.008343041, y: 0.006840974}
+  m_Offset: {x: -0.06820536, y: -0.41219473}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -11217,7 +11277,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.2502891, y: 0.80247456}
+  m_Size: {x: 2.396222, y: 1.6405458}
   m_EdgeRadius: 0
 --- !u!212 &718378909
 SpriteRenderer:
@@ -11288,7 +11348,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 13.55, y: 9.5316, z: 0}
-  m_LocalScale: {x: 1.8128487, y: 2.1256106, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -11447,8 +11507,9 @@ MonoBehaviour:
   totalTaps: 5
   totalTimeLimit: 120
   maxFailures: 3
-  qtePanel: {fileID: 1831294223}
   fullScreenTapArea: {fileID: 1072417531}
+  fillImage: {fileID: 0}
+  fillColor: {r: 1, g: 1, b: 1, a: 0.5}
   timerText: {fileID: 0}
   timerTextTMP: {fileID: 1441271856}
   progressText: {fileID: 0}
@@ -11475,7 +11536,7 @@ Transform:
   m_GameObject: {fileID: 943924364}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.5999994, y: 9.4673, z: 0}
+  m_LocalPosition: {x: 13.53, y: 9.59, z: 0}
   m_LocalScale: {x: 3.0729237, y: 2.9183931, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11492,6 +11553,7 @@ GameObject:
   - component: {fileID: 1072417530}
   - component: {fileID: 1072417532}
   - component: {fileID: 1072417531}
+  - component: {fileID: 1072417533}
   m_Layer: 5
   m_Name: FullScreenTapArea
   m_TagString: Untagged
@@ -11515,8 +11577,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0020904, y: 0}
-  m_SizeDelta: {x: 667.08, y: 300}
+  m_AnchoredPosition: {x: 2.1446, y: 7.1311}
+  m_SizeDelta: {x: 695.88, y: 285.74}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1072417531
 MonoBehaviour:
@@ -11531,7 +11593,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0.8784314, g: 1, b: 1, a: 0.2}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -11556,6 +11618,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1072417529}
   m_CullTransparentMesh: 1
+--- !u!114 &1072417533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1072417529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1072417531}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1122708840
 GameObject:
   m_ObjectHideFlags: 0
@@ -11869,9 +11975,11 @@ MonoBehaviour:
   isIntroDone: 0
   hasCheckedBathtub: 0
   hasCheckedMedicine: 0
-  hasFoundTornClothes: 0
-  hasFoundApologyNote: 0
+  totalEvidenceItems: 2
+  evidenceCollected: 0
+  hasCollectedAllEvidence: 0
   hasFoundHammer: 0
+  hasInteractedWithBathtub: 0
   isEmilyHunting: 0
   emilyAI: {fileID: 476286772}
   emilySpawnPoint: {fileID: 1329504398}
@@ -11879,10 +11987,9 @@ MonoBehaviour:
   hasExaminedMirror: 0
   hasBrokenMirror: 0
   canClimbThrough: 0
-  mirrorSpriteRenderer: {fileID: 0}
-  mirrorNormalSprite: {fileID: 0}
-  mirrorBrokenSprite: {fileID: 0}
-  passageObject: {fileID: 0}
+  mirrorGameObject: {fileID: 718378906}
+  mirrorNormalSprite: {fileID: 5661148724446967396, guid: 50d95a5b0647706499c2aadfb04e6095, type: 3}
+  mirrorBrokenSprite: {fileID: 4037971763981148822, guid: c68eb6ca8a11df94a8107ecf732fb5fb, type: 3}
   emilyHummingSound: {fileID: 0}
   emilyAudioSource: {fileID: 0}
   bathroomDoor: {fileID: 718170041}
@@ -12163,7 +12270,7 @@ GameObject:
   - component: {fileID: 1591585036}
   - component: {fileID: 1591585040}
   m_Layer: 0
-  m_Name: TornClothes
+  m_Name: Torn Dress
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12262,7 +12369,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_MaskInteraction: 0
   m_Sprite: {fileID: -8347490568425500463, guid: 312c9e97d5d982e4aa9a744590e6d4f4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -12312,11 +12419,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 1591585035}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5986a2648577f6b489903315655d5eaf, type: 3}
+  m_Script: {fileID: 11500000, guid: f5e6955c455e61246b4d111a66af9727, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Room08_Interactable
-  myType: 5
+  m_EditorClassIdentifier: Assembly-CSharp::Room08_EvidencePickup
   evidenceId: torn_clothes
+  evidenceName: Torn Dress
+  evidenceDescription: A torn and bloodied dress. Someone was hurt here.
+  autoPickup: 1
+  pickupSound: {fileID: 0}
+  pickupEffect: {fileID: 0}
+  debugMode: 1
 --- !u!1 &1700008713
 GameObject:
   m_ObjectHideFlags: 0
@@ -12331,7 +12443,7 @@ GameObject:
   - component: {fileID: 1700008714}
   - component: {fileID: 1700008718}
   m_Layer: 0
-  m_Name: ApologyNote
+  m_Name: Note
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12430,7 +12542,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_MaskInteraction: 0
   m_Sprite: {fileID: 956424012952299613, guid: a7f7125c2e9f084468440e13b857e37d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -12480,11 +12592,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 1700008713}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5986a2648577f6b489903315655d5eaf, type: 3}
+  m_Script: {fileID: 11500000, guid: f5e6955c455e61246b4d111a66af9727, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Room08_Interactable
-  myType: 5
+  m_EditorClassIdentifier: Assembly-CSharp::Room08_EvidencePickup
   evidenceId: apology_note
+  evidenceName: Apology Note
+  evidenceDescription: A crumpled note. 'I'm sorry... I didn't mean to...
+  autoPickup: 1
+  pickupSound: {fileID: 0}
+  pickupEffect: {fileID: 0}
+  debugMode: 1
 --- !u!1 &1774745668
 GameObject:
   m_ObjectHideFlags: 0
@@ -12648,13 +12765,14 @@ GameObject:
   - component: {fileID: 1831294224}
   - component: {fileID: 1831294226}
   - component: {fileID: 1831294225}
+  - component: {fileID: 1831294227}
   m_Layer: 5
-  m_Name: QTE_Panel
+  m_Name: Mirror_Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1831294224
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12717,6 +12835,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1831294223}
   m_CullTransparentMesh: 1
+--- !u!114 &1831294227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1831294223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fb6649a01970334b80c33ae81b6e9e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Room08_MirrorQTE
+  totalTaps: 20
+  totalTimeLimit: 10
+  maxFailures: 0
+  fullScreenTapArea: {fileID: 1072417531}
+  fillImage: {fileID: 0}
+  fillColor: {r: 1, g: 1, b: 1, a: 0}
+  timerText: {fileID: 0}
+  timerTextTMP: {fileID: 1441271856}
+  progressText: {fileID: 0}
+  progressTextTMP: {fileID: 0}
+  mirrorImage: {fileID: 837263895}
+  mirrorPhase1: {fileID: 7991403044314185772, guid: 4fcb0f2ba7044144aa189bb30203e698, type: 3}
+  mirrorPhase2: {fileID: 5661148724446967396, guid: 50d95a5b0647706499c2aadfb04e6095, type: 3}
+  mirrorPhase3: {fileID: -2226729254331398921, guid: 85ba3d45241f82b41a621226c375dbc5, type: 3}
+  mirrorPhase4: {fileID: -5847951794236987431, guid: 8f6c250f02a2bcc4fb5a9b09dd1046d2, type: 3}
+  shatterEffect: {fileID: 0}
+  tapSound: {fileID: 0}
+  crackSound: {fileID: 0}
+  shatterSound: {fileID: 0}
+  failSound: {fileID: 0}
+  glassStressSounds: []
+  shakeIntensity: 0.1
+  shakeDuration: 0.2
 --- !u!1 &1832269131
 GameObject:
   m_ObjectHideFlags: 0
@@ -12856,7 +13009,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1832269131}
   m_CullTransparentMesh: 1
---- !u!1 &1874506540
+--- !u!1 &1964086440
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12864,91 +13017,43 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1874506543}
-  - component: {fileID: 1874506542}
-  - component: {fileID: 1874506541}
+  - component: {fileID: 1964086441}
+  - component: {fileID: 1964086442}
   m_Layer: 0
-  m_Name: Passage
+  m_Name: Room08UIManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1874506541
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1874506540}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5986a2648577f6b489903315655d5eaf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Room08_Interactable
-  myType: 4
-  evidenceId: 
---- !u!61 &1874506542
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1874506540}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
---- !u!4 &1874506543
+  m_IsActive: 1
+--- !u!4 &1964086441
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1874506540}
+  m_GameObject: {fileID: 1964086440}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.49, y: 9.32, z: 0}
+  m_LocalPosition: {x: 6.7894, y: 2.88276, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1964086442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964086440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10b9b63437e6ea64885df8845771bdd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Room08UIManager
+  mirrorPanel: {fileID: 1831294223}
 --- !u!1 &2019250661
 GameObject:
   m_ObjectHideFlags: 0
@@ -19887,17 +19992,17 @@ SceneRoots:
   - {fileID: 542861822}
   - {fileID: 1225079882}
   - {fileID: 943924366}
+  - {fileID: 1964086441}
   - {fileID: 909072025}
-  - {fileID: 718170045}
-  - {fileID: 1522651814}
-  - {fileID: 93056007}
-  - {fileID: 656351613}
-  - {fileID: 155472156}
-  - {fileID: 1874506543}
-  - {fileID: 718378910}
-  - {fileID: 366919735}
-  - {fileID: 1591585039}
   - {fileID: 1700008717}
+  - {fileID: 1591585039}
+  - {fileID: 656351613}
+  - {fileID: 93056007}
+  - {fileID: 366919735}
+  - {fileID: 1522651814}
+  - {fileID: 155472156}
+  - {fileID: 718378910}
+  - {fileID: 718170045}
   - {fileID: 591742360}
   - {fileID: 1172988499}
   - {fileID: 2019250663}

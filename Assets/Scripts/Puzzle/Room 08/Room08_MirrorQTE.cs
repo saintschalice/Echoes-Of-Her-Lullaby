@@ -10,20 +10,21 @@ using System.Collections;
 public class Room08_MirrorQTE : MonoBehaviour
 {
     [Header("QTE Settings")]
-    public int totalTaps = 50; // 50 taps total
+    public int totalTaps = 15; // 15 taps total (changed from 50)
     public float totalTimeLimit = 25f; // 25 seconds total
     public int maxFailures = 0; // No failures allowed - just time limit
     
     [Header("UI References")]
-    public GameObject qtePanel;
-    public Image fullScreenTapArea; // Full screen tap area (no target prefab needed)
+    public Image fullScreenTapArea; // Full screen tap area within panel - will fill with color
+    public Image fillImage; // Progress fill image (child of fullScreenTapArea)
+    public Color fillColor = new Color(0.8f, 0.2f, 0.2f, 0.5f); // Red-ish color with transparency
     
     // Support both Text and TextMeshProUGUI
     public Text timerText; // Shows total time remaining (legacy)
     public TextMeshProUGUI timerTextTMP; // Shows total time remaining (TMP)
     
-    public Text progressText; // "25/50" (legacy)
-    public TextMeshProUGUI progressTextTMP; // "25/50" (TMP)
+    public Text progressText; // "10/15" (legacy)
+    public TextMeshProUGUI progressTextTMP; // "10/15" (TMP)
     
     [Header("Visual Effects")]
     public Image mirrorImage; // The mirror sprite
@@ -52,11 +53,8 @@ public class Room08_MirrorQTE : MonoBehaviour
 
     public void StartQTE()
     {
-        // Pause game
-        PauseGame();
-        
-        // Show QTE panel
-        if (qtePanel != null) qtePanel.SetActive(true);
+        // Disable player controls
+        DisablePlayer();
         
         // Setup full screen tap area
         if (fullScreenTapArea != null)
@@ -68,6 +66,16 @@ public class Room08_MirrorQTE : MonoBehaviour
             }
             tapButton.onClick.RemoveAllListeners();
             tapButton.onClick.AddListener(OnScreenTapped);
+            
+            // Set fill color
+            fullScreenTapArea.color = fillColor;
+        }
+        
+        // Setup fill image
+        if (fillImage != null)
+        {
+            fillImage.fillAmount = 0f; // Start empty
+            fillImage.color = fillColor;
         }
         
         // Reset state
@@ -162,6 +170,12 @@ public class Room08_MirrorQTE : MonoBehaviour
         // Success!
         OnTapSuccess(currentTap);
         currentTap++;
+        
+        // Update fill amount
+        if (fillImage != null)
+        {
+            fillImage.fillAmount = (float)currentTap / totalTaps;
+        }
     }
 
     void OnTapSuccess(int tapIndex)
@@ -230,7 +244,7 @@ public class Room08_MirrorQTE : MonoBehaviour
     {
         isQTEActive = false;
         
-        // Emily breaks through the door
+        // Show failure dialogue
         DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.QTE_FAILED, "Lisa");
         
         while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
@@ -238,21 +252,34 @@ public class Room08_MirrorQTE : MonoBehaviour
             yield return null;
         }
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         
-        // Hide QTE panel
-        if (qtePanel != null) qtePanel.SetActive(false);
+        // Close panel
+        Room08UIManager uiManager = FindFirstObjectByType<Room08UIManager>();
+        if (uiManager != null)
+        {
+            uiManager.HideAllPanels();
+        }
         
-        // Resume game
-        ResumeGame();
+        // DON'T re-enable player - jumpscare will handle it
         
-        // Trigger game over sequence
-        // TODO: Load last checkpoint or show game over screen
-        Debug.Log("[Room08] QTE Failed - Game Over!");
+        // Trigger jumpscare + game over
+        if (JumpscareManager.Instance != null)
+        {
+            JumpscareManager.Instance.TriggerJumpscare("Time ran out...");
+        }
+        else
+        {
+            // Fallback to direct game over if jumpscare not available
+            EnablePlayer();
+            GameOverManager.Instance?.TriggerGameOver("Time ran out...");
+        }
     }
 
     System.Collections.IEnumerator MirrorShatter()
     {
+        isQTEActive = false;
+        
         // Play shatter sound
         if (shatterSound != null)
         {
@@ -268,24 +295,23 @@ public class Room08_MirrorQTE : MonoBehaviour
         // Big camera shake
         StartCoroutine(ShakeCamera(shakeIntensity * 3, shakeDuration * 2));
         
-        // Show success dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.QTE_SUCCESS, "Lisa");
-        
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
         yield return new WaitForSeconds(1f);
         
-        // Hide QTE panel
-        if (qtePanel != null) qtePanel.SetActive(false);
+        // Hide shatter effect
+        if (shatterEffect != null)
+        {
+            shatterEffect.SetActive(false);
+        }
         
-        // Resume game
-        ResumeGame();
+        // Close panel
+        Room08UIManager uiManager = FindFirstObjectByType<Room08UIManager>();
+        if (uiManager != null)
+        {
+            uiManager.OnMirrorPuzzleComplete();
+        }
         
-        // Notify flow controller
-        Room08_FlowController.Instance?.OnMirrorBroken();
+        // Re-enable player
+        EnablePlayer();
     }
 
     System.Collections.IEnumerator ShakeCamera(float intensity = -1, float duration = -1)
@@ -311,35 +337,21 @@ public class Room08_MirrorQTE : MonoBehaviour
         mainCamera.transform.localPosition = originalPos;
     }
 
-    void PauseGame()
+    void DisablePlayer()
     {
-        Time.timeScale = 1f; // QTE uses unscaled time
-        
-        // Disable player controls
         JoystickPlayerController player = JoystickPlayerController.Instance;
         if (player != null) player.enabled = false;
 
         GameObject joystick = GameObject.Find("Joystick");
         if (joystick != null) joystick.SetActive(false);
-        
-        // Pause Emily AI
-        EmilyGhost emily = FindFirstObjectByType<EmilyGhost>();
-        if (emily != null) emily.isPaused = true;
     }
 
-    void ResumeGame()
+    void EnablePlayer()
     {
-        Time.timeScale = 1f;
-        
-        // Re-enable player controls
         JoystickPlayerController player = JoystickPlayerController.Instance;
         if (player != null) player.enabled = true;
 
         GameObject joystick = GameObject.Find("Joystick");
         if (joystick != null) joystick.SetActive(true);
-        
-        // Resume Emily AI
-        EmilyGhost emily = FindFirstObjectByType<EmilyGhost>();
-        if (emily != null) emily.isPaused = false;
     }
 }

@@ -83,18 +83,33 @@ public class Room08_Interactable : MonoBehaviour, IInteractable
     {
         Room08_FlowController flow = Room08_FlowController.Instance;
         
+        // Check if hammer is obtained first
+        if (!flow.hasFoundHammer)
+        {
+            DialogueSystemV2.Instance?.StartDialogue("I should look around more before examining the bathtub.", "Lisa");
+            yield break;
+        }
+        
         // Show bathtub dialogue
         yield return StartCoroutine(ShowDialogueSequence(
             Room08_Dialogues.BATHTUB_1,
             Room08_Dialogues.BATHTUB_2
         ));
         
+        flow.hasInteractedWithBathtub = true;
         flow.hasCheckedBathtub = true;
     }
 
     System.Collections.IEnumerator ExamineMedicineCabinet()
     {
         Room08_FlowController flow = Room08_FlowController.Instance;
+        
+        // Check if evidence is collected first
+        if (!flow.hasCollectedAllEvidence)
+        {
+            DialogueSystemV2.Instance?.StartDialogue("I should collect the evidence first.", "Lisa");
+            yield break;
+        }
         
         // Show medicine cabinet dialogue
         yield return StartCoroutine(ShowDialogueSequence(
@@ -120,12 +135,6 @@ public class Room08_Interactable : MonoBehaviour, IInteractable
             ));
             
             flow.hasFoundHammer = true;
-            
-            // Check if all evidence collected - Emily enters!
-            if (flow.IsAllEvidenceFound())
-            {
-                flow.OnAllEvidenceCollected();
-            }
         }
     }
 
@@ -133,96 +142,50 @@ public class Room08_Interactable : MonoBehaviour, IInteractable
     {
         Room08_FlowController flow = Room08_FlowController.Instance;
         
-        // Show evidence dialogue based on type
-        switch (evidenceId)
-        {
-            case "torn_clothes":
-                StartCoroutine(ExamineTornClothes());
-                flow.hasFoundTornClothes = true;
-                break;
-                
-            case "apology_note":
-                StartCoroutine(ExamineApologyNote());
-                flow.hasFoundApologyNote = true;
-                break;
-        }
+        // Show evidence dialogue
+        StartCoroutine(ShowDialogueSequence(
+            "Evidence found. This might be important.",
+            "I should collect everything I can find."
+        ));
         
         // Hide this evidence object after examining
         gameObject.SetActive(false);
         
-        // Check if all evidence collected - Emily enters!
-        if (flow.IsAllEvidenceFound())
-        {
-            flow.OnAllEvidenceCollected();
-        }
-    }
-    
-    System.Collections.IEnumerator ExamineTornClothes()
-    {
-        yield return StartCoroutine(ShowDialogueSequence(
-            Room08_Dialogues.TORN_CLOTHES_1,
-            Room08_Dialogues.TORN_CLOTHES_2
-        ));
-    }
-    
-    System.Collections.IEnumerator ExamineApologyNote()
-    {
-        yield return StartCoroutine(ShowDialogueSequence(
-            Room08_Dialogues.APOLOGY_NOTE_1,
-            Room08_Dialogues.APOLOGY_NOTE_2
-        ));
+        // Mark evidence as collected (you can track individual items if needed)
+        // For now, we'll use a simple flag
+        flow.hasCollectedAllEvidence = true;
     }
 
     void ExamineMirror()
     {
         Room08_FlowController flow = Room08_FlowController.Instance;
+        Room08UIManager uiManager = FindFirstObjectByType<Room08UIManager>();
         
-        // Check if all evidence is collected
-        if (!flow.IsAllEvidenceFound())
+        // Check if ready for mirror interaction
+        if (!flow.IsReadyForMirror())
         {
-            DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.NEED_ALL_EVIDENCE, "Lisa");
+            DialogueSystemV2.Instance?.StartDialogue("I need to finish examining everything first.", "Lisa");
             return;
         }
         
-        // Check if Emily is hunting
-        if (!flow.isEmilyHunting)
+        // Already broken - this is now the passage!
+        if (flow.hasBrokenMirror)
         {
-            DialogueSystemV2.Instance?.StartDialogue("I should look around more...", "Lisa");
+            // Transition to next room
+            flow.ClimbThroughPassage();
             return;
         }
         
-        // Ready to break mirror - start QTE immediately
-        if (!flow.hasBrokenMirror)
+        // Ready to break mirror - show panel
+        if (uiManager != null)
         {
-            StartCoroutine(StartMirrorQTE());
-        }
-        // Already broken
-        else
-        {
-            DialogueSystemV2.Instance?.StartDialogue("The mirror is shattered. I can see the passage behind it.", "Lisa");
-        }
-    }
-
-    System.Collections.IEnumerator StartMirrorQTE()
-    {
-        // Show QTE start dialogue
-        DialogueSystemV2.Instance?.StartDialogue(Room08_Dialogues.QTE_START, "Lisa");
-        while (DialogueSystemV2.Instance != null && DialogueSystemV2.Instance.IsDialogueActive())
-        {
-            yield return null;
-        }
-        
-        yield return new WaitForSeconds(0.3f);
-        
-        // Find and start QTE
-        Room08_MirrorQTE qte = FindFirstObjectByType<Room08_MirrorQTE>();
-        if (qte != null)
-        {
-            qte.StartQTE();
+            // Disable this interactable during puzzle to prevent double-interaction
+            enabled = false;
+            uiManager.ShowMirrorPanel();
         }
         else
         {
-            Debug.LogError("[Room08] Room08_MirrorQTE not found!");
+            Debug.LogError("[Room08] Room08UIManager not found!");
         }
     }
 

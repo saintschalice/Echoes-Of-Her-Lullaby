@@ -294,15 +294,15 @@ public class CinematicChaseTrigger : MonoBehaviour
             audioSource.Stop();
         }
 
-        // Trigger Game Over
-        GameOverManager gameOverManager = FindFirstObjectByType<GameOverManager>();
-        if (gameOverManager != null)
+        // Trigger jumpscare + game over
+        if (JumpscareManager.Instance != null)
         {
-            gameOverManager.TriggerGameOver(gameOverMessage);
+            JumpscareManager.Instance.TriggerJumpscare(gameOverMessage);
         }
         else
         {
-            Debug.LogError("[CinematicChase] GameOverManager not found! Cannot trigger Game Over.");
+            // Fallback to direct game over if jumpscare not available
+            GameOverManager.Instance?.TriggerGameOver(gameOverMessage);
         }
     }
 
